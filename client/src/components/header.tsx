@@ -69,7 +69,7 @@ export function Header() {
                   />
                   <div>
                     <h1 className="text-2xl font-bold text-slate-800">Meds-Go</h1>
-                    <p className="text-xs text-slate-500 -mt-1">Professional Healthcare Products</p>
+                    <p className="text-xs text-white -mt-1">Professional Healthcare Products</p>
                   </div>
                 </motion.div>
               </Link>
