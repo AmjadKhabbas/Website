@@ -3,33 +3,33 @@
 @tailwind utilities;
 
 :root {
-  --background: 220 20% 8%; /* #0D1117 - Dark professional blue */
-  --foreground: 0 0% 98%; /* #FAFAFA - Pure white */
-  --muted: 220 15% 15%; /* #1F2937 - Professional dark */
-  --muted-foreground: 220 9% 60%; /* #9CA3AF - Professional grey */
-  --popover: 220 20% 8%; /* #0D1117 - Dark professional blue */
-  --popover-foreground: 0 0% 98%; /* #FAFAFA - Pure white */
-  --card: 220 18% 12%; /* #1A202C - Professional card */
-  --card-foreground: 0 0% 98%; /* #FAFAFA - Pure white */
-  --border: 220 15% 20%; /* #2D3748 - Subtle borders */
-  --input: 220 18% 12%; /* #1A202C - Professional inputs */
-  --primary: 210 40% 55%; /* #4A90E2 - Professional blue */
-  --primary-foreground: 0 0% 98%; /* #FAFAFA - Pure white */
-  --secondary: 195 30% 45%; /* #3182CE - Subtle blue accent */
-  --secondary-foreground: 0 0% 98%; /* #FAFAFA - Pure white */
-  --accent: 215 45% 60%; /* #5A9BD4 - Refined accent */
-  --accent-foreground: 0 0% 98%; /* #FAFAFA - Pure white */
+  --background: 0 0% 100%; /* #FFFFFF - Clean white */
+  --foreground: 222 84% 4.9%; /* #020817 - Deep navy text */
+  --muted: 210 40% 94%; /* #F1F5F9 - Light grey */
+  --muted-foreground: 215.4 16.3% 46.9%; /* #64748B - Medium grey */
+  --popover: 0 0% 100%; /* #FFFFFF - White */
+  --popover-foreground: 222 84% 4.9%; /* #020817 - Deep navy */
+  --card: 0 0% 100%; /* #FFFFFF - White cards */
+  --card-foreground: 222 84% 4.9%; /* #020817 - Navy text */
+  --border: 214.3 31.8% 91.4%; /* #E2E8F0 - Light border */
+  --input: 214.3 31.8% 91.4%; /* #E2E8F0 - Light input bg */
+  --primary: 200 98% 39%; /* #0891B2 - Fox Pharma teal/cyan */
+  --primary-foreground: 0 0% 98%; /* #FAFAFA - White text */
+  --secondary: 210 40% 94%; /* #F1F5F9 - Light secondary */
+  --secondary-foreground: 222 84% 4.9%; /* #020817 - Dark text */
+  --accent: 197 71% 52%; /* #22D3EE - Bright cyan accent */
+  --accent-foreground: 0 0% 9%; /* #171717 - Dark text */
   --destructive: 0 84.2% 60.2%; /* #EF4444 - Red */
-  --destructive-foreground: 0 0% 98%; /* #FAFAFA - Pure white */
-  --ring: 210 40% 55%; /* #4A90E2 - Professional blue */
-  --radius: 1rem;
+  --destructive-foreground: 0 0% 98%; /* #FAFAFA - White text */
+  --ring: 200 98% 39%; /* #0891B2 - Teal ring */
+  --radius: 0.75rem;
   
-  /* Professional medical colors */
-  --medical-blue: 210 40% 55%; /* #4A90E2 */
-  --medical-teal: 185 35% 50%; /* #3B9BAD */
-  --medical-silver: 210 15% 75%; /* #B0BCC9 */
-  --medical-accent: 195 30% 45%; /* #3182CE */
-  --medical-light: 210 25% 85%; /* #D6E3F0 */
+  /* Fox Pharma inspired colors */
+  --fox-teal: 200 98% 39%; /* #0891B2 - Primary teal */
+  --fox-cyan: 197 71% 52%; /* #22D3EE - Bright cyan */
+  --fox-navy: 222 84% 4.9%; /* #020817 - Deep navy */
+  --fox-grey: 215.4 16.3% 46.9%; /* #64748B - Medium grey */
+  --fox-light: 210 40% 94%; /* #F1F5F9 - Light background */
 }
 
 .dark {
@@ -62,7 +62,7 @@
   body {
     @apply font-sans antialiased bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
-    background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(220 18% 12%) 100%);
+    background: hsl(var(--background));
     min-height: 100vh;
   }
 
@@ -100,31 +100,31 @@
     overflow: hidden;
   }
 
-  /* Grid pattern for hero background */
+  /* Clean grid pattern */
   .bg-grid-pattern {
     background-image: 
-      linear-gradient(rgba(74, 144, 226, 0.15) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(74, 144, 226, 0.15) 1px, transparent 1px);
+      linear-gradient(rgba(8, 145, 178, 0.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(8, 145, 178, 0.08) 1px, transparent 1px);
     background-size: 40px 40px;
   }
 
-  /* Professional glow effects */
-  .glow-medical {
-    box-shadow: 0 0 10px hsl(var(--medical-blue) / 0.3), 0 0 20px hsl(var(--medical-blue) / 0.2);
+  /* Fox Pharma inspired effects */
+  .glow-teal {
+    box-shadow: 0 0 20px hsl(var(--fox-teal) / 0.2), 0 0 40px hsl(var(--fox-teal) / 0.1);
   }
 
   .glow-subtle {
-    box-shadow: 0 0 8px hsl(var(--medical-accent) / 0.25), 0 0 16px hsl(var(--medical-accent) / 0.15);
+    box-shadow: 0 4px 6px -1px hsl(var(--fox-teal) / 0.1), 0 2px 4px -1px hsl(var(--fox-teal) / 0.06);
   }
 
-  /* Professional gradient text */
+  /* Fox Pharma gradient text */
   .gradient-text {
-    background: linear-gradient(45deg, hsl(var(--medical-blue)), hsl(var(--medical-teal)));
+    background: linear-gradient(135deg, hsl(var(--fox-teal)), hsl(var(--fox-cyan)));
     background-size: 200% 200%;
     background-clip: text;
     -webkit-background-clip: text;
     color: transparent;
-    animation: gradient-flow 6s ease-in-out infinite;
+    animation: gradient-flow 8s ease-in-out infinite;
   }
 
   @keyframes gradient-flow {
@@ -192,37 +192,35 @@
 }
 
 @layer components {
-  /* Professional button variants */
-  .btn-medical {
-    @apply bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 hover:from-blue-700 hover:via-blue-800 hover:to-blue-900 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 glow-subtle;
+  /* Fox Pharma button variants */
+  .btn-fox {
+    @apply bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white font-semibold py-3 px-8 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl;
   }
 
-  .btn-outline-medical {
-    @apply bg-transparent border-2 border-blue-500 text-blue-400 hover:bg-blue-500 hover:text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105;
+  .btn-outline-fox {
+    @apply bg-transparent border-2 border-teal-500 text-teal-600 hover:bg-teal-500 hover:text-white font-semibold py-3 px-8 rounded-lg transition-all duration-300;
   }
 
-  /* Professional card effects */
-  .card-medical {
-    @apply bg-gradient-to-br from-slate-800/90 via-slate-700/80 to-slate-800/95 backdrop-blur-lg border border-blue-500/20 rounded-2xl transition-all duration-300 hover:border-blue-400/40 hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-2;
+  /* Clean card effects */
+  .card-fox {
+    @apply bg-white border border-slate-200 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1;
   }
 
-  /* Professional glassmorphism */
-  .glass-medical {
-    @apply bg-slate-800/50 backdrop-blur-xl border border-blue-500/15 shadow-lg shadow-blue-500/5;
+  /* Clean backgrounds */
+  .glass-fox {
+    @apply bg-white/95 backdrop-blur-sm border border-slate-200 shadow-lg;
   }
 
   .glass-accent {
-    @apply bg-slate-800/50 backdrop-blur-xl border border-blue-400/20 shadow-lg shadow-blue-400/10;
+    @apply bg-teal-50/80 backdrop-blur-sm border border-teal-200 shadow-lg;
   }
 
-  /* Subtle pattern background */
-  .medical-pattern {
+  /* Fox Pharma pattern background */
+  .fox-pattern {
     background-image: 
-      radial-gradient(circle at 30% 30%, rgba(74, 144, 226, 0.15) 1px, transparent 1px),
-      radial-gradient(circle at 70% 70%, rgba(59, 155, 173, 0.15) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(74, 144, 226, 0.05) 1px, transparent 1px),
-      linear-gradient(rgba(59, 155, 173, 0.05) 1px, transparent 1px);
-    background-size: 80px 80px, 80px 80px, 30px 30px, 30px 30px;
+      radial-gradient(circle at 25% 25%, rgba(8, 145, 178, 0.08) 1px, transparent 1px),
+      radial-gradient(circle at 75% 75%, rgba(34, 211, 238, 0.06) 1px, transparent 1px);
+    background-size: 60px 60px, 80px 80px;
   }
 }
 
