@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Search, ShoppingCart, User, Menu, ChevronDown, LogIn, LogOut, Package, UserPlus, HelpCircle } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
+import medsGoLogo from '@assets/image_1749025160394.png';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -56,12 +57,21 @@ export function Header() {
             {/* Logo */}
             <div className="flex items-center space-x-6">
               <Link href="/">
-                <motion.h1
+                <motion.div 
+                  className="flex items-center space-x-3"
                   whileHover={{ scale: 1.05 }}
-                  className="text-3xl font-bold text-slate-800 cursor-pointer tracking-tight"
+                  whileTap={{ scale: 0.95 }}
                 >
-                  <span className="gradient-text">MedMarket</span>
-                </motion.h1>
+                  <img 
+                    src={medsGoLogo} 
+                    alt="Meds-Go" 
+                    className="h-10 w-auto object-contain"
+                  />
+                  <div>
+                    <h1 className="text-2xl font-bold text-slate-800">Meds-Go</h1>
+                    <p className="text-xs text-slate-500 -mt-1">Professional Healthcare Products</p>
+                  </div>
+                </motion.div>
               </Link>
               
               {/* Desktop Navigation */}

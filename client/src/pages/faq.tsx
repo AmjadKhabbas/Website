@@ -14,13 +14,13 @@ interface FAQItem {
 const faqData: FAQItem[] = [
   {
     id: 1,
-    question: "What is Fox Pharma?",
-    answer: "Fox Pharma is a specialized medical marketplace connecting healthcare professionals with premium medical products including botulinum toxins, dermal fillers, orthopedic supplies, and other professional-grade medical treatments. We serve licensed healthcare providers with authentic, high-quality products from trusted manufacturers."
+    question: "What is Meds-Go?",
+    answer: "Meds-Go is a specialized medical marketplace connecting healthcare professionals with premium medical products including botulinum toxins, dermal fillers, orthopedic supplies, and other professional-grade medical treatments. We serve licensed healthcare providers with authentic, high-quality products from trusted manufacturers."
   },
   {
     id: 2,
     question: "Is a prescription or medical license required?",
-    answer: "Yes, all products on Fox Pharma require proper medical licensure and credentials. We verify healthcare professional status during account setup and only sell to licensed practitioners including doctors, nurses, and other qualified medical professionals."
+    answer: "Yes, all products on Meds-Go require proper medical licensure and credentials. We verify healthcare professional status during account setup and only sell to licensed practitioners including doctors, nurses, and other qualified medical professionals."
   },
   {
     id: 3,
@@ -50,7 +50,7 @@ const faqData: FAQItem[] = [
   {
     id: 8,
     question: "How do I contact customer support?",
-    answer: "Our customer support team is available Monday-Friday, 8 AM to 6 PM EST. You can reach us via email at support@foxpharma.com, phone at 1-800-FOX-MEDS, or through our live chat feature. For urgent matters, use our emergency support line available 24/7."
+    answer: "Our customer support team is available Monday-Friday, 8 AM to 6 PM EST. You can reach us via email at support@meds-go.com, phone at 1-800-MEDS-GO, or through our live chat feature. For urgent matters, use our emergency support line available 24/7."
   },
   {
     id: 9,
