@@ -105,9 +105,9 @@ export default function ContactPage() {
       </section>
 
       {/* Contact Information Cards */}
-      <section className="py-12">
+      <section className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
             {contactInfo.map((item, index) => (
               <motion.div
                 key={item.title}
@@ -115,17 +115,19 @@ export default function ContactPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
               >
-                <Card className="h-full border border-slate-200 hover:border-blue-200 transition-all duration-300 hover:shadow-lg">
-                  <CardContent className="p-6 text-center">
-                    <div className={`w-12 h-12 ${item.color} bg-opacity-10 rounded-lg flex items-center justify-center mx-auto mb-4`}>
-                      <item.icon className={`w-6 h-6 ${item.color}`} />
+                <Card className="h-full border-2 border-blue-100 hover:border-blue-300 transition-all duration-300 hover:shadow-lg bg-white">
+                  <CardContent className="p-8 text-center">
+                    <div className={`w-16 h-16 ${item.color} bg-opacity-15 rounded-xl flex items-center justify-center mx-auto mb-6`}>
+                      <item.icon className={`w-8 h-8 ${item.color}`} />
                     </div>
-                    <h3 className="text-lg font-semibold text-slate-800 mb-2">{item.title}</h3>
-                    {item.details.map((detail, idx) => (
-                      <p key={idx} className={`${idx === 0 ? 'text-slate-800 font-medium' : 'text-slate-500 text-sm'}`}>
-                        {detail}
-                      </p>
-                    ))}
+                    <h3 className="text-xl font-semibold text-slate-800 mb-4">{item.title}</h3>
+                    <div className="space-y-2">
+                      {item.details.map((detail, idx) => (
+                        <p key={idx} className={`${idx === 0 ? 'text-slate-800 font-semibold text-lg' : 'text-slate-600 text-sm'}`}>
+                          {detail}
+                        </p>
+                      ))}
+                    </div>
                   </CardContent>
                 </Card>
               </motion.div>
