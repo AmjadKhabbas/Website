@@ -101,19 +101,19 @@ export default function HomePage() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
-              className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6"
+              className="text-4xl sm:text-5xl lg:text-7xl font-bold text-white mb-8 tracking-wider"
             >
-              Discover Amazing
-              <span className="block text-amber-400">Products</span>
+              ENTER THE
+              <span className="block matrix-text">NEXUS</span>
             </motion.h1>
             
             <motion.p
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto"
+              className="text-xl text-purple-200 mb-10 max-w-2xl mx-auto font-mono"
             >
-              Shop from thousands of verified sellers and find exactly what you're looking for at unbeatable prices.
+              QUANTUM MARKETPLACE • NEURAL COMMERCE • DIGITAL EVOLUTION
             </motion.p>
             
             {/* Enhanced Search */}
@@ -121,22 +121,22 @@ export default function HomePage() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="max-w-2xl mx-auto mb-8"
+              className="max-w-3xl mx-auto mb-12"
             >
               <form onSubmit={handleSearch} className="relative">
                 <Input
                   type="text"
-                  placeholder="What are you looking for today?"
+                  placeholder="INITIALIZE NEURAL SEARCH..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 pr-20 py-4 text-lg border-0 rounded-2xl shadow-xl focus:ring-4 focus:ring-blue-300 transition-all duration-300"
+                  className="w-full pl-16 pr-24 py-6 text-lg bg-slate-900/60 border-2 border-purple-500/40 rounded-3xl text-white placeholder-purple-300 focus:ring-4 focus:ring-cyan-400/50 focus:border-cyan-400 transition-all duration-500 font-mono uppercase tracking-wider backdrop-blur-xl"
                 />
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 w-6 h-6" />
+                <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 text-cyan-400 w-6 h-6" />
                 <Button
                   type="submit"
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl transition-colors duration-200"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-purple-600 via-cyan-500 to-pink-500 hover:from-purple-700 hover:via-cyan-600 hover:to-pink-600 text-white px-8 py-3 rounded-2xl font-bold uppercase tracking-wider transition-all duration-300 transform hover:scale-105 glow-neon"
                 >
-                  Search
+                  SCAN
                 </Button>
               </form>
             </motion.div>
@@ -148,11 +148,11 @@ export default function HomePage() {
               transition={{ duration: 0.8, delay: 0.6 }}
               className="flex flex-wrap justify-center gap-4"
             >
-              {categories.slice(0, 4).map((category) => (
+              {categories.slice(0, 4).map((category, index) => (
                 <Link key={category.slug} href={`/category/${category.slug}`}>
                   <Button
                     variant="outline"
-                    className="bg-white/20 backdrop-blur-sm text-white border-white/30 hover:bg-white/30 transition-colors duration-200"
+                    className="bg-slate-900/40 backdrop-blur-xl text-purple-300 border-purple-500/40 hover:bg-purple-500/20 hover:text-cyan-400 hover:border-cyan-400/60 transition-all duration-300 transform hover:scale-105 font-mono uppercase tracking-wider px-6 py-3 rounded-2xl"
                   >
                     {category.name}
                   </Button>
@@ -164,18 +164,16 @@ export default function HomePage() {
       </section>
 
       {/* Categories Section */}
-      <section className="py-16 bg-white">
+      <section className="py-20 bg-gradient-to-b from-slate-900 to-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-slate-900 mb-4">Shop by Category</h2>
-            <p className="text-lg text-slate-600">Find what you need in our carefully curated categories</p>
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-white mb-6 matrix-text">NEURAL CATEGORIES</h2>
+            <p className="text-xl text-purple-200 font-mono">NAVIGATE THE DIGITAL MARKETPLACE</p>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
             {categories.map((category, index) => {
               const Icon = categoryIcons[category.slug as keyof typeof categoryIcons] || Laptop;
-              const colorClasses = categoryColors[category.color as keyof typeof categoryColors] || categoryColors.blue;
-              const [gradientClasses, bgClasses] = colorClasses.split(' bg-');
               
               return (
                 <motion.div
@@ -185,12 +183,12 @@ export default function HomePage() {
                   transition={{ duration: 0.3, delay: index * 0.1 }}
                 >
                   <Link href={`/category/${category.slug}`}>
-                    <div className={`group cursor-pointer text-center p-6 rounded-2xl hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-gradient-to-br ${gradientClasses}`}>
-                      <div className={`w-16 h-16 mx-auto mb-4 bg-${bgClasses} rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
+                    <div className="group cursor-pointer text-center p-6 card-techno hover:-translate-y-3">
+                      <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-purple-600 to-cyan-500 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-500 glow-purple">
                         <Icon className="w-8 h-8 text-white" />
                       </div>
-                      <h3 className="font-semibold text-slate-900 mb-2">{category.name}</h3>
-                      <p className="text-sm text-slate-600">{category.itemCount.toLocaleString()}+ items</p>
+                      <h3 className="font-bold text-white mb-2 group-hover:text-cyan-400 transition-colors duration-300 uppercase tracking-wider">{category.name}</h3>
+                      <p className="text-sm text-purple-300 font-mono">{category.itemCount.toLocaleString()}+ UNITS</p>
                     </div>
                   </Link>
                 </motion.div>

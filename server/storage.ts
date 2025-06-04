@@ -82,6 +82,7 @@ export class MemStorage implements IStorage {
         name: "Premium Headphones",
         description: "Noise-canceling wireless headphones with superior sound quality",
         price: "299.00",
+        originalPrice: "399.00",
         imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400",
         categoryId: 1,
         rating: "4.6",
@@ -94,6 +95,7 @@ export class MemStorage implements IStorage {
         name: "Luxury Watch",
         description: "Elegant timepiece with premium materials and craftsmanship",
         price: "1299.00",
+        originalPrice: null,
         imageUrl: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400",
         categoryId: 2,
         rating: "4.9",
@@ -106,6 +108,7 @@ export class MemStorage implements IStorage {
         name: "Sport Sneakers",
         description: "Comfortable athletic shoes perfect for daily wear and exercise",
         price: "129.00",
+        originalPrice: "179.00",
         imageUrl: "https://images.unsplash.com/photo-1549298916-b41d501d3772?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400",
         categoryId: 4,
         rating: "4.7",
@@ -118,6 +121,7 @@ export class MemStorage implements IStorage {
         name: "Gaming Laptop",
         description: "High-performance laptop for gaming and professional work",
         price: "1599.00",
+        originalPrice: null,
         imageUrl: "https://images.unsplash.com/photo-1603302576837-37561b2e2302?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400",
         categoryId: 1,
         rating: "4.5",
@@ -130,6 +134,7 @@ export class MemStorage implements IStorage {
         name: "Wireless Mouse",
         description: "Ergonomic wireless mouse with precision tracking",
         price: "49.99",
+        originalPrice: null,
         imageUrl: "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400",
         categoryId: 1,
         rating: "4.3",
@@ -219,14 +224,14 @@ export class MemStorage implements IStorage {
 
     if (existingItem) {
       // Update quantity
-      const updatedItem = { ...existingItem, quantity: existingItem.quantity + insertItem.quantity };
+      const updatedItem = { ...existingItem, quantity: existingItem.quantity + (insertItem.quantity || 1) };
       this.cartItems.set(existingItem.id, updatedItem);
       return updatedItem;
     }
 
     // Create new item
     const id = this.currentCartItemId++;
-    const cartItem: CartItem = { ...insertItem, id };
+    const cartItem: CartItem = { ...insertItem, quantity: insertItem.quantity || 1, id };
     this.cartItems.set(id, cartItem);
     return cartItem;
   }
