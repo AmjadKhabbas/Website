@@ -13,6 +13,7 @@ import ProductsPage from "@/pages/products";
 import OrdersPage from "@/pages/orders";
 import ReferralsPage from "@/pages/referrals";
 import FAQPage from "@/pages/faq";
+import ContactPage from "@/pages/contact";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -25,6 +26,7 @@ function Router() {
       <Route path="/orders" component={OrdersPage} />
       <Route path="/referrals" component={ReferralsPage} />
       <Route path="/faq" component={FAQPage} />
+      <Route path="/contact" component={ContactPage} />
       <Route component={NotFound} />
     </Switch>
   );

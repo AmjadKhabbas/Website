@@ -106,13 +106,13 @@ export function Header() {
                   </span>
                 </Link>
 
-                <Link href="/faqs">
+                <Link href="/faq">
                   <span className={`px-4 py-2 text-sm font-medium transition-all duration-300 rounded-lg cursor-pointer ${
-                    location === '/faqs' 
+                    location === '/faq' 
                       ? 'text-blue-600 bg-blue-50 border border-blue-200' 
                       : 'text-slate-600 hover:text-blue-600 hover:bg-blue-50 border border-transparent hover:border-blue-200'
                   }`}>
-                    FAQS
+                    FAQ
                   </span>
                 </Link>
 
