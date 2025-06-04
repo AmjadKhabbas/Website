@@ -1,5 +1,4 @@
-import { Heart, Star, ShoppingCart } from 'lucide-react';
-import { useState } from 'react';
+import { Star, ShoppingCart } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,7 +14,6 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, index = 0 }: ProductCardProps) {
-  const [isWishlisted, setIsWishlisted] = useState(false);
   const { success, error } = useToast();
   const queryClient = useQueryClient();
 
@@ -74,24 +72,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
               -{discountPercentage}%
             </Badge>
           )}
-          {product.featured && (
-            <Badge className="bg-blue-600 text-white font-semibold">
-              Featured
-            </Badge>
-          )}
         </div>
-        
-        {/* Wishlist Button */}
-        <button
-          onClick={() => setIsWishlisted(!isWishlisted)}
-          className="absolute top-4 right-4 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-lg flex items-center justify-center hover:bg-white border border-slate-200 hover:border-blue-300 transition-all duration-300 shadow-sm"
-        >
-          <Heart
-            className={`w-5 h-5 transition-colors duration-300 ${
-              isWishlisted ? 'text-red-500 fill-red-500' : 'text-slate-400 hover:text-red-500'
-            }`}
-          />
-        </button>
       </div>
       
       {/* Content */}
