@@ -203,7 +203,7 @@
 
   /* Professional card effects */
   .card-medical {
-    @apply bg-gradient-to-br from-slate-800/90 via-slate-700/80 to-slate-800/95 backdrop-blur-lg border border-blue-500/20 rounded-2xl transition-all duration-400 hover:border-blue-400/40 hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-2;
+    @apply bg-gradient-to-br from-slate-800/90 via-slate-700/80 to-slate-800/95 backdrop-blur-lg border border-blue-500/20 rounded-2xl transition-all duration-300 hover:border-blue-400/40 hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-2;
   }
 
   /* Professional glassmorphism */

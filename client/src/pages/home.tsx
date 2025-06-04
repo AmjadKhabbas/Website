@@ -126,17 +126,17 @@ export default function HomePage() {
               <form onSubmit={handleSearch} className="relative">
                 <Input
                   type="text"
-                  placeholder="INITIALIZE NEURAL SEARCH..."
+                  placeholder="Search medical products..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-16 pr-24 py-6 text-lg bg-slate-900/60 border-2 border-purple-500/40 rounded-3xl text-white placeholder-purple-300 focus:ring-4 focus:ring-cyan-400/50 focus:border-cyan-400 transition-all duration-500 font-mono uppercase tracking-wider backdrop-blur-xl"
+                  className="w-full pl-16 pr-24 py-6 text-lg bg-slate-800/60 border-2 border-blue-500/30 rounded-xl text-white placeholder-blue-300 focus:ring-4 focus:ring-blue-400/50 focus:border-blue-400 transition-all duration-500 backdrop-blur-xl"
                 />
-                <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 text-cyan-400 w-6 h-6" />
+                <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 text-blue-400 w-6 h-6" />
                 <Button
                   type="submit"
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-purple-600 via-cyan-500 to-pink-500 hover:from-purple-700 hover:via-cyan-600 hover:to-pink-600 text-white px-8 py-3 rounded-2xl font-bold uppercase tracking-wider transition-all duration-300 transform hover:scale-105 glow-neon"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105"
                 >
-                  SCAN
+                  Search
                 </Button>
               </form>
             </motion.div>
@@ -152,7 +152,7 @@ export default function HomePage() {
                 <Link key={category.slug} href={`/category/${category.slug}`}>
                   <Button
                     variant="outline"
-                    className="bg-slate-900/40 backdrop-blur-xl text-purple-300 border-purple-500/40 hover:bg-purple-500/20 hover:text-cyan-400 hover:border-cyan-400/60 transition-all duration-300 transform hover:scale-105 font-mono uppercase tracking-wider px-6 py-3 rounded-2xl"
+                    className="bg-slate-800/40 backdrop-blur-xl text-blue-300 border-blue-500/30 hover:bg-blue-500/15 hover:text-blue-400 hover:border-blue-400/50 transition-all duration-300 transform hover:scale-105 font-medium px-6 py-3 rounded-xl"
                   >
                     {category.name}
                   </Button>
@@ -167,8 +167,8 @@ export default function HomePage() {
       <section className="py-20 bg-gradient-to-b from-slate-900 to-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-white mb-6 matrix-text">NEURAL CATEGORIES</h2>
-            <p className="text-xl text-purple-200 font-mono">NAVIGATE THE DIGITAL MARKETPLACE</p>
+            <h2 className="text-4xl font-bold text-white mb-6 gradient-text">Medical Categories</h2>
+            <p className="text-xl text-blue-200">Professional Healthcare Products</p>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
@@ -183,12 +183,12 @@ export default function HomePage() {
                   transition={{ duration: 0.3, delay: index * 0.1 }}
                 >
                   <Link href={`/category/${category.slug}`}>
-                    <div className="group cursor-pointer text-center p-6 card-techno hover:-translate-y-3">
-                      <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-purple-600 to-cyan-500 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-500 glow-purple">
+                    <div className="group cursor-pointer text-center p-6 card-medical hover:-translate-y-3">
+                      <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-500 glow-subtle">
                         <Icon className="w-8 h-8 text-white" />
                       </div>
-                      <h3 className="font-bold text-white mb-2 group-hover:text-cyan-400 transition-colors duration-300 uppercase tracking-wider">{category.name}</h3>
-                      <p className="text-sm text-purple-300 font-mono">{category.itemCount.toLocaleString()}+ UNITS</p>
+                      <h3 className="font-semibold text-white mb-2 group-hover:text-blue-400 transition-colors duration-300">{category.name}</h3>
+                      <p className="text-sm text-blue-300">{category.itemCount.toLocaleString()}+ Products</p>
                     </div>
                   </Link>
                 </motion.div>
