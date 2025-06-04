@@ -14,6 +14,8 @@ import type { Category, ProductWithCategory } from '@shared/schema';
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -78,12 +80,29 @@ export function Header() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      const currentScrollY = window.scrollY;
+      
+      // Update scrolled state for background changes
+      setIsScrolled(currentScrollY > 50);
+      
+      // Handle fade effect based on scroll direction
+      if (currentScrollY < 100) {
+        // Always show header at top of page
+        setIsVisible(true);
+      } else if (currentScrollY > lastScrollY && currentScrollY > 150) {
+        // Scrolling down - hide header
+        setIsVisible(false);
+      } else if (currentScrollY < lastScrollY) {
+        // Scrolling up - show header
+        setIsVisible(true);
+      }
+      
+      setLastScrollY(currentScrollY);
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [lastScrollY]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -120,9 +139,14 @@ export function Header() {
       <motion.header
         initial={false}
         animate={{
-          backgroundColor: isScrolled ? 'rgba(15, 15, 35, 0.95)' : 'rgba(15, 15, 35, 0.90)',
+          opacity: isVisible ? 1 : 0,
+          y: isVisible ? 0 : -100,
         }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 backdrop-blur-sm border-b border-slate-200 bg-white/95 ${
+        transition={{
+          duration: 0.3,
+          ease: "easeInOut"
+        }}
+        className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-sm border-b border-slate-200 bg-white/95 ${
           isScrolled ? 'shadow-lg' : ''
         }`}
       >
