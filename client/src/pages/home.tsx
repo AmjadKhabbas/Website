@@ -78,18 +78,18 @@ const HeroSlideshow = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
                   >
-                    <Badge className="bg-green-100 text-green-800 mb-4">
+                    <Badge className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 mb-4">
                       Save {product.discount}
                     </Badge>
-                    <h1 className="text-5xl lg:text-6xl font-bold text-slate-800 leading-tight mb-6">
+                    <h1 className="text-5xl lg:text-6xl font-bold text-foreground leading-tight mb-6">
                       {product.name}
                     </h1>
-                    <p className="text-xl text-slate-600 mb-8 leading-relaxed">
+                    <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
                       {product.description}
                     </p>
                     <div className="flex items-center gap-4 mb-8">
-                      <span className="text-4xl font-bold text-teal-600">${product.price}</span>
-                      <span className="text-2xl text-slate-400 line-through">${product.originalPrice}</span>
+                      <span className="text-4xl font-bold text-primary">${product.price}</span>
+                      <span className="text-2xl text-muted-foreground line-through">${product.originalPrice}</span>
                     </div>
                     <Button className="btn-fox text-lg px-8 py-4">
                       Shop Now
@@ -104,8 +104,8 @@ const HeroSlideshow = () => {
                   transition={{ delay: 0.4 }}
                   className="relative"
                 >
-                  <div className="aspect-square bg-gradient-to-br from-teal-100 to-cyan-100 rounded-3xl p-12 flex items-center justify-center">
-                    <Heart className="w-32 h-32 text-teal-600" />
+                  <div className="aspect-square bg-gradient-to-br from-teal-100 to-cyan-100 dark:from-teal-900/30 dark:to-cyan-900/30 rounded-3xl p-12 flex items-center justify-center">
+                    <Heart className="w-32 h-32 text-primary" />
                   </div>
                 </motion.div>
               </div>
@@ -117,7 +117,7 @@ const HeroSlideshow = () => {
       <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
         <button
           onClick={prevSlide}
-          className="p-3 bg-white shadow-lg hover:shadow-xl border border-slate-200 rounded-full text-teal-600 hover:text-teal-700 transition-all duration-200 hover:scale-110"
+          className="p-3 bg-background shadow-lg hover:shadow-xl border border-border rounded-full text-primary hover:text-primary/80 transition-all duration-200 hover:scale-110"
         >
           <ChevronLeft className="w-6 h-6" />
         </button>
@@ -126,7 +126,7 @@ const HeroSlideshow = () => {
       <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
         <button
           onClick={nextSlide}
-          className="p-3 bg-white shadow-lg hover:shadow-xl border border-slate-200 rounded-full text-teal-600 hover:text-teal-700 transition-all duration-200 hover:scale-110"
+          className="p-3 bg-background shadow-lg hover:shadow-xl border border-border rounded-full text-primary hover:text-primary/80 transition-all duration-200 hover:scale-110"
         >
           <ChevronRight className="w-6 h-6" />
         </button>
