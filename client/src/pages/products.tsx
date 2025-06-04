@@ -9,6 +9,7 @@ import { Slider } from '@/components/ui/slider';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ProductCard } from '@/components/product-card';
+import { useLocation } from 'wouter';
 import type { Product, ProductWithCategory } from '@shared/schema';
 
 // Medical categories as shown in your image
@@ -21,6 +22,7 @@ const medicalCategories = [
 ];
 
 export default function ProductsPage() {
+  const [location] = useLocation();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -28,6 +30,15 @@ export default function ProductsPage() {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 2000]);
   const [selectedConcentration, setSelectedConcentration] = useState<string | null>(null);
   const [inStockOnly, setInStockOnly] = useState(false);
+
+  // Parse URL search parameters
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.split('?')[1] || '');
+    const searchParam = urlParams.get('search');
+    if (searchParam) {
+      setSearchQuery(decodeURIComponent(searchParam));
+    }
+  }, [location]);
 
   const { data: products = [], isLoading } = useQuery<ProductWithCategory[]>({
     queryKey: ['/api/products', { 
