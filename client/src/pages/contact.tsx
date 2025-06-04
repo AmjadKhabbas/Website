@@ -59,7 +59,7 @@ export default function ContactPage() {
     {
       icon: Mail,
       title: "Email",
-      details: ["support@meds-go.com", "Response within 2 hours"],
+      details: ["support@meds-go.com", "Response within 1-2 business days"],
       color: "text-green-600"
     },
     {
@@ -150,7 +150,7 @@ export default function ContactPage() {
                     Send Us a Message
                   </CardTitle>
                   <p className="text-slate-600">
-                    Fill out the form below and we'll get back to you within 2 hours during business hours.
+                    Fill out the form below and we'll get back to you within 1-2 business days.
                   </p>
                 </CardHeader>
                 <CardContent>
