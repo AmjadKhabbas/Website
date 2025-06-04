@@ -24,12 +24,16 @@
   --ring: 200 98% 39%; /* #0891B2 - Teal ring */
   --radius: 0.75rem;
   
-  /* Fox Pharma inspired colors */
-  --fox-teal: 200 98% 39%; /* #0891B2 - Primary teal */
-  --fox-cyan: 197 71% 52%; /* #22D3EE - Bright cyan */
-  --fox-navy: 222 84% 4.9%; /* #020817 - Deep navy */
-  --fox-grey: 215.4 16.3% 46.9%; /* #64748B - Medium grey */
-  --fox-light: 210 40% 94%; /* #F1F5F9 - Light background */
+  /* Medical blue color palette */
+  --medical-blue: 210 100% 50%; /* #0080FF - Vibrant medical blue */
+  --medical-blue-dark: 210 100% 35%; /* #0059B3 - Dark medical blue */
+  --medical-blue-light: 210 100% 85%; /* #B3D9FF - Light medical blue */
+  --medical-navy: 220 100% 25%; /* #003D80 - Medical navy */
+  --medical-cyan: 185 100% 40%; /* #00CCCC - Medical cyan */
+  --medical-teal: 175 100% 35%; /* #00B3B3 - Medical teal */
+  --scrub-blue: 200 100% 45%; /* #0099E6 - Scrub blue */
+  --hospital-white: 210 25% 98%; /* #FAFBFC - Hospital white */
+  --sterile-grey: 210 15% 95%; /* #F0F2F5 - Sterile grey */
 }
 
 .dark {
@@ -221,6 +225,31 @@
       radial-gradient(circle at 25% 25%, rgba(8, 145, 178, 0.08) 1px, transparent 1px),
       radial-gradient(circle at 75% 75%, rgba(34, 211, 238, 0.06) 1px, transparent 1px);
     background-size: 60px 60px, 80px 80px;
+  }
+
+  /* Medical blue styling classes */
+  .btn-medical {
+    @apply bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl border border-blue-600;
+  }
+
+  .btn-medical-secondary {
+    @apply bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl;
+  }
+
+  .btn-scrub {
+    @apply bg-gradient-to-r from-sky-500 to-blue-500 hover:from-sky-600 hover:to-blue-600 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl;
+  }
+
+  .card-medical {
+    @apply bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-blue-200 hover:border-blue-400;
+  }
+
+  .medical-gradient {
+    @apply bg-gradient-to-br from-blue-50 via-sky-50 to-cyan-50;
+  }
+
+  .pill-medical {
+    @apply px-6 py-3 bg-gradient-to-r from-blue-100 to-sky-100 border-2 border-blue-300 text-blue-800 rounded-full hover:from-blue-200 hover:to-sky-200 hover:border-blue-400 hover:-translate-y-1 transition-all duration-300 font-semibold shadow-md hover:shadow-lg transform;
   }
 }
 

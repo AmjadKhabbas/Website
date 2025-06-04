@@ -174,7 +174,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative pt-20 pb-16 overflow-hidden fox-pattern bg-gradient-to-br from-white via-teal-50/30 to-cyan-50/20">
+      <section className="relative pt-20 pb-16 overflow-hidden medical-gradient bg-gradient-to-br from-blue-50 via-sky-50 to-cyan-50">
         {/* Clean Background Elements */}
         <div className="absolute inset-0 bg-grid-pattern opacity-30"></div>
         <motion.div
@@ -205,7 +205,7 @@ export default function HomePage() {
               <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 text-slate-400 w-6 h-6" />
               <Button
                 type="submit"
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 btn-medical-secondary"
               >
                 Search
               </Button>
@@ -219,19 +219,19 @@ export default function HomePage() {
             transition={{ duration: 0.8, delay: 0.8 }}
             className="flex flex-wrap justify-center gap-4"
           >
-            <button className="px-6 py-3 bg-white border-2 border-teal-200 text-teal-700 rounded-full hover:bg-teal-50 hover:border-teal-300 hover:-translate-y-1 transition-all duration-300 font-medium shadow-md hover:shadow-lg transform">
+            <button className="pill-medical">
               Botulinum Toxins
             </button>
-            <button className="px-6 py-3 bg-white border-2 border-teal-200 text-teal-700 rounded-full hover:bg-teal-50 hover:border-teal-300 hover:-translate-y-1 transition-all duration-300 font-medium shadow-md hover:shadow-lg transform">
+            <button className="pill-medical">
               Dermal Fillers
             </button>
-            <button className="px-6 py-3 bg-white border-2 border-teal-200 text-teal-700 rounded-full hover:bg-teal-50 hover:border-teal-300 hover:-translate-y-1 transition-all duration-300 font-medium shadow-md hover:shadow-lg transform">
+            <button className="pill-medical">
               Orthopedic
             </button>
-            <button className="px-6 py-3 bg-white border-2 border-teal-200 text-teal-700 rounded-full hover:bg-teal-50 hover:border-teal-300 hover:-translate-y-1 transition-all duration-300 font-medium shadow-md hover:shadow-lg transform">
+            <button className="pill-medical">
               Rheumatology
             </button>
-            <button className="px-6 py-3 bg-white border-2 border-teal-200 text-teal-700 rounded-full hover:bg-teal-50 hover:border-teal-300 hover:-translate-y-1 transition-all duration-300 font-medium shadow-md hover:shadow-lg transform">
+            <button className="pill-medical">
               Weightloss & Gynecology
             </button>
           </motion.div>
