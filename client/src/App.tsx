@@ -1,0 +1,45 @@
+import { Switch, Route } from "wouter";
+import { queryClient } from "./lib/queryClient";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "@/components/ui/toaster";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { Header } from "@/components/header";
+import { CartSidebar } from "@/components/cart-sidebar";
+import { ToastContainer, useToast } from "@/components/toast";
+import HomePage from "@/pages/home";
+import CategoryPage from "@/pages/category";
+import ProductPage from "@/pages/product";
+import NotFound from "@/pages/not-found";
+
+function Router() {
+  return (
+    <Switch>
+      <Route path="/" component={HomePage} />
+      <Route path="/category/:slug" component={CategoryPage} />
+      <Route path="/product/:id" component={ProductPage} />
+      <Route component={NotFound} />
+    </Switch>
+  );
+}
+
+function App() {
+  const { toasts, dismissToast } = useToast();
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <div className="min-h-screen bg-slate-50">
+          <Header />
+          <main>
+            <Router />
+          </main>
+          <CartSidebar />
+          <ToastContainer toasts={toasts} onDismiss={dismissToast} />
+          <Toaster />
+        </div>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+}
+
+export default App;
