@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Search, Filter, Grid, List, ChevronRight } from 'lucide-react';
+import { Search, Filter, Grid, List, ChevronRight, Package, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Slider } from '@/components/ui/slider';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ProductCard } from '@/components/product-card';
 import type { Product, ProductWithCategory } from '@shared/schema';
 
@@ -22,6 +25,10 @@ export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [isScrolled, setIsScrolled] = useState(false);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 2000]);
+  const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
+  const [selectedConcentration, setSelectedConcentration] = useState<string | null>(null);
+  const [inStockOnly, setInStockOnly] = useState(false);
 
   const { data: products = [], isLoading } = useQuery<ProductWithCategory[]>({
     queryKey: ['/api/products', { 
@@ -43,7 +50,12 @@ export default function ProductsPage() {
       product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       product.description.toLowerCase().includes(searchQuery.toLowerCase());
     
-    return matchesSearch;
+    const productPrice = parseFloat(product.price);
+    const matchesPrice = productPrice >= priceRange[0] && productPrice <= priceRange[1];
+    
+    const matchesStock = !inStockOnly || product.inStock;
+    
+    return matchesSearch && matchesPrice && matchesStock;
   });
 
   return (
@@ -143,14 +155,89 @@ export default function ProductsPage() {
                 </div>
 
                 {/* Filter Options */}
-                <div className="mt-8 pt-6 border-t border-slate-200">
+                <div className="mt-8 pt-6 border-t border-slate-200 space-y-6">
                   <h4 className="text-sm font-semibold text-slate-800 mb-4">Filter Options</h4>
+                  
+                  {/* Price Range */}
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium text-slate-700">Price Range</label>
+                    <div className="px-2">
+                      <Slider
+                        value={priceRange}
+                        onValueChange={(value) => setPriceRange(value as [number, number])}
+                        max={2000}
+                        min={0}
+                        step={50}
+                        className="w-full"
+                      />
+                      <div className="flex justify-between text-xs text-slate-500 mt-2">
+                        <span>${priceRange[0]}</span>
+                        <span>${priceRange[1]}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Brand Selection */}
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium text-slate-700">Brand</label>
+                    <Select value={selectedBrand || undefined} onValueChange={(value) => setSelectedBrand(value || null)}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="All Brands" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all-brands">All Brands</SelectItem>
+                        <SelectItem value="allergan">Allergan</SelectItem>
+                        <SelectItem value="galderma">Galderma</SelectItem>
+                        <SelectItem value="merz">Merz Pharmaceuticals</SelectItem>
+                        <SelectItem value="revance">Revance</SelectItem>
+                        <SelectItem value="zimmer">Zimmer Biomet</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Concentration */}
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium text-slate-700">Concentration</label>
+                    <Select value={selectedConcentration || undefined} onValueChange={(value) => setSelectedConcentration(value || null)}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="All Concentrations" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all-concentrations">All Concentrations</SelectItem>
+                        <SelectItem value="50-units">50 Units</SelectItem>
+                        <SelectItem value="100-units">100 Units</SelectItem>
+                        <SelectItem value="200-units">200 Units</SelectItem>
+                        <SelectItem value="300-units">300 Units</SelectItem>
+                        <SelectItem value="20mg">20mg/ml</SelectItem>
+                        <SelectItem value="24mg">24mg/ml</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Stock Filter */}
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="in-stock" 
+                      checked={inStockOnly}
+                      onCheckedChange={(checked) => setInStockOnly(checked as boolean)}
+                    />
+                    <label htmlFor="in-stock" className="text-sm font-medium text-slate-700 cursor-pointer">
+                      In Stock Only
+                    </label>
+                  </div>
+
+                  {/* Clear Filters */}
                   <Button 
                     variant="outline" 
-                    className="w-full justify-start gap-2 text-slate-600 hover:text-slate-800"
+                    onClick={() => {
+                      setPriceRange([0, 2000]);
+                      setSelectedBrand(null);
+                      setSelectedConcentration(null);
+                      setInStockOnly(false);
+                    }}
+                    className="w-full text-slate-600 hover:text-slate-800"
                   >
-                    <Filter className="w-4 h-4" />
-                    Advanced Filters
+                    Clear All Filters
                   </Button>
                 </div>
               </div>
