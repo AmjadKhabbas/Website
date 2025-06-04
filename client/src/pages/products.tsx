@@ -26,7 +26,6 @@ export default function ProductsPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [isScrolled, setIsScrolled] = useState(false);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 2000]);
-  const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
   const [selectedConcentration, setSelectedConcentration] = useState<string | null>(null);
   const [inStockOnly, setInStockOnly] = useState(false);
 
@@ -168,31 +167,19 @@ export default function ProductsPage() {
                         max={2000}
                         min={0}
                         step={50}
-                        className="w-full"
+                        className="w-full [&>[role=slider]]:h-5 [&>[role=slider]]:w-5 [&>[role=slider]]:border-2 [&>[role=slider]]:border-blue-500 [&>[role=slider]]:bg-white [&>[role=slider]]:shadow-md"
                       />
-                      <div className="flex justify-between text-xs text-slate-500 mt-2">
-                        <span>${priceRange[0]}</span>
-                        <span>${priceRange[1]}</span>
+                      <div className="flex justify-between text-xs text-slate-500 mt-3">
+                        <div className="flex flex-col items-center">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full mb-1"></div>
+                          <span className="font-medium">${priceRange[0]}</span>
+                        </div>
+                        <div className="flex flex-col items-center">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full mb-1"></div>
+                          <span className="font-medium">${priceRange[1]}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-
-                  {/* Brand Selection */}
-                  <div className="space-y-3">
-                    <label className="text-sm font-medium text-slate-700">Brand</label>
-                    <Select value={selectedBrand || undefined} onValueChange={(value) => setSelectedBrand(value || null)}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="All Brands" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all-brands">All Brands</SelectItem>
-                        <SelectItem value="allergan">Allergan</SelectItem>
-                        <SelectItem value="galderma">Galderma</SelectItem>
-                        <SelectItem value="merz">Merz Pharmaceuticals</SelectItem>
-                        <SelectItem value="revance">Revance</SelectItem>
-                        <SelectItem value="zimmer">Zimmer Biomet</SelectItem>
-                      </SelectContent>
-                    </Select>
                   </div>
 
                   {/* Concentration */}
@@ -231,7 +218,6 @@ export default function ProductsPage() {
                     variant="outline" 
                     onClick={() => {
                       setPriceRange([0, 2000]);
-                      setSelectedBrand(null);
                       setSelectedConcentration(null);
                       setInStockOnly(false);
                     }}
