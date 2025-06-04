@@ -78,7 +78,7 @@ const HeroSlideshow = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="mb-6"
           >
-            <Badge className="bg-blue-600/90 text-white px-6 py-2 text-lg backdrop-blur-sm">
+            <Badge className="bg-gradient-to-r from-teal-500 to-cyan-500 text-white px-6 py-2 text-lg shadow-lg">
               <Star className="w-5 h-5 mr-2" />
               {bestSellers[currentSlide].subtitle}
             </Badge>
@@ -217,37 +217,37 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900/15 to-slate-900">
+    <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative pt-20 pb-16 overflow-hidden medical-pattern">
-        {/* Animated Background Elements */}
-        <div className="absolute inset-0 bg-grid-pattern opacity-15"></div>
+      <section className="relative pt-20 pb-16 overflow-hidden fox-pattern bg-gradient-to-br from-white via-teal-50/30 to-cyan-50/20">
+        {/* Clean Background Elements */}
+        <div className="absolute inset-0 bg-grid-pattern opacity-30"></div>
         <motion.div
           animate={{
-            x: [0, 80, 0],
-            y: [0, -40, 0],
+            x: [0, 60, 0],
+            y: [0, -30, 0],
             rotate: [0, 180, 360],
+          }}
+          transition={{
+            duration: 30,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+          className="absolute top-20 left-20 w-20 h-20 bg-gradient-to-r from-teal-200/40 to-cyan-200/40 rounded-full blur-2xl"
+        />
+        <motion.div
+          animate={{
+            x: [0, -40, 0],
+            y: [0, 20, 0],
+            rotate: [360, 180, 0],
           }}
           transition={{
             duration: 25,
             repeat: Infinity,
             ease: "linear",
-          }}
-          className="absolute top-20 left-20 w-28 h-28 bg-gradient-to-r from-blue-500/20 to-blue-600/20 rounded-full blur-xl"
-        />
-        <motion.div
-          animate={{
-            x: [0, -60, 0],
-            y: [0, 30, 0],
-            rotate: [360, 180, 0],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: "linear",
             delay: 5,
           }}
-          className="absolute bottom-20 right-20 w-20 h-20 bg-gradient-to-r from-blue-400/20 to-teal-500/20 rounded-full blur-xl"
+          className="absolute bottom-20 right-20 w-16 h-16 bg-gradient-to-r from-cyan-200/40 to-teal-200/40 rounded-full blur-2xl"
         />
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-16">
@@ -266,12 +266,12 @@ export default function HomePage() {
                 placeholder="Search medical products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-16 pr-24 py-6 text-lg bg-slate-800/60 border-2 border-blue-500/30 rounded-xl text-white placeholder-blue-300 focus:ring-4 focus:ring-blue-400/50 focus:border-blue-400 transition-all duration-500 backdrop-blur-xl"
+                className="w-full pl-16 pr-24 py-6 text-lg bg-white border-2 border-slate-300 rounded-lg text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-300 shadow-lg"
               />
-              <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 text-blue-400 w-6 h-6" />
+              <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 text-slate-400 w-6 h-6" />
               <Button
                 type="submit"
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300"
               >
                 Search
               </Button>
@@ -289,7 +289,7 @@ export default function HomePage() {
               <Link key={category.slug} href={`/category/${category.slug}`}>
                 <Button
                   variant="outline"
-                  className="bg-slate-800/40 backdrop-blur-xl text-blue-300 border-blue-500/30 hover:bg-blue-500/15 hover:text-blue-400 hover:border-blue-400/50 transition-all duration-300 transform hover:scale-105 font-medium px-6 py-3 rounded-xl"
+                  className="bg-white border-2 border-teal-200 text-teal-600 hover:bg-teal-50 hover:border-teal-300 transition-all duration-300 font-medium px-6 py-3 rounded-lg shadow-md hover:shadow-lg"
                 >
                   {category.name}
                 </Button>
@@ -300,11 +300,11 @@ export default function HomePage() {
       </section>
 
       {/* Categories Section */}
-      <section className="py-20 bg-gradient-to-b from-slate-900 to-slate-800">
+      <section className="py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-white mb-6 gradient-text">Medical Categories</h2>
-            <p className="text-xl text-blue-200">Professional Healthcare Products</p>
+            <h2 className="text-4xl font-bold text-slate-800 mb-6">Medical Categories</h2>
+            <p className="text-xl text-slate-600">Professional Healthcare Products</p>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
@@ -319,12 +319,12 @@ export default function HomePage() {
                   transition={{ duration: 0.3, delay: index * 0.1 }}
                 >
                   <Link href={`/category/${category.slug}`}>
-                    <div className="group cursor-pointer text-center p-6 card-medical hover:-translate-y-3">
-                      <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-500 glow-subtle">
+                    <div className="group cursor-pointer text-center p-6 card-fox hover:-translate-y-2">
+                      <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-teal-500 to-cyan-500 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                         <Icon className="w-8 h-8 text-white" />
                       </div>
-                      <h3 className="font-semibold text-white mb-2 group-hover:text-blue-400 transition-colors duration-300">{category.name}</h3>
-                      <p className="text-sm text-blue-300">{category.itemCount.toLocaleString()}+ Products</p>
+                      <h3 className="font-semibold text-slate-800 mb-2 group-hover:text-teal-600 transition-colors duration-300">{category.name}</h3>
+                      <p className="text-sm text-slate-500">{category.itemCount.toLocaleString()}+ Products</p>
                     </div>
                   </Link>
                 </motion.div>

@@ -96,13 +96,13 @@ export function Header() {
                   placeholder="Search medical products..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 pr-20 py-3 bg-slate-800/60 border-2 border-blue-500/25 rounded-xl text-white placeholder-blue-300 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-300"
+                  className="w-full pl-12 pr-20 py-3 bg-white border border-slate-300 rounded-lg text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-300"
                 />
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-400 w-5 h-5" />
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
                 <Button
                   type="submit"
                   size="sm"
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300"
                 >
                   Search
                 </Button>
@@ -116,7 +116,7 @@ export function Header() {
                 variant="ghost"
                 size="sm"
                 onClick={openCart}
-                className="relative p-3 text-blue-300 hover:text-blue-400 bg-slate-800/30 hover:bg-blue-500/15 border border-blue-500/25 hover:border-blue-400/40 rounded-xl transition-all duration-300 transform hover:scale-105"
+                className="relative p-3 text-slate-600 hover:text-teal-600 bg-white hover:bg-teal-50 border border-slate-200 hover:border-teal-200 rounded-lg transition-all duration-300"
               >
                 <ShoppingCart className="w-6 h-6" />
                 <AnimatePresence>
@@ -127,7 +127,7 @@ export function Header() {
                       exit={{ scale: 0, opacity: 0 }}
                       className="absolute -top-1 -right-1"
                     >
-                      <Badge className="bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-medium">
+                      <Badge className="bg-gradient-to-r from-teal-500 to-cyan-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-medium">
                         {getTotalItems()}
                       </Badge>
                     </motion.div>
@@ -139,10 +139,10 @@ export function Header() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="hidden sm:flex items-center space-x-2 p-3 text-blue-300 hover:text-blue-400 bg-slate-800/30 hover:bg-blue-500/15 border border-blue-500/25 hover:border-blue-400/40 rounded-xl transition-all duration-300 transform hover:scale-105"
+                className="hidden sm:flex items-center space-x-2 p-3 text-slate-600 hover:text-teal-600 bg-white hover:bg-teal-50 border border-slate-200 hover:border-teal-200 rounded-lg transition-all duration-300"
               >
                 <User className="w-5 h-5" />
-                <span className="text-sm font-medium tracking-wide">Account</span>
+                <span className="text-sm font-medium">Account</span>
                 <ChevronDown className="w-4 h-4" />
               </Button>
 
@@ -151,7 +151,7 @@ export function Header() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsMobileMenuOpen(true)}
-                className="lg:hidden p-3 text-blue-300 hover:text-blue-400 bg-slate-800/30 hover:bg-blue-500/15 border border-blue-500/25 hover:border-blue-400/40 rounded-xl transition-all duration-300 transform hover:scale-105"
+                className="lg:hidden p-3 text-slate-600 hover:text-teal-600 bg-white hover:bg-teal-50 border border-slate-200 hover:border-teal-200 rounded-lg transition-all duration-300"
               >
                 <Menu className="w-6 h-6" />
               </Button>
