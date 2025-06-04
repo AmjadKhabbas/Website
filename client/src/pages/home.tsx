@@ -303,37 +303,98 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Categories Section */}
+      {/* Medical Category Pills Section */}
+      <section className="py-12 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-wrap justify-center gap-4">
+            <button className="px-6 py-3 bg-white border-2 border-teal-200 text-teal-700 rounded-full hover:bg-teal-50 hover:border-teal-300 transition-all duration-300 font-medium">
+              Botulinum Toxins
+            </button>
+            <button className="px-6 py-3 bg-white border-2 border-teal-200 text-teal-700 rounded-full hover:bg-teal-50 hover:border-teal-300 transition-all duration-300 font-medium">
+              Dermal Fillers
+            </button>
+            <button className="px-6 py-3 bg-white border-2 border-teal-200 text-teal-700 rounded-full hover:bg-teal-50 hover:border-teal-300 transition-all duration-300 font-medium">
+              Orthopedic
+            </button>
+            <button className="px-6 py-3 bg-white border-2 border-teal-200 text-teal-700 rounded-full hover:bg-teal-50 hover:border-teal-300 transition-all duration-300 font-medium">
+              Rheumatology
+            </button>
+            <button className="px-6 py-3 bg-white border-2 border-teal-200 text-teal-700 rounded-full hover:bg-teal-50 hover:border-teal-300 transition-all duration-300 font-medium">
+              Weightloss & Gynecology
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Main Content with Sidebar */}
       <section className="py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-slate-800 mb-6">Medical Categories</h2>
-            <p className="text-xl text-slate-600">Professional Healthcare Products</p>
-          </div>
+          <div className="flex gap-8">
+            {/* Medical Categories Sidebar */}
+            <div className="hidden lg:block w-64 flex-shrink-0">
+              <div className="bg-white rounded-lg p-6 shadow-sm border border-slate-200">
+                <h3 className="font-semibold text-slate-800 mb-6 text-lg">Medical Categories</h3>
+                <div className="space-y-3">
+                  <button className="w-full text-left px-4 py-3 text-slate-700 hover:bg-teal-50 hover:text-teal-700 rounded-lg transition-all duration-300 font-medium">
+                    Botulinum Toxins
+                  </button>
+                  <button className="w-full text-left px-4 py-3 text-slate-700 hover:bg-teal-50 hover:text-teal-700 rounded-lg transition-all duration-300 font-medium">
+                    Dermal Fillers
+                  </button>
+                  <button className="w-full text-left px-4 py-3 text-slate-700 hover:bg-teal-50 hover:text-teal-700 rounded-lg transition-all duration-300 font-medium">
+                    Orthopedic
+                  </button>
+                  <button className="w-full text-left px-4 py-3 text-slate-700 hover:bg-teal-50 hover:text-teal-700 rounded-lg transition-all duration-300 font-medium">
+                    Rheumatology
+                  </button>
+                  <button className="w-full text-left px-4 py-3 text-slate-700 hover:bg-teal-50 hover:text-teal-700 rounded-lg transition-all duration-300 font-medium">
+                    Weightloss & Gynecology
+                  </button>
+                </div>
+              </div>
+            </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-            {categories.map((category, index) => {
-              const Icon = categoryIcons[category.slug as keyof typeof categoryIcons] || Laptop;
-              
-              return (
-                <motion.div
-                  key={category.slug}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.1 }}
-                >
-                  <Link href={`/category/${category.slug}`}>
-                    <div className="group cursor-pointer text-center p-6 card-fox hover:-translate-y-2">
-                      <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-teal-500 to-cyan-500 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                        <Icon className="w-8 h-8 text-white" />
-                      </div>
-                      <h3 className="font-semibold text-slate-800 mb-2 group-hover:text-teal-600 transition-colors duration-300">{category.name}</h3>
-                      <p className="text-sm text-slate-500">{category.itemCount.toLocaleString()}+ Products</p>
+            {/* Main Content Area */}
+            <div className="flex-1">
+              <div className="text-center mb-16">
+                <h2 className="text-4xl font-bold text-slate-800 mb-6">Premium Medical Products</h2>
+                <p className="text-xl text-slate-600">Professional Healthcare Solutions</p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {featuredProducts.slice(0, 6).map((product, index) => (
+                  <motion.div
+                    key={product.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                    className="card-fox p-6 group cursor-pointer"
+                  >
+                    <div className="aspect-square bg-gradient-to-br from-teal-100 to-cyan-100 rounded-lg mb-4 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                      <Heart className="w-12 h-12 text-teal-600" />
                     </div>
-                  </Link>
-                </motion.div>
-              );
-            })}
+                    
+                    <div className="space-y-3">
+                      <div>
+                        <h3 className="font-semibold text-slate-800 text-lg group-hover:text-teal-600 transition-colors duration-300">
+                          {product.name}
+                        </h3>
+                        <p className="text-slate-600 text-sm">{product.description}</p>
+                      </div>
+                      
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl font-bold text-teal-600">${product.price}</span>
+                        <span className="text-lg text-slate-400 line-through">$299.99</span>
+                      </div>
+                      
+                      <Badge className="bg-teal-100 text-teal-700 hover:bg-teal-200">
+                        {product.category?.name || 'Medical'}
+                      </Badge>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
