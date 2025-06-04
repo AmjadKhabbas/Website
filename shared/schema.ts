@@ -85,6 +85,29 @@ export const orderItems = pgTable("order_items", {
   productImageUrl: varchar("product_image_url"), // Store image URL at time of purchase
 });
 
+// Referrals table for doctor referral program
+export const referrals = pgTable("referrals", {
+  id: serial("id").primaryKey(),
+  firstName: varchar("first_name").notNull(),
+  lastName: varchar("last_name").notNull(),
+  email: varchar("email").notNull(),
+  phone: varchar("phone").notNull(),
+  clinicName: varchar("clinic_name").notNull(),
+  address: varchar("address"),
+  city: varchar("city"),
+  state: varchar("state"),
+  zipCode: varchar("zip_code"),
+  specialty: varchar("specialty").notNull(),
+  licenseNumber: varchar("license_number").notNull(),
+  yearsOfExperience: varchar("years_of_experience"),
+  referredBy: varchar("referred_by"),
+  referrerContact: varchar("referrer_contact"),
+  additionalNotes: text("additional_notes"),
+  status: varchar("status").default("pending"), // pending, approved, rejected
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const insertCategorySchema = createInsertSchema(categories).omit({
   id: true,
 });
@@ -110,6 +133,13 @@ export const insertOrderSchema = createInsertSchema(orders).omit({
 
 export const insertOrderItemSchema = createInsertSchema(orderItems).omit({
   id: true,
+});
+
+export const insertReferralSchema = createInsertSchema(referrals).omit({
+  id: true,
+  status: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
 // Database relations
@@ -165,6 +195,9 @@ export type Order = typeof orders.$inferSelect;
 
 export type InsertOrderItem = z.infer<typeof insertOrderItemSchema>;
 export type OrderItem = typeof orderItems.$inferSelect;
+
+export type InsertReferral = z.infer<typeof insertReferralSchema>;
+export type Referral = typeof referrals.$inferSelect;
 
 export type ProductWithCategory = Product & { category: Category };
 export type CartItemWithProduct = CartItem & { product: Product };

@@ -11,6 +11,7 @@ import CategoryPage from "@/pages/category";
 import ProductPage from "@/pages/product";
 import ProductsPage from "@/pages/products";
 import OrdersPage from "@/pages/orders";
+import ReferralsPage from "@/pages/referrals";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -21,6 +22,7 @@ function Router() {
       <Route path="/category/:slug" component={CategoryPage} />
       <Route path="/product/:id" component={ProductPage} />
       <Route path="/orders" component={OrdersPage} />
+      <Route path="/referrals" component={ReferralsPage} />
       <Route component={NotFound} />
     </Switch>
   );
