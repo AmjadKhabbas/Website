@@ -276,14 +276,21 @@ export default function ProductsPage() {
               <div className="flex items-center justify-between mb-8 bg-white rounded-xl p-4 shadow-sm border border-slate-200">
                 <div className="flex items-center gap-4">
                   <h2 className="text-lg font-semibold text-slate-800">
-                    {selectedCategory 
-                      ? medicalCategories.find(cat => cat.slug === selectedCategory)?.name 
-                      : 'All Products'
+                    {searchQuery 
+                      ? `Search results for "${searchQuery}"`
+                      : selectedCategory 
+                        ? medicalCategories.find(cat => cat.slug === selectedCategory)?.name 
+                        : 'All Products'
                     }
                   </h2>
                   <Badge variant="secondary">
                     {filteredProducts.length} products
                   </Badge>
+                  {searchQuery && (
+                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                      Active Search
+                    </Badge>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-2">

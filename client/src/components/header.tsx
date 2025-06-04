@@ -17,6 +17,19 @@ export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [location, navigate] = useLocation();
+
+  // Sync search query with URL parameters when on products page
+  useEffect(() => {
+    if (location.startsWith('/products')) {
+      const urlParams = new URLSearchParams(location.split('?')[1] || '');
+      const searchParam = urlParams.get('search');
+      if (searchParam) {
+        setSearchQuery(decodeURIComponent(searchParam));
+      } else {
+        setSearchQuery('');
+      }
+    }
+  }, [location]);
   
   const { getTotalItems, openCart } = useCartStore();
   const { user, isLoading, isAuthenticated } = useAuth();
@@ -38,7 +51,7 @@ export function Header() {
     e.preventDefault();
     if (searchQuery.trim()) {
       navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery(''); // Clear search after navigation
+      // Keep search query in the header for persistence
     }
   };
 
