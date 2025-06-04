@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import customerSupportBg from '@assets/customer-support-illustration-concept_23152-154.avif';
 
 const contactFormSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -74,11 +75,11 @@ export default function ContactPage() {
     <div className="min-h-screen bg-slate-50 pt-20">
       {/* Header */}
       <section className="relative bg-gradient-to-br from-blue-50 via-white to-slate-50 py-16 overflow-hidden">
-        <div className="absolute inset-0 flex items-center justify-end pr-8 opacity-20">
+        <div className="absolute inset-0 flex items-center justify-end pr-8 opacity-30">
           <img 
-            src="https://images.unsplash.com/photo-1551601651-2a8555f1a136?w=600&h=400&fit=crop&crop=center&auto=format&q=80"
+            src={customerSupportBg}
             alt="Customer Support"
-            className="w-96 h-64 object-cover rounded-2xl"
+            className="w-96 h-64 object-contain rounded-2xl"
           />
         </div>
         
