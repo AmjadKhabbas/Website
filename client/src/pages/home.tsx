@@ -383,8 +383,10 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredProducts.slice(0, 4).map((product, index) => (
+          <div className={`grid gap-6 transition-all duration-500 ${
+            showAllFeatured ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'
+          }`}>
+            {(showAllFeatured ? featuredProducts : featuredProducts.slice(featuredIndex, featuredIndex + 4)).map((product, index) => (
               <motion.div
                 key={product.id}
                 initial={{ opacity: 0, y: 20 }}
