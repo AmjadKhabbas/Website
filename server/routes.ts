@@ -1,17 +1,25 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertCartItemSchema } from "@shared/schema";
 import session from "express-session";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Session configuration
-  app.use(session({
-    secret: process.env.SESSION_SECRET || 'marketplace-secret-key',
-    resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 } // 24 hours
-  }));
+  // Auth middleware
+  await setupAuth(app);
+
+  // Auth routes
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
 
   // Categories
   app.get("/api/categories", async (req, res) => {

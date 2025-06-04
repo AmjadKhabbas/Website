@@ -60,13 +60,13 @@ export default function ProductsPage() {
   return (
     <div className="min-h-screen bg-slate-50 pt-20">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-blue-50 via-white to-slate-50 py-16 scroll-reveal">
+      <section className="bg-gradient-to-br from-blue-50 via-white to-slate-50 py-8 scroll-reveal">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
+          <div className="text-center mb-6">
             <motion.h1 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-5xl font-bold text-slate-800 mb-6"
+              className="text-4xl font-bold text-slate-800 mb-4"
             >
               Medical Products
             </motion.h1>
@@ -74,7 +74,7 @@ export default function ProductsPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-xl text-slate-600 max-w-3xl mx-auto"
+              className="text-lg text-slate-600 max-w-2xl mx-auto"
             >
               Professional medical solutions for healthcare practitioners
             </motion.p>
@@ -100,7 +100,7 @@ export default function ProductsPage() {
       </section>
 
       {/* Main Content */}
-      <section className="py-12">
+      <section className="py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex gap-8">
             {/* Sidebar - Medical Categories */}
