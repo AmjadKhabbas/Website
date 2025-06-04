@@ -53,7 +53,7 @@ export default function ContactPage() {
     {
       icon: Phone,
       title: "Phone",
-      details: ["+1 (855) 637-7462", "Available 24/7"],
+      details: ["+1 (647) 913-5659", "Mon-Fri: 9:00 AM - 6:00 PM EST"],
       color: "text-blue-600"
     },
     {
@@ -63,15 +63,15 @@ export default function ContactPage() {
       color: "text-green-600"
     },
     {
-      icon: MapPin,
-      title: "Address",
-      details: ["123 Medical Center Drive", "Healthcare District, CA 90210"],
+      icon: Phone,
+      title: "Fax",
+      details: ["+1 (800) 513-8015", "Available 24/7"],
       color: "text-purple-600"
     },
     {
       icon: Clock,
       title: "Business Hours",
-      details: ["Mon-Fri: 8:00 AM - 6:00 PM PST", "Emergency support 24/7"],
+      details: ["Mon-Fri: 9:00 AM - 6:00 PM EST", "Customer service team ready to help"],
       color: "text-orange-600"
     }
   ];
@@ -104,8 +104,7 @@ export default function ContactPage() {
               transition={{ delay: 0.1 }}
               className="text-lg text-slate-600 max-w-3xl mx-auto"
             >
-              We're here to help with your medical product needs. Get in touch with our expert team 
-              for personalized assistance, product information, or technical support.
+              Contact us with any questions or concerns that you may have, our friendly customer service team is happy to help between the hours of 9am – 6pm EST from Monday – Friday.
             </motion.p>
           </div>
         </div>
