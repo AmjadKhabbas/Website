@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, ShoppingCart, User, Menu, ChevronDown } from 'lucide-react';
+import { Search, ShoppingCart, User, Menu, ChevronDown, LogIn, LogOut } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { useCartStore } from '@/lib/cart';
 import { MobileMenu } from '@/components/mobile-menu';
 import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '@/hooks/useAuth';
 import type { Category } from '@shared/schema';
 
 export function Header() {
@@ -17,6 +18,7 @@ export function Header() {
   const [location, navigate] = useLocation();
   
   const { getTotalItems, openCart } = useCartStore();
+  const { user, isLoading, isAuthenticated } = useAuth();
   
   const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ['/api/categories'],
@@ -163,16 +165,51 @@ export function Header() {
                 </AnimatePresence>
               </Button>
 
-              {/* User Menu */}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="hidden sm:flex items-center space-x-2 p-3 text-slate-600 hover:text-teal-600 bg-white hover:bg-teal-50 border border-slate-200 hover:border-teal-200 rounded-lg transition-all duration-300"
-              >
-                <User className="w-5 h-5" />
-                <span className="text-sm font-medium">Account</span>
-                <ChevronDown className="w-4 h-4" />
-              </Button>
+              {/* User Authentication */}
+              {!isLoading && (
+                <>
+                  {isAuthenticated ? (
+                    <div className="hidden sm:flex items-center space-x-3">
+                      {/* User Profile */}
+                      <div className="flex items-center space-x-2 p-3 text-slate-600 bg-white border border-slate-200 rounded-lg">
+                        {user?.profileImageUrl ? (
+                          <img 
+                            src={user.profileImageUrl} 
+                            alt="Profile" 
+                            className="w-6 h-6 rounded-full object-cover"
+                          />
+                        ) : (
+                          <User className="w-5 h-5" />
+                        )}
+                        <span className="text-sm font-medium">
+                          {user?.firstName || user?.email || 'User'}
+                        </span>
+                      </div>
+                      
+                      {/* Logout Button */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => window.location.href = '/api/logout'}
+                        className="flex items-center space-x-2 p-3 text-slate-600 hover:text-red-600 bg-white hover:bg-red-50 border border-slate-200 hover:border-red-200 rounded-lg transition-all duration-300"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        <span className="text-sm font-medium">Logout</span>
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => window.location.href = '/api/login'}
+                      className="hidden sm:flex items-center space-x-2 p-3 text-slate-600 hover:text-blue-600 bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-200 rounded-lg transition-all duration-300"
+                    >
+                      <LogIn className="w-5 h-5" />
+                      <span className="text-sm font-medium">Login</span>
+                    </Button>
+                  )}
+                </>
+              )}
 
               {/* Mobile Menu Button */}
               <Button

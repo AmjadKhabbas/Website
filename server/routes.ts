@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertCartItemSchema } from "@shared/schema";
+import { insertCartItemSchema, insertOrderSchema, insertOrderItemSchema } from "@shared/schema";
 import session from "express-session";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -140,6 +140,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ message: "Failed to clear cart" });
+    }
+  });
+
+  // Orders (Protected routes for logged-in users)
+  app.post("/api/orders", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const orderData = insertOrderSchema.parse({
+        ...req.body,
+        userId,
+        status: 'pending'
+      });
+      
+      const { items, ...order } = req.body;
+      const orderItemsData = items.map((item: any) => 
+        insertOrderItemSchema.parse(item)
+      );
+      
+      const newOrder = await storage.createOrder(orderData, orderItemsData);
+      res.json(newOrder);
+    } catch (error) {
+      console.error("Error creating order:", error);
+      res.status(400).json({ message: "Invalid order data" });
+    }
+  });
+
+  app.get("/api/orders", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const orders = await storage.getUserOrders(userId);
+      res.json(orders);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      res.status(500).json({ message: "Failed to fetch orders" });
+    }
+  });
+
+  app.get("/api/orders/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const orderId = parseInt(req.params.id);
+      const order = await storage.getOrderById(orderId, userId);
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+      res.json(order);
+    } catch (error) {
+      console.error("Error fetching order:", error);
+      res.status(500).json({ message: "Failed to fetch order" });
     }
   });
 
