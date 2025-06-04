@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, ShoppingCart, User, Menu, ChevronDown, LogIn, LogOut } from 'lucide-react';
+import { Search, ShoppingCart, User, Menu, ChevronDown, LogIn, LogOut, Package } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -170,20 +170,22 @@ export function Header() {
                 <>
                   {isAuthenticated ? (
                     <div className="hidden sm:flex items-center space-x-3">
+                      {/* Orders Link */}
+                      <Link href="/orders">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="flex items-center space-x-2 p-3 text-slate-600 hover:text-blue-600 bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-200 rounded-lg transition-all duration-300"
+                        >
+                          <Package className="w-4 h-4" />
+                          <span className="text-sm font-medium">Orders</span>
+                        </Button>
+                      </Link>
+                      
                       {/* User Profile */}
                       <div className="flex items-center space-x-2 p-3 text-slate-600 bg-white border border-slate-200 rounded-lg">
-                        {user?.profileImageUrl ? (
-                          <img 
-                            src={user.profileImageUrl} 
-                            alt="Profile" 
-                            className="w-6 h-6 rounded-full object-cover"
-                          />
-                        ) : (
-                          <User className="w-5 h-5" />
-                        )}
-                        <span className="text-sm font-medium">
-                          {user?.firstName || user?.email || 'User'}
-                        </span>
+                        <User className="w-5 h-5" />
+                        <span className="text-sm font-medium">Account</span>
                       </div>
                       
                       {/* Logout Button */}
