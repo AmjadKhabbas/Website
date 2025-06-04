@@ -167,17 +167,42 @@ export default function ProductsPage() {
                         max={2000}
                         min={0}
                         step={50}
-                        className="w-full [&>[role=slider]]:h-5 [&>[role=slider]]:w-5 [&>[role=slider]]:border-2 [&>[role=slider]]:border-blue-500 [&>[role=slider]]:bg-white [&>[role=slider]]:shadow-md"
+                        className="w-full mb-4"
                       />
-                      <div className="flex justify-between text-xs text-slate-500 mt-3">
-                        <div className="flex flex-col items-center">
-                          <div className="w-2 h-2 bg-blue-500 rounded-full mb-1"></div>
-                          <span className="font-medium">${priceRange[0]}</span>
+                      <div className="flex justify-between items-center gap-2 mt-4">
+                        <div className="flex flex-col items-center flex-1">
+                          <span className="text-xs text-slate-500 mb-1">Min</span>
+                          <Input
+                            type="number"
+                            value={priceRange[0]}
+                            onChange={(e) => {
+                              const value = Math.max(0, Math.min(parseInt(e.target.value) || 0, priceRange[1] - 50));
+                              setPriceRange([value, priceRange[1]]);
+                            }}
+                            className="w-full text-center text-sm h-8 border-blue-200 focus:border-blue-500"
+                            min={0}
+                            max={priceRange[1] - 50}
+                          />
                         </div>
-                        <div className="flex flex-col items-center">
-                          <div className="w-2 h-2 bg-blue-500 rounded-full mb-1"></div>
-                          <span className="font-medium">${priceRange[1]}</span>
+                        <span className="text-slate-400 text-sm px-2">-</span>
+                        <div className="flex flex-col items-center flex-1">
+                          <span className="text-xs text-slate-500 mb-1">Max</span>
+                          <Input
+                            type="number"
+                            value={priceRange[1]}
+                            onChange={(e) => {
+                              const value = Math.min(2000, Math.max(parseInt(e.target.value) || 2000, priceRange[0] + 50));
+                              setPriceRange([priceRange[0], value]);
+                            }}
+                            className="w-full text-center text-sm h-8 border-blue-200 focus:border-blue-500"
+                            min={priceRange[0] + 50}
+                            max={2000}
+                          />
                         </div>
+                      </div>
+                      <div className="flex justify-between text-xs text-slate-400 mt-2">
+                        <span>$0</span>
+                        <span>$2,000</span>
                       </div>
                     </div>
                   </div>
