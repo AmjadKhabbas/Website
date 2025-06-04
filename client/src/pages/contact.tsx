@@ -53,7 +53,7 @@ export default function ContactPage() {
     {
       icon: Phone,
       title: "Phone",
-      details: ["+1 (647) 913-5659", "Mon-Fri: 9:00 AM - 6:00 PM EST"],
+      details: ["+1 (647) 913-5659", "Customer service support"],
       color: "text-blue-600"
     },
     {
@@ -65,14 +65,8 @@ export default function ContactPage() {
     {
       icon: Phone,
       title: "Fax",
-      details: ["+1 (800) 513-8015", "Available 24/7"],
+      details: ["+1 (800) 513-8015", "Document submissions"],
       color: "text-purple-600"
-    },
-    {
-      icon: Clock,
-      title: "Business Hours",
-      details: ["Mon-Fri: 9:00 AM - 6:00 PM EST", "Customer service team ready to help"],
-      color: "text-orange-600"
     }
   ];
 
@@ -329,27 +323,14 @@ export default function ContactPage() {
                 <CardContent className="p-6">
                   <div className="flex items-center space-x-3 mb-4">
                     <MessageCircle className="w-6 h-6 text-blue-600" />
-                    <h4 className="font-semibold text-slate-800">Live Chat Available</h4>
+                    <h4 className="font-semibold text-slate-800">Speak with Meds-Go AI</h4>
                   </div>
                   <p className="text-slate-600 text-sm mb-4">
-                    Need immediate assistance? Our live chat support is available during business hours for real-time help.
+                    Get instant answers to your questions with our intelligent AI assistant, available to help with product information and support.
                   </p>
                   <Button variant="outline" className="w-full border-blue-200 text-blue-700 hover:bg-blue-100">
-                    Start Live Chat
+                    Chat with Meds-Go AI
                   </Button>
-                </CardContent>
-              </Card>
-
-              <Card className="border border-slate-200">
-                <CardContent className="p-6">
-                  <h4 className="font-semibold text-slate-800 mb-3">Emergency Contact</h4>
-                  <p className="text-slate-600 text-sm mb-3">
-                    For urgent medical product needs outside business hours:
-                  </p>
-                  <div className="space-y-2">
-                    <p className="text-slate-800 font-medium">Emergency Hotline: +1 (855) 637-URGENT</p>
-                    <p className="text-slate-600 text-sm">Available 24/7 for critical situations</p>
-                  </div>
                 </CardContent>
               </Card>
             </motion.div>
