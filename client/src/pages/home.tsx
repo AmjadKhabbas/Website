@@ -157,20 +157,7 @@ const HeroSlideshow = () => {
         </button>
       </div>
 
-      {/* Slide Indicators */}
-      <div className="flex justify-center gap-3 mt-12">
-        {bestSellers.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => setCurrentSlide(index)}
-            className={`h-3 rounded-full transition-all duration-300 ${
-              index === currentSlide 
-                ? 'bg-teal-500 w-12' 
-                : 'bg-slate-300 hover:bg-teal-300 w-3'
-            }`}
-          />
-        ))}
-      </div>
+
     </div>
   );
 };
@@ -289,19 +276,19 @@ export default function HomePage() {
             transition={{ duration: 0.8, delay: 0.8 }}
             className="flex flex-wrap justify-center gap-4"
           >
-            <button className="px-6 py-3 bg-white border-2 border-teal-200 text-teal-700 rounded-full hover:bg-teal-50 hover:border-teal-300 transition-all duration-300 font-medium shadow-md hover:shadow-lg">
+            <button className="px-6 py-3 bg-white border-2 border-teal-200 text-teal-700 rounded-full hover:bg-teal-50 hover:border-teal-300 hover:-translate-y-1 transition-all duration-300 font-medium shadow-md hover:shadow-lg transform">
               Botulinum Toxins
             </button>
-            <button className="px-6 py-3 bg-white border-2 border-teal-200 text-teal-700 rounded-full hover:bg-teal-50 hover:border-teal-300 transition-all duration-300 font-medium shadow-md hover:shadow-lg">
+            <button className="px-6 py-3 bg-white border-2 border-teal-200 text-teal-700 rounded-full hover:bg-teal-50 hover:border-teal-300 hover:-translate-y-1 transition-all duration-300 font-medium shadow-md hover:shadow-lg transform">
               Dermal Fillers
             </button>
-            <button className="px-6 py-3 bg-white border-2 border-teal-200 text-teal-700 rounded-full hover:bg-teal-50 hover:border-teal-300 transition-all duration-300 font-medium shadow-md hover:shadow-lg">
+            <button className="px-6 py-3 bg-white border-2 border-teal-200 text-teal-700 rounded-full hover:bg-teal-50 hover:border-teal-300 hover:-translate-y-1 transition-all duration-300 font-medium shadow-md hover:shadow-lg transform">
               Orthopedic
             </button>
-            <button className="px-6 py-3 bg-white border-2 border-teal-200 text-teal-700 rounded-full hover:bg-teal-50 hover:border-teal-300 transition-all duration-300 font-medium shadow-md hover:shadow-lg">
+            <button className="px-6 py-3 bg-white border-2 border-teal-200 text-teal-700 rounded-full hover:bg-teal-50 hover:border-teal-300 hover:-translate-y-1 transition-all duration-300 font-medium shadow-md hover:shadow-lg transform">
               Rheumatology
             </button>
-            <button className="px-6 py-3 bg-white border-2 border-teal-200 text-teal-700 rounded-full hover:bg-teal-50 hover:border-teal-300 transition-all duration-300 font-medium shadow-md hover:shadow-lg">
+            <button className="px-6 py-3 bg-white border-2 border-teal-200 text-teal-700 rounded-full hover:bg-teal-50 hover:border-teal-300 hover:-translate-y-1 transition-all duration-300 font-medium shadow-md hover:shadow-lg transform">
               Weightloss & Gynecology
             </button>
           </motion.div>
