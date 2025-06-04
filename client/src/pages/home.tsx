@@ -261,16 +261,16 @@ export default function HomePage() {
                   transition={{ duration: 0.3, delay: index * 0.1 }}
                   className="group cursor-pointer"
                 >
-                  <div className="bg-slate-100 rounded-2xl p-8 aspect-square flex items-center justify-center group-hover:bg-slate-200 transition-all duration-300 border-2 border-dashed border-slate-300 group-hover:border-teal-300">
+                  <div className="bg-blue-50 rounded-2xl p-8 aspect-square flex items-center justify-center group-hover:bg-blue-100 transition-all duration-300 border-2 border-dashed border-blue-300 group-hover:border-blue-500">
                     <div className="text-center">
-                      <div className="w-16 h-16 bg-slate-200 rounded-lg mx-auto mb-4 flex items-center justify-center group-hover:bg-teal-100 transition-colors duration-300">
-                        <Heart className="w-8 h-8 text-slate-400 group-hover:text-teal-600" />
+                      <div className="w-16 h-16 bg-blue-100 rounded-lg mx-auto mb-4 flex items-center justify-center group-hover:bg-blue-200 transition-colors duration-300">
+                        <Heart className="w-8 h-8 text-blue-500 group-hover:text-blue-700" />
                       </div>
-                      <p className="text-sm text-slate-500 group-hover:text-teal-600 font-medium">Upload Image</p>
+                      <p className="text-sm text-blue-600 group-hover:text-blue-800 font-medium">Upload Image</p>
                     </div>
                   </div>
                   <div className="mt-4 text-center">
-                    <h3 className="font-semibold text-slate-800 text-sm group-hover:text-teal-600 transition-colors duration-300">
+                    <h3 className="font-semibold text-slate-800 text-sm group-hover:text-blue-700 transition-colors duration-300">
                       {brandName}
                     </h3>
                   </div>
@@ -281,11 +281,11 @@ export default function HomePage() {
 
           <div className="flex justify-center gap-4">
             <Link href="/products">
-              <Button className="bg-slate-800 hover:bg-slate-700 text-white px-8 py-3 rounded-lg font-medium transition-all duration-300">
+              <Button className="btn-medical">
                 ALL PRODUCTS
               </Button>
             </Link>
-            <Button variant="outline" className="border-2 border-slate-300 text-slate-700 hover:bg-slate-50 px-8 py-3 rounded-lg font-medium transition-all duration-300">
+            <Button className="btn-scrub">
               FIND OUT MORE
             </Button>
           </div>
@@ -309,7 +309,7 @@ export default function HomePage() {
                     className={`p-2 rounded-lg border transition-all duration-300 ${
                       featuredIndex === 0 
                         ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed'
-                        : 'bg-white border-slate-300 text-slate-600 hover:bg-teal-50 hover:border-teal-300 hover:text-teal-600'
+                        : 'bg-white border-blue-300 text-blue-600 hover:bg-blue-50 hover:border-blue-400 hover:text-blue-700'
                     }`}
                   >
                     <ChevronLeft className="w-5 h-5" />
@@ -320,7 +320,7 @@ export default function HomePage() {
                     className={`p-2 rounded-lg border transition-all duration-300 ${
                       featuredIndex >= featuredProducts.length - 4
                         ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed'
-                        : 'bg-white border-slate-300 text-slate-600 hover:bg-teal-50 hover:border-teal-300 hover:text-teal-600'
+                        : 'bg-white border-blue-300 text-blue-600 hover:bg-blue-50 hover:border-blue-400 hover:text-blue-700'
                     }`}
                   >
                     <ChevronRight className="w-5 h-5" />
@@ -329,7 +329,7 @@ export default function HomePage() {
               )}
               <Button 
                 onClick={() => setShowAllFeatured(!showAllFeatured)}
-                className="btn-fox"
+                className="btn-medical-secondary"
               >
                 {showAllFeatured ? 'Show Less' : 'View All'}
                 <ArrowRight className="w-4 h-4 ml-2" />
@@ -388,7 +388,7 @@ export default function HomePage() {
                 placeholder="Enter your email..."
                 className="flex-1 px-6 py-4 bg-white border-2 border-slate-300 rounded-lg text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-300"
               />
-              <Button className="btn-fox px-8 py-4">
+              <Button className="btn-medical px-8 py-4">
                 Subscribe
               </Button>
             </div>
