@@ -78,18 +78,18 @@ const HeroSlideshow = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
                   >
-                    <Badge className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 mb-4">
+                    <Badge className="bg-green-100 text-green-800 mb-4">
                       Save {product.discount}
                     </Badge>
-                    <h1 className="text-5xl lg:text-6xl font-bold text-foreground leading-tight mb-6">
+                    <h1 className="text-5xl lg:text-6xl font-bold text-slate-800 leading-tight mb-6">
                       {product.name}
                     </h1>
-                    <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
+                    <p className="text-xl text-slate-600 mb-8 leading-relaxed">
                       {product.description}
                     </p>
                     <div className="flex items-center gap-4 mb-8">
-                      <span className="text-4xl font-bold text-primary">${product.price}</span>
-                      <span className="text-2xl text-muted-foreground line-through">${product.originalPrice}</span>
+                      <span className="text-4xl font-bold text-teal-600">${product.price}</span>
+                      <span className="text-2xl text-slate-400 line-through">${product.originalPrice}</span>
                     </div>
                     <Button className="btn-fox text-lg px-8 py-4">
                       Shop Now
@@ -104,8 +104,8 @@ const HeroSlideshow = () => {
                   transition={{ delay: 0.4 }}
                   className="relative"
                 >
-                  <div className="aspect-square bg-gradient-to-br from-teal-100 to-cyan-100 dark:from-teal-900/30 dark:to-cyan-900/30 rounded-3xl p-12 flex items-center justify-center">
-                    <Heart className="w-32 h-32 text-primary" />
+                  <div className="aspect-square bg-gradient-to-br from-teal-100 to-cyan-100 rounded-3xl p-12 flex items-center justify-center">
+                    <Heart className="w-32 h-32 text-teal-600" />
                   </div>
                 </motion.div>
               </div>
@@ -117,7 +117,7 @@ const HeroSlideshow = () => {
       <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
         <button
           onClick={prevSlide}
-          className="p-3 bg-background shadow-lg hover:shadow-xl border border-border rounded-full text-primary hover:text-primary/80 transition-all duration-200 hover:scale-110"
+          className="p-3 bg-white shadow-lg hover:shadow-xl border border-slate-200 rounded-full text-teal-600 hover:text-teal-700 transition-all duration-200 hover:scale-110"
         >
           <ChevronLeft className="w-6 h-6" />
         </button>
@@ -126,7 +126,7 @@ const HeroSlideshow = () => {
       <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
         <button
           onClick={nextSlide}
-          className="p-3 bg-background shadow-lg hover:shadow-xl border border-border rounded-full text-primary hover:text-primary/80 transition-all duration-200 hover:scale-110"
+          className="p-3 bg-white shadow-lg hover:shadow-xl border border-slate-200 rounded-full text-teal-600 hover:text-teal-700 transition-all duration-200 hover:scale-110"
         >
           <ChevronRight className="w-6 h-6" />
         </button>
@@ -197,9 +197,9 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative pt-20 pb-16 overflow-hidden medical-gradient bg-gradient-to-br from-blue-50 via-sky-50 to-cyan-50 dark:from-blue-900/20 dark:via-sky-900/20 dark:to-cyan-900/20">
+      <section className="relative pt-20 pb-16 overflow-hidden medical-gradient bg-gradient-to-br from-blue-50 via-sky-50 to-cyan-50">
         {/* Clean Background Elements */}
         <div className="absolute inset-0 bg-grid-pattern opacity-30 parallax-slow"></div>
         <motion.div
@@ -227,9 +227,9 @@ export default function HomePage() {
                 placeholder="Search medical products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-16 pr-24 py-6 text-lg bg-background border-2 border-border rounded-lg text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-300 shadow-lg"
+                className="w-full pl-16 pr-24 py-6 text-lg bg-white border-2 border-slate-300 rounded-lg text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-300 shadow-lg"
               />
-              <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 text-muted-foreground w-6 h-6" />
+              <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 text-slate-400 w-6 h-6" />
               <Button
                 type="submit"
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 btn-medical-secondary"

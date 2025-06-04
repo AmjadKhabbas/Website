@@ -42,7 +42,7 @@ function App() {
         <TooltipProvider>
           <div className="min-h-screen bg-background text-foreground">
             <Header />
-            <main className="bg-background">
+            <main>
               <Router />
             </main>
             <CartSidebar />
