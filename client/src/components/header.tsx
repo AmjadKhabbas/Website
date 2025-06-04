@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Search, ShoppingCart, User, Menu, ChevronDown, LogIn, LogOut, Package, UserPlus, HelpCircle } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Search, ShoppingCart, User, Menu, ChevronDown, LogIn, LogOut, Package, UserPlus, HelpCircle, Loader2 } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
 import medsGoLogo from '@assets/image_1749025160394.png';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -10,12 +10,15 @@ import { useCartStore } from '@/lib/cart';
 import { MobileMenu } from '@/components/mobile-menu';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
-import type { Category } from '@shared/schema';
+import type { Category, ProductWithCategory } from '@shared/schema';
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isSearchLoading, setIsSearchLoading] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
   const [location, navigate] = useLocation();
 
   // Sync search query with URL parameters when on products page
@@ -30,9 +33,44 @@ export function Header() {
       }
     }
   }, [location]);
+
+  // Handle click outside search to close suggestions
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Show suggestions when user types
+  useEffect(() => {
+    if (searchQuery.trim().length > 1) {
+      setShowSuggestions(true);
+    } else {
+      setShowSuggestions(false);
+    }
+  }, [searchQuery]);
   
   const { getTotalItems, openCart } = useCartStore();
   const { user, isLoading, isAuthenticated } = useAuth();
+
+  // Fetch products for search suggestions
+  const { data: products = [] } = useQuery<ProductWithCategory[]>({
+    queryKey: ['/api/products'],
+  });
+
+  // Filter products based on search query for suggestions
+  const searchSuggestions = searchQuery.trim() 
+    ? products.filter(product => 
+        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (product.category?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
+      ).slice(0, 6) // Limit to 6 suggestions
+    : [];
   
   const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ['/api/categories'],
@@ -50,8 +88,30 @@ export function Header() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
+      setIsSearchLoading(true);
       navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
-      // Keep search query in the header for persistence
+      setShowSuggestions(false);
+      setTimeout(() => setIsSearchLoading(false), 500);
+    }
+  };
+
+  const handleSuggestionClick = (product: ProductWithCategory) => {
+    setSearchQuery(product.name);
+    setShowSuggestions(false);
+    navigate(`/product/${product.id}`);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+  };
+
+  const handleViewAllResults = () => {
+    if (searchQuery.trim()) {
+      setIsSearchLoading(true);
+      navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+      setShowSuggestions(false);
+      setTimeout(() => setIsSearchLoading(false), 500);
     }
   };
 
@@ -142,25 +202,126 @@ export function Header() {
               </nav>
             </div>
 
-            {/* Search Bar */}
-            <div className="hidden md:flex flex-1 max-w-2xl mx-8">
-              <form onSubmit={handleSearch} className="relative w-full">
-                <Input
-                  type="text"
-                  placeholder="Search medical products..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 pr-20 py-3 bg-white border border-slate-300 rounded-lg text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-300"
-                />
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
-                <Button
-                  type="submit"
-                  size="sm"
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 btn-medical-secondary"
-                >
-                  Search
-                </Button>
-              </form>
+            {/* Search Bar with Live Filtering */}
+            <div className="hidden md:flex flex-1 max-w-2xl mx-8" ref={searchRef}>
+              <div className="relative w-full">
+                <form onSubmit={handleSearch} className="relative w-full">
+                  <Input
+                    type="text"
+                    placeholder="Search medical products..."
+                    value={searchQuery}
+                    onChange={handleInputChange}
+                    onFocus={() => searchQuery.trim().length > 1 && setShowSuggestions(true)}
+                    className="w-full pl-12 pr-20 py-3 bg-white border border-slate-300 rounded-lg text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
+                  />
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+                  <Button
+                    type="submit"
+                    size="sm"
+                    disabled={isSearchLoading}
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    {isSearchLoading ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      "Search"
+                    )}
+                  </Button>
+                </form>
+
+                {/* Live Search Suggestions Dropdown */}
+                <AnimatePresence>
+                  {showSuggestions && searchSuggestions.length > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto"
+                    >
+                      {/* Search Results Header */}
+                      <div className="px-4 py-3 border-b border-slate-100 bg-slate-50">
+                        <p className="text-sm font-medium text-slate-700">
+                          {searchSuggestions.length} product{searchSuggestions.length !== 1 ? 's' : ''} found
+                        </p>
+                      </div>
+
+                      {/* Product Suggestions */}
+                      <div className="py-2">
+                        {searchSuggestions.map((product, index) => (
+                          <motion.div
+                            key={product.id}
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: index * 0.05 }}
+                            onClick={() => handleSuggestionClick(product)}
+                            className="px-4 py-3 hover:bg-blue-50 cursor-pointer transition-colors duration-200 flex items-center space-x-3"
+                          >
+                            <img
+                              src={product.imageUrl}
+                              alt={product.name}
+                              className="w-12 h-12 object-cover rounded-md border border-slate-200"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-medium text-slate-800 truncate">
+                                {product.name}
+                              </h4>
+                              <p className="text-sm text-slate-500 truncate">
+                                {product.description}
+                              </p>
+                              <div className="flex items-center justify-between mt-1">
+                                <span className="text-sm font-semibold text-blue-600">
+                                  ${product.price}
+                                </span>
+                                {product.category && (
+                                  <span className="text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded">
+                                    {product.category.name}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </motion.div>
+                        ))}
+                      </div>
+
+                      {/* View All Results Footer */}
+                      {searchQuery.trim() && (
+                        <div className="px-4 py-3 border-t border-slate-100 bg-slate-50">
+                          <button
+                            onClick={handleViewAllResults}
+                            className="w-full text-center text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors duration-200"
+                          >
+                            View all results for "{searchQuery}"
+                          </button>
+                        </div>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* No Results Message */}
+                <AnimatePresence>
+                  {showSuggestions && searchQuery.trim().length > 1 && searchSuggestions.length === 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-lg shadow-xl z-50"
+                    >
+                      <div className="px-4 py-6 text-center">
+                        <Search className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                        <p className="text-sm text-slate-500">
+                          No products found for "{searchQuery}"
+                        </p>
+                        <p className="text-xs text-slate-400 mt-1">
+                          Try different keywords or browse our categories
+                        </p>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
 
             {/* Right Side Actions */}
