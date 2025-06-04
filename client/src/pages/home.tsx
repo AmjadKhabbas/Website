@@ -1,12 +1,159 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Search, ArrowRight, Laptop, Shirt, Home, Dumbbell, Book, Heart } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, ArrowRight, Laptop, Shirt, Home, Dumbbell, Book, Heart, Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ProductCard } from '@/components/product-card';
+import { Badge } from '@/components/ui/badge';
 import type { Category, ProductWithCategory } from '@shared/schema';
+
+// Best Sellers Carousel Component  
+const BestSellersCarousel = () => {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  
+  const bestSellers = [
+    {
+      id: 1,
+      name: "Best Seller 1",
+      description: "Premium medical treatment with excellent results",
+      price: "$299.99",
+      originalPrice: "$399.99",
+      rating: 4.9,
+      reviews: 156
+    },
+    {
+      id: 2,
+      name: "Best Seller 2", 
+      description: "Professional grade medical product for healthcare providers",
+      price: "$449.99",
+      originalPrice: "$599.99",
+      rating: 4.8,
+      reviews: 203
+    },
+    {
+      id: 3,
+      name: "Best Seller 3",
+      description: "Advanced medical solution trusted by professionals",
+      price: "$699.99",
+      originalPrice: "$899.99", 
+      rating: 4.9,
+      reviews: 187
+    }
+  ];
+
+  // Auto-advance slides every 4 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % bestSellers.length);
+    }, 4000);
+    
+    return () => clearInterval(timer);
+  }, [bestSellers.length]);
+
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % bestSellers.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + bestSellers.length) % bestSellers.length);
+  };
+
+  return (
+    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-800/60 to-slate-700/60 backdrop-blur-xl border border-blue-500/20 p-8">
+      {/* Header */}
+      <div className="text-center mb-6">
+        <Badge className="bg-blue-600 text-white px-4 py-2 mb-4">
+          <Star className="w-4 h-4 mr-2" />
+          Best Sellers
+        </Badge>
+        <h3 className="text-2xl font-bold text-white">Top Medical Products</h3>
+      </div>
+
+      {/* Carousel */}
+      <div className="relative h-64 overflow-hidden rounded-xl">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentSlide}
+            initial={{ x: 300, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -300, opacity: 0 }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+            className="absolute inset-0 flex items-center justify-center"
+          >
+            <div className="text-center max-w-md mx-auto">
+              <div className="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-blue-600/80 to-blue-700/80 rounded-xl flex items-center justify-center glow-subtle">
+                <Heart className="w-16 h-16 text-white" />
+              </div>
+              
+              <h4 className="text-2xl font-bold text-white mb-3">
+                {bestSellers[currentSlide].name}
+              </h4>
+              
+              <p className="text-blue-200 mb-4 leading-relaxed">
+                {bestSellers[currentSlide].description}
+              </p>
+              
+              <div className="flex items-center justify-center gap-4 mb-4">
+                <span className="text-3xl font-bold text-blue-400">
+                  {bestSellers[currentSlide].price}
+                </span>
+                <span className="text-lg text-gray-400 line-through">
+                  {bestSellers[currentSlide].originalPrice}
+                </span>
+              </div>
+              
+              <div className="flex items-center justify-center gap-2">
+                <div className="flex">
+                  {[...Array(5)].map((_, i) => (
+                    <Star 
+                      key={i} 
+                      className="w-4 h-4 fill-yellow-400 text-yellow-400" 
+                    />
+                  ))}
+                </div>
+                <span className="text-blue-200 text-sm">
+                  {bestSellers[currentSlide].rating} ({bestSellers[currentSlide].reviews} reviews)
+                </span>
+              </div>
+            </div>
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Navigation Arrows */}
+        <button
+          onClick={prevSlide}
+          className="absolute left-4 top-1/2 transform -translate-y-1/2 p-2 bg-blue-600/80 hover:bg-blue-700 rounded-full text-white transition-colors duration-200"
+        >
+          <ChevronLeft className="w-6 h-6" />
+        </button>
+        
+        <button
+          onClick={nextSlide}
+          className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 bg-blue-600/80 hover:bg-blue-700 rounded-full text-white transition-colors duration-200"
+        >
+          <ChevronRight className="w-6 h-6" />
+        </button>
+      </div>
+
+      {/* Slide Indicators */}
+      <div className="flex justify-center gap-2 mt-6">
+        {bestSellers.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => setCurrentSlide(index)}
+            className={`w-3 h-3 rounded-full transition-all duration-200 ${
+              index === currentSlide 
+                ? 'bg-blue-400 w-8' 
+                : 'bg-blue-600/50 hover:bg-blue-500'
+            }`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
 
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -116,11 +263,21 @@ export default function HomePage() {
               Premium Medical Products • Healthcare Excellence • Professional Quality
             </motion.p>
             
-            {/* Enhanced Search */}
+            {/* Best Sellers Slideshow */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
+              className="max-w-4xl mx-auto mb-12"
+            >
+              <BestSellersCarousel />
+            </motion.div>
+
+            {/* Enhanced Search */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.6 }}
               className="max-w-3xl mx-auto mb-12"
             >
               <form onSubmit={handleSearch} className="relative">
