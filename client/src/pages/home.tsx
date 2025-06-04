@@ -9,45 +9,45 @@ import { ProductCard } from '@/components/product-card';
 import { Badge } from '@/components/ui/badge';
 import type { Category, ProductWithCategory } from '@shared/schema';
 
-// Best Sellers Carousel Component  
-const BestSellersCarousel = () => {
+// Hero Slideshow Component - Full Section Slideshow
+const HeroSlideshow = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   
   const bestSellers = [
     {
       id: 1,
-      name: "Best Seller 1",
-      description: "Premium medical treatment with excellent results",
+      title: "Best Seller 1",
+      subtitle: "Premium Medical Excellence",
+      description: "Professional grade medical product trusted by healthcare providers worldwide",
       price: "$299.99",
       originalPrice: "$399.99",
-      rating: 4.9,
-      reviews: 156
+      features: ["FDA Approved", "Premium Quality", "Fast Results"]
     },
     {
       id: 2,
-      name: "Best Seller 2", 
-      description: "Professional grade medical product for healthcare providers",
+      title: "Best Seller 2", 
+      subtitle: "Advanced Healthcare Solutions",
+      description: "State-of-the-art medical treatment for professional use in clinical settings",
       price: "$449.99",
       originalPrice: "$599.99",
-      rating: 4.8,
-      reviews: 203
+      features: ["Clinically Tested", "Professional Grade", "Proven Results"]
     },
     {
       id: 3,
-      name: "Best Seller 3",
-      description: "Advanced medical solution trusted by professionals",
+      title: "Best Seller 3",
+      subtitle: "Elite Medical Products",
+      description: "Premium medical solution designed for the most demanding healthcare applications",
       price: "$699.99",
-      originalPrice: "$899.99", 
-      rating: 4.9,
-      reviews: 187
+      originalPrice: "$899.99",
+      features: ["Medical Grade", "Industry Leading", "Expert Recommended"]
     }
   ];
 
-  // Auto-advance slides every 4 seconds
+  // Auto-advance slides every 5 seconds
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % bestSellers.length);
-    }, 4000);
+    }, 5000);
     
     return () => clearInterval(timer);
   }, [bestSellers.length]);
@@ -61,92 +61,112 @@ const BestSellersCarousel = () => {
   };
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-800/60 to-slate-700/60 backdrop-blur-xl border border-blue-500/20 p-8">
-      {/* Header */}
-      <div className="text-center mb-6">
-        <Badge className="bg-blue-600 text-white px-4 py-2 mb-4">
-          <Star className="w-4 h-4 mr-2" />
-          Best Sellers
-        </Badge>
-        <h3 className="text-2xl font-bold text-white">Top Medical Products</h3>
-      </div>
-
-      {/* Carousel */}
-      <div className="relative h-64 overflow-hidden rounded-xl">
-        <AnimatePresence mode="wait">
+    <div className="relative">
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={currentSlide}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.8, ease: "easeInOut" }}
+          className="text-center"
+        >
+          {/* Badge */}
           <motion.div
-            key={currentSlide}
-            initial={{ x: 300, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: -300, opacity: 0 }}
-            transition={{ duration: 0.5, ease: "easeInOut" }}
-            className="absolute inset-0 flex items-center justify-center"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="mb-6"
           >
-            <div className="text-center max-w-md mx-auto">
-              <div className="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-blue-600/80 to-blue-700/80 rounded-xl flex items-center justify-center glow-subtle">
-                <Heart className="w-16 h-16 text-white" />
-              </div>
-              
-              <h4 className="text-2xl font-bold text-white mb-3">
-                {bestSellers[currentSlide].name}
-              </h4>
-              
-              <p className="text-blue-200 mb-4 leading-relaxed">
-                {bestSellers[currentSlide].description}
-              </p>
-              
-              <div className="flex items-center justify-center gap-4 mb-4">
-                <span className="text-3xl font-bold text-blue-400">
-                  {bestSellers[currentSlide].price}
-                </span>
-                <span className="text-lg text-gray-400 line-through">
-                  {bestSellers[currentSlide].originalPrice}
-                </span>
-              </div>
-              
-              <div className="flex items-center justify-center gap-2">
-                <div className="flex">
-                  {[...Array(5)].map((_, i) => (
-                    <Star 
-                      key={i} 
-                      className="w-4 h-4 fill-yellow-400 text-yellow-400" 
-                    />
-                  ))}
-                </div>
-                <span className="text-blue-200 text-sm">
-                  {bestSellers[currentSlide].rating} ({bestSellers[currentSlide].reviews} reviews)
-                </span>
-              </div>
-            </div>
+            <Badge className="bg-blue-600/90 text-white px-6 py-2 text-lg backdrop-blur-sm">
+              <Star className="w-5 h-5 mr-2" />
+              {bestSellers[currentSlide].subtitle}
+            </Badge>
           </motion.div>
-        </AnimatePresence>
 
-        {/* Navigation Arrows */}
+          {/* Main Title */}
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="text-4xl sm:text-5xl lg:text-7xl font-bold text-white mb-8 tracking-wide"
+          >
+            <span className="gradient-text">{bestSellers[currentSlide].title}</span>
+          </motion.h1>
+          
+          {/* Description */}
+          <motion.p
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="text-xl text-blue-200 mb-8 max-w-3xl mx-auto leading-relaxed"
+          >
+            {bestSellers[currentSlide].description}
+          </motion.p>
+
+          {/* Features */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+            className="flex flex-wrap justify-center gap-4 mb-8"
+          >
+            {bestSellers[currentSlide].features.map((feature, index) => (
+              <Badge key={index} variant="outline" className="border-blue-400/50 text-blue-300 px-4 py-2">
+                {feature}
+              </Badge>
+            ))}
+          </motion.div>
+
+          {/* Pricing */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+            className="flex items-center justify-center gap-4 mb-10"
+          >
+            <span className="text-4xl font-bold text-blue-400">
+              {bestSellers[currentSlide].price}
+            </span>
+            <span className="text-xl text-gray-400 line-through">
+              {bestSellers[currentSlide].originalPrice}
+            </span>
+            <Badge className="bg-green-600 text-white px-3 py-1">
+              Save {Math.round(((parseFloat(bestSellers[currentSlide].originalPrice.slice(1)) - parseFloat(bestSellers[currentSlide].price.slice(1))) / parseFloat(bestSellers[currentSlide].originalPrice.slice(1))) * 100)}%
+            </Badge>
+          </motion.div>
+        </motion.div>
+      </AnimatePresence>
+
+      {/* Navigation Controls */}
+      <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
         <button
           onClick={prevSlide}
-          className="absolute left-4 top-1/2 transform -translate-y-1/2 p-2 bg-blue-600/80 hover:bg-blue-700 rounded-full text-white transition-colors duration-200"
+          className="p-3 bg-blue-600/80 hover:bg-blue-700 rounded-full text-white transition-all duration-200 backdrop-blur-sm hover:scale-110"
         >
           <ChevronLeft className="w-6 h-6" />
         </button>
-        
+      </div>
+      
+      <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
         <button
           onClick={nextSlide}
-          className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 bg-blue-600/80 hover:bg-blue-700 rounded-full text-white transition-colors duration-200"
+          className="p-3 bg-blue-600/80 hover:bg-blue-700 rounded-full text-white transition-all duration-200 backdrop-blur-sm hover:scale-110"
         >
           <ChevronRight className="w-6 h-6" />
         </button>
       </div>
 
       {/* Slide Indicators */}
-      <div className="flex justify-center gap-2 mt-6">
+      <div className="flex justify-center gap-3 mt-12">
         {bestSellers.map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrentSlide(index)}
-            className={`w-3 h-3 rounded-full transition-all duration-200 ${
+            className={`h-3 rounded-full transition-all duration-300 ${
               index === currentSlide 
-                ? 'bg-blue-400 w-8' 
-                : 'bg-blue-600/50 hover:bg-blue-500'
+                ? 'bg-blue-400 w-12' 
+                : 'bg-blue-600/50 hover:bg-blue-500 w-3'
             }`}
           />
         ))}
@@ -197,126 +217,85 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900/15 to-slate-900">
       {/* Hero Section */}
-      <section className="relative pt-20 pb-16 overflow-hidden circuit-bg">
+      <section className="relative pt-20 pb-16 overflow-hidden medical-pattern">
         {/* Animated Background Elements */}
-        <div className="absolute inset-0 bg-grid-pattern opacity-20"></div>
+        <div className="absolute inset-0 bg-grid-pattern opacity-15"></div>
         <motion.div
           animate={{
-            x: [0, 100, 0],
-            y: [0, -50, 0],
+            x: [0, 80, 0],
+            y: [0, -40, 0],
             rotate: [0, 180, 360],
+          }}
+          transition={{
+            duration: 25,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+          className="absolute top-20 left-20 w-28 h-28 bg-gradient-to-r from-blue-500/20 to-blue-600/20 rounded-full blur-xl"
+        />
+        <motion.div
+          animate={{
+            x: [0, -60, 0],
+            y: [0, 30, 0],
+            rotate: [360, 180, 0],
           }}
           transition={{
             duration: 20,
             repeat: Infinity,
             ease: "linear",
-          }}
-          className="absolute top-20 left-20 w-32 h-32 bg-gradient-to-r from-purple-500/30 to-cyan-500/30 rounded-full blur-xl"
-        />
-        <motion.div
-          animate={{
-            x: [0, -80, 0],
-            y: [0, 40, 0],
-            rotate: [360, 180, 0],
-          }}
-          transition={{
-            duration: 15,
-            repeat: Infinity,
-            ease: "linear",
             delay: 5,
           }}
-          className="absolute bottom-20 right-20 w-24 h-24 bg-gradient-to-r from-cyan-500/30 to-pink-500/30 rounded-full blur-lg"
-        />
-        <motion.div
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.3, 0.6, 0.3],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-purple-500/10 to-cyan-500/10 rounded-full blur-3xl"
+          className="absolute bottom-20 right-20 w-20 h-20 bg-gradient-to-r from-blue-400/20 to-teal-500/20 rounded-full blur-xl"
         />
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-16">
-          <div className="text-center">
-            <motion.h1
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-8 tracking-wide"
-            >
-              Professional
-              <span className="block gradient-text">Medical Market</span>
-            </motion.h1>
-            
-            <motion.p
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="text-xl text-blue-200 mb-10 max-w-2xl mx-auto"
-            >
-              Premium Medical Products • Healthcare Excellence • Professional Quality
-            </motion.p>
-            
-            {/* Best Sellers Slideshow */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              className="max-w-4xl mx-auto mb-12"
-            >
-              <BestSellersCarousel />
-            </motion.div>
+          <HeroSlideshow />
 
-            {/* Enhanced Search */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.6 }}
-              className="max-w-3xl mx-auto mb-12"
-            >
-              <form onSubmit={handleSearch} className="relative">
-                <Input
-                  type="text"
-                  placeholder="Search medical products..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-16 pr-24 py-6 text-lg bg-slate-800/60 border-2 border-blue-500/30 rounded-xl text-white placeholder-blue-300 focus:ring-4 focus:ring-blue-400/50 focus:border-blue-400 transition-all duration-500 backdrop-blur-xl"
-                />
-                <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 text-blue-400 w-6 h-6" />
+          {/* Enhanced Search */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
+            className="max-w-3xl mx-auto mb-12"
+          >
+            <form onSubmit={handleSearch} className="relative">
+              <Input
+                type="text"
+                placeholder="Search medical products..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-16 pr-24 py-6 text-lg bg-slate-800/60 border-2 border-blue-500/30 rounded-xl text-white placeholder-blue-300 focus:ring-4 focus:ring-blue-400/50 focus:border-blue-400 transition-all duration-500 backdrop-blur-xl"
+              />
+              <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 text-blue-400 w-6 h-6" />
+              <Button
+                type="submit"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105"
+              >
+                Search
+              </Button>
+            </form>
+          </motion.div>
+
+          {/* Quick Categories */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.8 }}
+            className="flex flex-wrap justify-center gap-4"
+          >
+            {categories.slice(0, 4).map((category, index) => (
+              <Link key={category.slug} href={`/category/${category.slug}`}>
                 <Button
-                  type="submit"
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105"
+                  variant="outline"
+                  className="bg-slate-800/40 backdrop-blur-xl text-blue-300 border-blue-500/30 hover:bg-blue-500/15 hover:text-blue-400 hover:border-blue-400/50 transition-all duration-300 transform hover:scale-105 font-medium px-6 py-3 rounded-xl"
                 >
-                  Search
+                  {category.name}
                 </Button>
-              </form>
-            </motion.div>
-
-            {/* Quick Categories */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.6 }}
-              className="flex flex-wrap justify-center gap-4"
-            >
-              {categories.slice(0, 4).map((category, index) => (
-                <Link key={category.slug} href={`/category/${category.slug}`}>
-                  <Button
-                    variant="outline"
-                    className="bg-slate-800/40 backdrop-blur-xl text-blue-300 border-blue-500/30 hover:bg-blue-500/15 hover:text-blue-400 hover:border-blue-400/50 transition-all duration-300 transform hover:scale-105 font-medium px-6 py-3 rounded-xl"
-                  >
-                    {category.name}
-                  </Button>
-                </Link>
-              ))}
-            </motion.div>
-          </div>
+              </Link>
+            ))}
+          </motion.div>
         </div>
       </section>
 
