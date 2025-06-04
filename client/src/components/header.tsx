@@ -140,8 +140,8 @@ export function Header() {
                     className="h-10 w-auto object-contain brightness-125 contrast-110"
                   />
                   <div>
-                    <h1 className="text-2xl font-bold text-slate-800">Meds-Go</h1>
-                    <p className="text-xs text-white -mt-1">Professional Healthcare Products</p>
+                    <h1 className="text-2xl font-bold text-foreground">Meds-Go</h1>
+                    <p className="text-xs text-muted-foreground -mt-1">Professional Healthcare Products</p>
                   </div>
                 </motion.div>
               </Link>
@@ -151,8 +151,8 @@ export function Header() {
                 <Link href="/">
                   <span className={`px-4 py-2 text-sm font-medium transition-all duration-300 rounded-lg cursor-pointer ${
                     location === '/' 
-                      ? 'text-blue-600 bg-blue-50 border border-blue-200' 
-                      : 'text-slate-600 hover:text-blue-600 hover:bg-blue-50 border border-transparent hover:border-blue-200'
+                      ? 'text-primary bg-primary/10 border border-primary/20' 
+                      : 'text-muted-foreground hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/20'
                   }`}>
                     Home
                   </span>
@@ -161,8 +161,8 @@ export function Header() {
                 <Link href="/products">
                   <span className={`px-4 py-2 text-sm font-medium transition-all duration-300 rounded-lg cursor-pointer ${
                     location === '/products' 
-                      ? 'text-blue-600 bg-blue-50 border border-blue-200' 
-                      : 'text-slate-600 hover:text-blue-600 hover:bg-blue-50 border border-transparent hover:border-blue-200'
+                      ? 'text-primary bg-primary/10 border border-primary/20' 
+                      : 'text-muted-foreground hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/20'
                   }`}>
                     Products
                   </span>
@@ -171,8 +171,8 @@ export function Header() {
                 <Link href="/referrals">
                   <span className={`px-4 py-2 text-sm font-medium transition-all duration-300 rounded-lg cursor-pointer ${
                     location === '/referrals' 
-                      ? 'text-blue-600 bg-blue-50 border border-blue-200' 
-                      : 'text-slate-600 hover:text-blue-600 hover:bg-blue-50 border border-transparent hover:border-blue-200'
+                      ? 'text-primary bg-primary/10 border border-primary/20' 
+                      : 'text-muted-foreground hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/20'
                   }`}>
                     Referrals
                   </span>
@@ -181,8 +181,8 @@ export function Header() {
                 <Link href="/faq">
                   <span className={`px-4 py-2 text-sm font-medium transition-all duration-300 rounded-lg cursor-pointer ${
                     location === '/faq' 
-                      ? 'text-blue-600 bg-blue-50 border border-blue-200' 
-                      : 'text-slate-600 hover:text-blue-600 hover:bg-blue-50 border border-transparent hover:border-blue-200'
+                      ? 'text-primary bg-primary/10 border border-primary/20' 
+                      : 'text-muted-foreground hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/20'
                   }`}>
                     FAQ
                   </span>
@@ -191,8 +191,8 @@ export function Header() {
                 <Link href="/contact">
                   <span className={`px-4 py-2 text-sm font-medium transition-all duration-300 rounded-lg cursor-pointer ${
                     location === '/contact' 
-                      ? 'text-blue-600 bg-blue-50 border border-blue-200' 
-                      : 'text-slate-600 hover:text-blue-600 hover:bg-blue-50 border border-transparent hover:border-blue-200'
+                      ? 'text-primary bg-primary/10 border border-primary/20' 
+                      : 'text-muted-foreground hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/20'
                   }`}>
                     Contact
                   </span>
@@ -210,14 +210,14 @@ export function Header() {
                     value={searchQuery}
                     onChange={handleInputChange}
                     onFocus={() => searchQuery.trim().length > 1 && setShowSuggestions(true)}
-                    className="w-full pl-12 pr-20 py-3 bg-white border border-slate-300 rounded-lg text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
+                    className="w-full pl-12 pr-20 py-3 bg-background border border-border rounded-lg text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-300"
                   />
-                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
                   <Button
                     type="submit"
                     size="sm"
                     disabled={isSearchLoading}
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 hover:bg-blue-700 text-white"
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-primary hover:bg-primary/90 text-primary-foreground"
                   >
                     {isSearchLoading ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -235,11 +235,11 @@ export function Header() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
                       transition={{ duration: 0.2 }}
-                      className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto"
+                      className="absolute top-full left-0 right-0 mt-2 bg-popover border border-border rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto"
                     >
                       {/* Search Results Header */}
-                      <div className="px-4 py-3 border-b border-slate-100 bg-slate-50">
-                        <p className="text-sm font-medium text-slate-700">
+                      <div className="px-4 py-3 border-b border-border bg-muted/50">
+                        <p className="text-sm font-medium text-foreground">
                           {searchSuggestions.length} product{searchSuggestions.length !== 1 ? 's' : ''} found
                         </p>
                       </div>
@@ -253,26 +253,26 @@ export function Header() {
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: index * 0.05 }}
                             onClick={() => handleSuggestionClick(product)}
-                            className="px-4 py-3 hover:bg-blue-50 cursor-pointer transition-colors duration-200 flex items-center space-x-3"
+                            className="px-4 py-3 hover:bg-accent cursor-pointer transition-colors duration-200 flex items-center space-x-3"
                           >
                             <img
                               src={product.imageUrl}
                               alt={product.name}
-                              className="w-12 h-12 object-cover rounded-md border border-slate-200"
+                              className="w-12 h-12 object-cover rounded-md border border-border"
                             />
                             <div className="flex-1 min-w-0">
-                              <h4 className="font-medium text-slate-800 truncate">
+                              <h4 className="font-medium text-foreground truncate">
                                 {product.name}
                               </h4>
-                              <p className="text-sm text-slate-500 truncate">
+                              <p className="text-sm text-muted-foreground truncate">
                                 {product.description}
                               </p>
                               <div className="flex items-center justify-between mt-1">
-                                <span className="text-sm font-semibold text-blue-600">
+                                <span className="text-sm font-semibold text-primary">
                                   ${product.price}
                                 </span>
                                 {product.category && (
-                                  <span className="text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded">
+                                  <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
                                     {product.category.name}
                                   </span>
                                 )}
@@ -284,10 +284,10 @@ export function Header() {
 
                       {/* View All Results Footer */}
                       {searchQuery.trim() && (
-                        <div className="px-4 py-3 border-t border-slate-100 bg-slate-50">
+                        <div className="px-4 py-3 border-t border-border bg-muted/50">
                           <button
                             onClick={handleViewAllResults}
-                            className="w-full text-center text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors duration-200"
+                            className="w-full text-center text-sm font-medium text-primary hover:text-primary/80 transition-colors duration-200"
                           >
                             View all results for "{searchQuery}"
                           </button>
@@ -428,7 +428,7 @@ export function Header() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsMobileMenuOpen(true)}
-                className="lg:hidden p-3 text-slate-600 hover:text-teal-600 bg-white hover:bg-teal-50 border border-slate-200 hover:border-teal-200 rounded-lg transition-all duration-300"
+                className="lg:hidden p-3 text-muted-foreground hover:text-primary bg-background dark:bg-slate-800 hover:bg-accent border border-border hover:border-primary/20 rounded-lg transition-all duration-300"
               >
                 <Menu className="w-6 h-6" />
               </Button>
