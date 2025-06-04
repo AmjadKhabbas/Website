@@ -26,8 +26,14 @@ export default function ProductsPage() {
   useEffect(() => {
     const urlParams = new URLSearchParams(location.split('?')[1] || '');
     const searchParam = urlParams.get('search');
+    const categoryParam = urlParams.get('category');
+    
     if (searchParam) {
       setSearchQuery(decodeURIComponent(searchParam));
+    }
+    
+    if (categoryParam) {
+      setSelectedCategory(categoryParam);
     }
   }, [location]);
 
