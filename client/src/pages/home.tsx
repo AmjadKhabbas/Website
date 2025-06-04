@@ -306,15 +306,12 @@ export default function HomePage() {
             ))}
           </div>
 
-          <div className="flex justify-center gap-4">
+          <div className="flex justify-center">
             <Link href="/products">
               <Button className="btn-medical">
                 ALL PRODUCTS
               </Button>
             </Link>
-            <Button className="btn-scrub">
-              FIND OUT MORE
-            </Button>
           </div>
         </div>
       </section>
