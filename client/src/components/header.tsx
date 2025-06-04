@@ -43,39 +43,43 @@ export function Header() {
       <motion.header
         initial={false}
         animate={{
-          backgroundColor: isScrolled ? 'rgba(255, 255, 255, 0.98)' : 'rgba(255, 255, 255, 0.95)',
+          backgroundColor: isScrolled ? 'rgba(15, 15, 35, 0.95)' : 'rgba(15, 15, 35, 0.90)',
         }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 backdrop-blur-md border-b border-slate-200 ${
-          isScrolled ? 'shadow-lg' : ''
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 backdrop-blur-xl border-b border-purple-500/30 glass-neon ${
+          isScrolled ? 'shadow-2xl shadow-purple-500/20' : ''
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-20">
             {/* Logo */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-6">
               <Link href="/">
                 <motion.h1
                   whileHover={{ scale: 1.05 }}
-                  className="text-2xl font-bold text-blue-600 cursor-pointer"
+                  className="text-3xl font-bold matrix-text cursor-pointer tracking-wider"
                 >
-                  MarketPlace
+                  NEXUS
                 </motion.h1>
               </Link>
               
               {/* Desktop Navigation */}
-              <nav className="hidden lg:flex space-x-8">
+              <nav className="hidden lg:flex space-x-1">
                 <Link href="/">
-                  <a className={`px-3 py-2 text-sm font-medium transition-colors duration-200 ${
-                    location === '/' ? 'text-blue-600' : 'text-slate-700 hover:text-blue-600'
+                  <a className={`px-4 py-2 text-sm font-bold uppercase tracking-wider transition-all duration-300 rounded-xl ${
+                    location === '/' 
+                      ? 'text-cyan-400 bg-purple-500/20 border border-cyan-400/50 glow-neon' 
+                      : 'text-purple-300 hover:text-cyan-400 hover:bg-purple-500/10 border border-transparent hover:border-purple-500/30'
                   }`}>
-                    Home
+                    HOME
                   </a>
                 </Link>
                 
-                {categories.slice(0, 5).map((category) => (
+                {categories.slice(0, 4).map((category) => (
                   <Link key={category.slug} href={`/category/${category.slug}`}>
-                    <a className={`px-3 py-2 text-sm font-medium transition-colors duration-200 ${
-                      location === `/category/${category.slug}` ? 'text-blue-600' : 'text-slate-700 hover:text-blue-600'
+                    <a className={`px-4 py-2 text-sm font-bold uppercase tracking-wider transition-all duration-300 rounded-xl ${
+                      location === `/category/${category.slug}` 
+                        ? 'text-cyan-400 bg-purple-500/20 border border-cyan-400/50 glow-neon' 
+                        : 'text-purple-300 hover:text-cyan-400 hover:bg-purple-500/10 border border-transparent hover:border-purple-500/30'
                     }`}>
                       {category.name}
                     </a>
@@ -89,30 +93,30 @@ export function Header() {
               <form onSubmit={handleSearch} className="relative w-full">
                 <Input
                   type="text"
-                  placeholder="Search products..."
+                  placeholder="SEARCH THE NEXUS..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                  className="w-full pl-12 pr-20 py-4 bg-slate-900/50 border-2 border-purple-500/30 rounded-2xl text-white placeholder-purple-300 focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition-all duration-300 font-mono uppercase tracking-wider"
                 />
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-cyan-400 w-5 h-5" />
                 <Button
                   type="submit"
                   size="sm"
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 hover:bg-blue-700"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-700 hover:to-cyan-600 text-white px-4 py-2 rounded-xl font-bold uppercase tracking-wider transition-all duration-300 transform hover:scale-105"
                 >
-                  Search
+                  SCAN
                 </Button>
               </form>
             </div>
 
             {/* Right Side Actions */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
               {/* Cart Button */}
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={openCart}
-                className="relative p-2 text-slate-700 hover:text-blue-600 transition-colors duration-200"
+                className="relative p-3 text-purple-300 hover:text-cyan-400 bg-slate-900/30 hover:bg-purple-500/20 border border-purple-500/30 hover:border-cyan-400/50 rounded-xl transition-all duration-300 transform hover:scale-105"
               >
                 <ShoppingCart className="w-6 h-6" />
                 <AnimatePresence>
@@ -123,7 +127,7 @@ export function Header() {
                       exit={{ scale: 0, opacity: 0 }}
                       className="absolute -top-1 -right-1"
                     >
-                      <Badge className="bg-blue-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                      <Badge className="bg-gradient-to-r from-cyan-500 to-purple-600 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold glow-neon">
                         {getTotalItems()}
                       </Badge>
                     </motion.div>
@@ -135,10 +139,10 @@ export function Header() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="hidden sm:flex items-center space-x-2 p-2 text-slate-700 hover:text-blue-600 transition-colors duration-200"
+                className="hidden sm:flex items-center space-x-2 p-3 text-purple-300 hover:text-cyan-400 bg-slate-900/30 hover:bg-purple-500/20 border border-purple-500/30 hover:border-cyan-400/50 rounded-xl transition-all duration-300 transform hover:scale-105"
               >
                 <User className="w-5 h-5" />
-                <span className="text-sm font-medium">Account</span>
+                <span className="text-sm font-bold uppercase tracking-wider">ACCESS</span>
                 <ChevronDown className="w-4 h-4" />
               </Button>
 
@@ -147,7 +151,7 @@ export function Header() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsMobileMenuOpen(true)}
-                className="lg:hidden p-2 text-slate-700 hover:text-blue-600 transition-colors duration-200"
+                className="lg:hidden p-3 text-purple-300 hover:text-cyan-400 bg-slate-900/30 hover:bg-purple-500/20 border border-purple-500/30 hover:border-cyan-400/50 rounded-xl transition-all duration-300 transform hover:scale-105"
               >
                 <Menu className="w-6 h-6" />
               </Button>

@@ -50,33 +50,49 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900">
       {/* Hero Section */}
-      <section className="relative pt-16 pb-12 bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
+      <section className="relative pt-20 pb-16 overflow-hidden circuit-bg">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 bg-grid-pattern opacity-20"></div>
         <motion.div
           animate={{
-            y: [0, -10, 0],
+            x: [0, 100, 0],
+            y: [0, -50, 0],
+            rotate: [0, 180, 360],
           }}
           transition={{
-            duration: 4,
+            duration: 20,
             repeat: Infinity,
-            ease: "easeInOut",
+            ease: "linear",
           }}
-          className="absolute top-20 left-20 w-32 h-32 bg-white/10 rounded-full blur-xl"
+          className="absolute top-20 left-20 w-32 h-32 bg-gradient-to-r from-purple-500/30 to-cyan-500/30 rounded-full blur-xl"
         />
         <motion.div
           animate={{
-            y: [0, 10, 0],
+            x: [0, -80, 0],
+            y: [0, 40, 0],
+            rotate: [360, 180, 0],
           }}
           transition={{
-            duration: 5,
+            duration: 15,
+            repeat: Infinity,
+            ease: "linear",
+            delay: 5,
+          }}
+          className="absolute bottom-20 right-20 w-24 h-24 bg-gradient-to-r from-cyan-500/30 to-pink-500/30 rounded-full blur-lg"
+        />
+        <motion.div
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.3, 0.6, 0.3],
+          }}
+          transition={{
+            duration: 8,
             repeat: Infinity,
             ease: "easeInOut",
-            delay: 1,
           }}
-          className="absolute bottom-20 right-20 w-24 h-24 bg-amber-400/20 rounded-full blur-lg"
+          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-purple-500/10 to-cyan-500/10 rounded-full blur-3xl"
         />
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-16">

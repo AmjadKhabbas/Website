@@ -3,26 +3,33 @@
 @tailwind utilities;
 
 :root {
-  --background: 210 11% 98%; /* #F5F7FA */
-  --foreground: 240 10% 3.9%; /* #0F172A */
-  --muted: 220 14% 96%; /* #F1F5F9 */
-  --muted-foreground: 220 8.9% 46.1%; /* #64748B */
-  --popover: 0 0% 100%; /* #FFFFFF */
-  --popover-foreground: 240 10% 3.9%; /* #0F172A */
-  --card: 0 0% 100%; /* #FFFFFF */
-  --card-foreground: 240 10% 3.9%; /* #0F172A */
-  --border: 220 13% 91%; /* #E2E8F0 */
-  --input: 220 13% 91%; /* #E2E8F0 */
-  --primary: 207 90% 54%; /* #2563EB */
-  --primary-foreground: 0 0% 98%; /* #FAFAFA */
-  --secondary: 220 14% 96%; /* #F1F5F9 */
-  --secondary-foreground: 240 5.9% 10%; /* #1E293B */
-  --accent: 220 14% 96%; /* #F1F5F9 */
-  --accent-foreground: 240 5.9% 10%; /* #1E293B */
-  --destructive: 0 84.2% 60.2%; /* #EF4444 */
-  --destructive-foreground: 0 0% 98%; /* #FAFAFA */
-  --ring: 207 90% 54%; /* #2563EB */
-  --radius: 0.75rem;
+  --background: 240 10% 3.9%; /* #0F0F23 - Deep space blue */
+  --foreground: 0 0% 98%; /* #FAFAFA - Pure white */
+  --muted: 240 3.7% 15.9%; /* #1A1A2E - Dark navy */
+  --muted-foreground: 240 5% 64.9%; /* #94A3B8 - Light grey */
+  --popover: 240 10% 3.9%; /* #0F0F23 - Deep space blue */
+  --popover-foreground: 0 0% 98%; /* #FAFAFA - Pure white */
+  --card: 240 8% 7%; /* #16213E - Dark card */
+  --card-foreground: 0 0% 98%; /* #FAFAFA - Pure white */
+  --border: 240 3.7% 15.9%; /* #1A1A2E - Dark borders */
+  --input: 240 8% 7%; /* #16213E - Dark inputs */
+  --primary: 271 91% 65%; /* #8B5CF6 - Electric purple */
+  --primary-foreground: 0 0% 98%; /* #FAFAFA - Pure white */
+  --secondary: 193 100% 50%; /* #00E5FF - Cyan glow */
+  --secondary-foreground: 240 10% 3.9%; /* #0F0F23 - Dark text */
+  --accent: 336 84% 57%; /* #F231A5 - Neon pink */
+  --accent-foreground: 0 0% 98%; /* #FAFAFA - Pure white */
+  --destructive: 0 84.2% 60.2%; /* #EF4444 - Red */
+  --destructive-foreground: 0 0% 98%; /* #FAFAFA - Pure white */
+  --ring: 271 91% 65%; /* #8B5CF6 - Electric purple */
+  --radius: 1rem;
+  
+  /* Custom techno colors */
+  --neon-cyan: 193 100% 50%; /* #00E5FF */
+  --neon-pink: 336 84% 57%; /* #F231A5 */
+  --neon-green: 120 100% 50%; /* #00FF00 */
+  --electric-blue: 230 100% 70%; /* #3366FF */
+  --deep-purple: 271 91% 65%; /* #8B5CF6 */
 }
 
 .dark {
@@ -53,8 +60,10 @@
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    @apply font-mono antialiased bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+    background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(240 8% 7%) 100%);
+    min-height: 100vh;
   }
 
   /* Custom scrollbar styles */
@@ -94,9 +103,37 @@
   /* Grid pattern for hero background */
   .bg-grid-pattern {
     background-image: 
-      linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px);
-    background-size: 20px 20px;
+      linear-gradient(rgba(139, 92, 246, 0.3) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(139, 92, 246, 0.3) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* Techno glow effects */
+  .glow-neon {
+    box-shadow: 0 0 10px hsl(var(--neon-cyan)), 0 0 20px hsl(var(--neon-cyan)), 0 0 30px hsl(var(--neon-cyan));
+  }
+
+  .glow-purple {
+    box-shadow: 0 0 10px hsl(var(--deep-purple)), 0 0 20px hsl(var(--deep-purple)), 0 0 30px hsl(var(--deep-purple));
+  }
+
+  .glow-pink {
+    box-shadow: 0 0 10px hsl(var(--neon-pink)), 0 0 20px hsl(var(--neon-pink)), 0 0 30px hsl(var(--neon-pink));
+  }
+
+  /* Matrix-style text animation */
+  .matrix-text {
+    background: linear-gradient(45deg, hsl(var(--neon-cyan)), hsl(var(--deep-purple)), hsl(var(--neon-pink)));
+    background-size: 200% 200%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    animation: matrix-flow 3s ease-in-out infinite;
+  }
+
+  @keyframes matrix-flow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
   }
 
   /* Animation utilities */
@@ -159,23 +196,37 @@
 }
 
 @layer components {
-  /* Custom button variants */
-  .btn-gradient {
-    @apply bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl;
+  /* Techno button variants */
+  .btn-neon {
+    @apply bg-gradient-to-r from-purple-600 via-blue-500 to-cyan-400 hover:from-purple-700 hover:via-blue-600 hover:to-cyan-500 text-white font-bold py-3 px-6 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:glow-neon;
   }
 
-  /* Card hover effects */
-  .card-hover {
-    @apply transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
+  .btn-outline-neon {
+    @apply bg-transparent border-2 border-purple-500 text-purple-300 hover:bg-purple-500 hover:text-white font-bold py-3 px-6 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:glow-purple;
   }
 
-  /* Glass morphism effect */
-  .glass {
-    @apply bg-white/80 backdrop-blur-md border border-white/20;
+  /* Futuristic card effects */
+  .card-techno {
+    @apply bg-gradient-to-br from-slate-900/80 via-slate-800/70 to-slate-900/90 backdrop-blur-lg border border-purple-500/30 rounded-3xl transition-all duration-500 hover:border-cyan-400/60 hover:shadow-2xl hover:shadow-purple-500/20 hover:-translate-y-2;
   }
 
-  .glass-dark {
-    @apply bg-slate-900/80 backdrop-blur-md border border-slate-700/20;
+  /* Glassmorphism with neon accents */
+  .glass-neon {
+    @apply bg-slate-900/40 backdrop-blur-xl border border-purple-500/20 shadow-lg shadow-purple-500/10;
+  }
+
+  .glass-cyan {
+    @apply bg-slate-900/40 backdrop-blur-xl border border-cyan-400/20 shadow-lg shadow-cyan-400/10;
+  }
+
+  /* Circuit board pattern */
+  .circuit-bg {
+    background-image: 
+      radial-gradient(circle at 25% 25%, rgba(139, 92, 246, 0.3) 2px, transparent 2px),
+      radial-gradient(circle at 75% 75%, rgba(0, 229, 255, 0.3) 2px, transparent 2px),
+      linear-gradient(90deg, rgba(139, 92, 246, 0.1) 1px, transparent 1px),
+      linear-gradient(rgba(0, 229, 255, 0.1) 1px, transparent 1px);
+    background-size: 60px 60px, 60px 60px, 20px 20px, 20px 20px;
   }
 }
 
