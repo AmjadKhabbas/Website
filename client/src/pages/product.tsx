@@ -89,12 +89,12 @@ export default function ProductPage() {
     : 0;
 
   return (
-    <div className="min-h-screen pt-16">
+    <div className="min-h-screen pt-16 bg-black">
       {/* Breadcrumb */}
-      <div className="bg-slate-50 py-4">
+      <div className="bg-gray-900 py-4 border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Link href="/">
-            <Button variant="ghost" size="sm" className="mb-4">
+            <Button variant="ghost" size="sm" className="mb-4 text-gray-300 hover:text-white hover:bg-gray-800">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Products
             </Button>
@@ -113,7 +113,7 @@ export default function ProductPage() {
               transition={{ duration: 0.6 }}
               className="relative"
             >
-              <div className="aspect-square bg-slate-100 rounded-2xl overflow-hidden">
+              <div className="aspect-square bg-gray-800 rounded-2xl overflow-hidden border border-gray-700">
                 <img
                   src={product.imageUrl}
                   alt={product.name}
@@ -137,7 +137,7 @@ export default function ProductPage() {
               className="space-y-6"
             >
               <div>
-                <h1 className="text-3xl font-bold text-slate-900 mb-4">{product.name}</h1>
+                <h1 className="text-3xl font-bold text-white mb-4">{product.name}</h1>
                 
                 {/* Rating */}
                 <div className="flex items-center space-x-2 mb-4">
@@ -148,33 +148,33 @@ export default function ProductPage() {
                         className={`w-5 h-5 ${
                           i < Math.floor(parseFloat(product.rating))
                             ? 'text-amber-400 fill-amber-400'
-                            : 'text-slate-300'
+                            : 'text-gray-600'
                         }`}
                       />
                     ))}
                   </div>
-                  <span className="text-lg font-semibold text-slate-900">{product.rating}</span>
-                  <span className="text-slate-600">({product.reviewCount} reviews)</span>
+                  <span className="text-lg font-semibold text-white">{product.rating}</span>
+                  <span className="text-gray-400">({product.reviewCount} reviews)</span>
                 </div>
 
                 {/* Price */}
                 <div className="flex items-center space-x-4 mb-6">
-                  <span className="text-4xl font-bold text-slate-900">
+                  <span className="text-4xl font-bold text-white">
                     {formatPrice(product.price)}
                   </span>
                   {hasDiscount && (
-                    <span className="text-xl text-slate-500 line-through">
+                    <span className="text-xl text-gray-500 line-through">
                       {formatPrice(product.originalPrice!)}
                     </span>
                   )}
                   {hasDiscount && (
-                    <Badge className="bg-red-100 text-red-800 text-sm">
+                    <Badge className="bg-red-900 text-red-400 text-sm">
                       Save {formatPrice((parseFloat(product.originalPrice!) - parseFloat(product.price)).toString())}
                     </Badge>
                   )}
                 </div>
 
-                <p className="text-lg text-slate-600 leading-relaxed mb-6">
+                <p className="text-lg text-gray-300 leading-relaxed mb-6">
                   {product.description}
                 </p>
 
@@ -182,7 +182,7 @@ export default function ProductPage() {
                 {product.tags && product.tags.length > 0 && (
                   <div className="flex flex-wrap gap-2 mb-6">
                     {product.tags.map((tag) => (
-                      <Badge key={tag} variant="outline" className="text-sm">
+                      <Badge key={tag} variant="outline" className="text-sm text-gray-300 border-gray-600">
                         {tag}
                       </Badge>
                     ))}
@@ -190,31 +190,31 @@ export default function ProductPage() {
                 )}
               </div>
 
-              <Separator />
+              <Separator className="bg-gray-700" />
 
               {/* Quantity and Actions */}
               <div className="space-y-6">
                 {/* Quantity Selector */}
                 <div className="flex items-center space-x-4">
-                  <span className="text-lg font-semibold text-slate-900">Quantity:</span>
-                  <div className="flex items-center border border-slate-300 rounded-lg">
+                  <span className="text-lg font-semibold text-white">Quantity:</span>
+                  <div className="flex items-center border border-gray-600 rounded-lg bg-gray-800">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => setQuantity(Math.max(1, quantity - 1))}
                       disabled={quantity <= 1}
-                      className="px-3 py-2"
+                      className="px-3 py-2 text-gray-300 hover:text-white hover:bg-gray-700"
                     >
                       <Minus className="w-4 h-4" />
                     </Button>
-                    <span className="px-4 py-2 text-lg font-semibold border-x border-slate-300">
+                    <span className="px-4 py-2 text-lg font-semibold border-x border-gray-600 text-white">
                       {quantity}
                     </span>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => setQuantity(quantity + 1)}
-                      className="px-3 py-2"
+                      className="px-3 py-2 text-gray-300 hover:text-white hover:bg-gray-700"
                     >
                       <Plus className="w-4 h-4" />
                     </Button>
