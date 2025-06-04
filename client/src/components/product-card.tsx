@@ -1,4 +1,4 @@
-import { Star, ShoppingCart } from 'lucide-react';
+import { ShoppingCart } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -83,12 +83,12 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
           </h3>
         </Link>
         
-        <p className="text-sm text-slate-600 mb-4 line-clamp-2 flex-grow">
+        <p className="text-sm text-slate-600 mb-6 line-clamp-2 flex-grow">
           {product.description}
         </p>
         
-        {/* Price and Rating */}
-        <div className="flex items-center justify-between mb-6">
+        {/* Price */}
+        <div className="mb-6">
           <div className="flex items-center space-x-3">
             <span className="text-2xl font-bold text-blue-600">
               {formatPrice(product.price)}
@@ -98,16 +98,6 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
                 {formatPrice(product.originalPrice!)}
               </span>
             )}
-          </div>
-          
-          <div className="flex items-center space-x-1 bg-slate-50 px-3 py-1 rounded-lg border border-slate-200">
-            <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-            <span className="text-sm text-slate-700 font-semibold">
-              {product.rating}
-            </span>
-            <span className="text-sm text-slate-500">
-              ({product.reviewCount})
-            </span>
           </div>
         </div>
         
