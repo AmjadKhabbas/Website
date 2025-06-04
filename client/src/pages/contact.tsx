@@ -74,19 +74,20 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen bg-slate-50 pt-20">
       {/* Header */}
-      <section className="relative bg-gradient-to-br from-blue-50 via-white to-slate-50 py-16 overflow-hidden">
-        <div className="absolute inset-0 flex items-center justify-end pr-8 opacity-30">
-          <img 
-            src={customerSupportBg}
-            alt="Customer Support"
-            className="w-96 h-64 object-contain rounded-2xl"
-          />
-        </div>
+      <section className="relative py-24 overflow-hidden">
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: `url(${customerSupportBg})`,
+            opacity: 0.15
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/80 via-white/90 to-slate-50/80" />
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-12">
+          <div className="flex items-center justify-between mb-16">
             <Link href="/">
-              <Button variant="ghost" className="flex items-center space-x-2">
+              <Button variant="ghost" className="flex items-center space-x-2 bg-white/80 hover:bg-white/90 backdrop-blur-sm">
                 <ArrowLeft className="w-4 h-4" />
                 <span>Back to Home</span>
               </Button>
@@ -97,7 +98,7 @@ export default function ContactPage() {
             <motion.h1 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-5xl font-bold text-slate-800 mb-6"
+              className="text-6xl font-bold text-slate-800 mb-8 drop-shadow-sm"
             >
               Contact Our Friendly Team
             </motion.h1>
@@ -105,7 +106,7 @@ export default function ContactPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-xl text-slate-600 leading-relaxed"
+              className="text-xl text-slate-700 leading-relaxed bg-white/60 backdrop-blur-sm rounded-2xl p-8 shadow-sm"
             >
               Contact us with any questions or concerns that you may have, our friendly customer service team is happy to help between the hours of 9am – 6pm EST from Monday – Friday.
             </motion.p>
