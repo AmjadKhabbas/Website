@@ -175,9 +175,13 @@ const HeroSlideshow = () => {
   );
 };
 
+
+
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [, navigate] = useLocation();
+  const [featuredIndex, setFeaturedIndex] = useState(0);
+  const [showAllFeatured, setShowAllFeatured] = useState(false);
 
   const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ['/api/categories'],
@@ -335,47 +339,104 @@ export default function HomePage() {
       </section>
 
       {/* Featured Products Section */}
-      <section className="py-20 bg-gradient-to-b from-slate-800 to-slate-900">
+      <section className="py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center mb-16">
             <div>
-              <h2 className="text-4xl font-bold text-white mb-6 matrix-text">PRIME SELECTIONS</h2>
-              <p className="text-xl text-purple-200 font-mono">NEURAL-CURATED PREMIUM UNITS</p>
+              <h2 className="text-4xl font-bold text-slate-800 mb-4">Featured Products</h2>
+              <p className="text-xl text-slate-600">Premium Medical Solutions</p>
             </div>
-            <Link href="/products">
-              <Button className="hidden sm:flex items-center space-x-2 bg-gradient-to-r from-purple-600 via-cyan-500 to-purple-600 hover:from-purple-700 hover:via-cyan-600 hover:to-purple-700 text-white px-8 py-4 rounded-2xl transition-all duration-300 transform hover:scale-105 font-bold uppercase tracking-wider glow-neon">
-                <span>ACCESS ALL</span>
-                <ArrowRight className="w-5 h-5" />
+            <div className="flex items-center gap-4">
+              {!showAllFeatured && (
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => setFeaturedIndex(Math.max(0, featuredIndex - 1))}
+                    disabled={featuredIndex === 0}
+                    className={`p-2 rounded-lg border transition-all duration-300 ${
+                      featuredIndex === 0 
+                        ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed'
+                        : 'bg-white border-slate-300 text-slate-600 hover:bg-teal-50 hover:border-teal-300 hover:text-teal-600'
+                    }`}
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  <button 
+                    onClick={() => setFeaturedIndex(Math.min(featuredProducts.length - 4, featuredIndex + 1))}
+                    disabled={featuredIndex >= featuredProducts.length - 4}
+                    className={`p-2 rounded-lg border transition-all duration-300 ${
+                      featuredIndex >= featuredProducts.length - 4
+                        ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed'
+                        : 'bg-white border-slate-300 text-slate-600 hover:bg-teal-50 hover:border-teal-300 hover:text-teal-600'
+                    }`}
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </div>
+              )}
+              <Button 
+                onClick={() => setShowAllFeatured(!showAllFeatured)}
+                className="btn-fox"
+              >
+                {showAllFeatured ? 'Show Less' : 'View All'}
+                <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
-            </Link>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {featuredProducts.map((product, index) => (
-              <ProductCard key={product.id} product={product} index={index} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {featuredProducts.slice(0, 4).map((product, index) => (
+              <motion.div
+                key={product.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.1 }}
+                className="card-fox p-6 group cursor-pointer"
+              >
+                <div className="aspect-square bg-gradient-to-br from-teal-100 to-cyan-100 rounded-lg mb-4 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                  <Heart className="w-12 h-12 text-teal-600" />
+                </div>
+                
+                <div className="space-y-3">
+                  <div>
+                    <h3 className="font-semibold text-slate-800 text-lg group-hover:text-teal-600 transition-colors duration-300">
+                      {product.name}
+                    </h3>
+                    <p className="text-slate-600 text-sm">{product.description}</p>
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl font-bold text-teal-600">${product.price}</span>
+                    <span className="text-lg text-slate-400 line-through">$299.99</span>
+                  </div>
+                  
+                  <Badge className="bg-teal-100 text-teal-700 hover:bg-teal-200">
+                    {product.category?.name || 'Medical'}
+                  </Badge>
+                </div>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
       {/* Newsletter Section */}
-      <section className="py-20 bg-gradient-to-r from-purple-900 via-slate-900 to-cyan-900 circuit-bg">
+      <section className="py-20 bg-white border-t border-slate-200">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-bold text-white mb-6 matrix-text">NEURAL LINK</h2>
-          <p className="text-xl text-purple-200 mb-10 font-mono">SYNCHRONIZE WITH THE NEXUS • RECEIVE PRIORITY ACCESS</p>
+          <h2 className="text-4xl font-bold text-slate-800 mb-6">Stay Updated</h2>
+          <p className="text-xl text-slate-600 mb-10">Get the latest medical product updates and exclusive offers</p>
           
           <div className="max-w-lg mx-auto">
             <div className="flex gap-3">
               <Input
                 type="email"
-                placeholder="ENTER NEURAL ID..."
-                className="flex-1 px-6 py-4 bg-slate-900/60 border-2 border-purple-500/40 rounded-2xl text-white placeholder-purple-300 focus:ring-4 focus:ring-cyan-400/50 focus:border-cyan-400 transition-all duration-300 font-mono uppercase tracking-wider backdrop-blur-xl"
+                placeholder="Enter your email..."
+                className="flex-1 px-6 py-4 bg-white border-2 border-slate-300 rounded-lg text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-300"
               />
-              <Button className="bg-gradient-to-r from-cyan-500 via-purple-600 to-pink-500 hover:from-cyan-600 hover:via-purple-700 hover:to-pink-600 text-white px-8 py-4 rounded-2xl font-bold uppercase tracking-wider transition-all duration-300 transform hover:scale-105 glow-neon">
-                CONNECT
+              <Button className="btn-fox px-8 py-4">
+                Subscribe
               </Button>
             </div>
-            <p className="text-sm text-cyan-400 mt-4 font-mono">SECURE PROTOCOL • NO DATA MINING • INSTANT DISCONNECT</p>
+            <p className="text-sm text-slate-500 mt-4">Secure • No spam • Unsubscribe anytime</p>
           </div>
         </div>
       </section>
