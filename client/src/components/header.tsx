@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useCartStore } from '@/lib/cart';
 import { MobileMenu } from '@/components/mobile-menu';
-import { ThemeToggle } from '@/components/theme-toggle';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import type { Category, ProductWithCategory } from '@shared/schema';
@@ -120,7 +119,10 @@ export function Header() {
     <>
       <motion.header
         initial={false}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 backdrop-blur-sm border-b border-border bg-background/95 dark:bg-background/90 ${
+        animate={{
+          backgroundColor: isScrolled ? 'rgba(15, 15, 35, 0.95)' : 'rgba(15, 15, 35, 0.90)',
+        }}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 backdrop-blur-sm border-b border-slate-200 bg-white/95 ${
           isScrolled ? 'shadow-lg' : ''
         }`}
       >
@@ -324,15 +326,12 @@ export function Header() {
 
             {/* Right Side Actions */}
             <div className="flex items-center space-x-3">
-              {/* Theme Toggle */}
-              <ThemeToggle />
-
               {/* Cart Button */}
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={openCart}
-                className="relative p-3 text-slate-600 hover:text-teal-600 bg-white dark:bg-slate-800 dark:text-slate-300 dark:hover:text-teal-400 hover:bg-teal-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-600 hover:border-teal-200 dark:hover:border-teal-500 rounded-lg transition-all duration-300"
+                className="relative p-3 text-slate-600 hover:text-teal-600 bg-white hover:bg-teal-50 border border-slate-200 hover:border-teal-200 rounded-lg transition-all duration-300"
               >
                 <ShoppingCart className="w-6 h-6" />
                 <AnimatePresence>

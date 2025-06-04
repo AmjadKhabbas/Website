@@ -3,7 +3,6 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { ThemeProvider } from "@/components/theme-provider";
 import { Header } from "@/components/header";
 import { CartSidebar } from "@/components/cart-sidebar";
 import { ToastContainer, useToast } from "@/components/toast";
@@ -38,19 +37,17 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="light">
-        <TooltipProvider>
-          <div className="min-h-screen bg-background text-foreground">
-            <Header />
-            <main>
-              <Router />
-            </main>
-            <CartSidebar />
-            <ToastContainer toasts={toasts} onDismiss={dismissToast} />
-            <Toaster />
-          </div>
-        </TooltipProvider>
-      </ThemeProvider>
+      <TooltipProvider>
+        <div className="min-h-screen bg-slate-50">
+          <Header />
+          <main>
+            <Router />
+          </main>
+          <CartSidebar />
+          <ToastContainer toasts={toasts} onDismiss={dismissToast} />
+          <Toaster />
+        </div>
+      </TooltipProvider>
     </QueryClientProvider>
   );
 }
