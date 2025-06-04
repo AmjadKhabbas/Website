@@ -71,12 +71,12 @@ export default function ProductPage() {
 
   if (!product) {
     return (
-      <div className="min-h-screen pt-16 flex items-center justify-center">
+      <div className="min-h-screen pt-16 bg-black flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-slate-900 mb-4">Product Not Found</h1>
-          <p className="text-slate-600 mb-6">The product you're looking for doesn't exist.</p>
+          <h1 className="text-2xl font-bold text-white mb-4">Product Not Found</h1>
+          <p className="text-gray-400 mb-6">The product you're looking for doesn't exist.</p>
           <Link href="/">
-            <Button>Go Back Home</Button>
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white">Go Back Home</Button>
           </Link>
         </div>
       </div>
@@ -247,16 +247,16 @@ export default function ProductPage() {
                     variant="outline"
                     size="lg"
                     onClick={() => setIsWishlisted(!isWishlisted)}
-                    className="px-6"
+                    className="px-6 border-gray-600 text-gray-300 hover:text-white hover:bg-gray-800"
                   >
                     <Heart
                       className={`w-5 h-5 ${
-                        isWishlisted ? 'text-red-500 fill-red-500' : 'text-slate-600'
+                        isWishlisted ? 'text-red-500 fill-red-500' : 'text-gray-300'
                       }`}
                     />
                   </Button>
 
-                  <Button variant="outline" size="lg" className="px-6">
+                  <Button variant="outline" size="lg" className="px-6 border-gray-600 text-gray-300 hover:text-white hover:bg-gray-800">
                     <Share2 className="w-5 h-5" />
                   </Button>
                 </div>
@@ -264,7 +264,7 @@ export default function ProductPage() {
                 {/* Stock Status */}
                 <div className="flex items-center space-x-2">
                   <div className={`w-3 h-3 rounded-full ${product.inStock ? 'bg-green-500' : 'bg-red-500'}`} />
-                  <span className={`font-medium ${product.inStock ? 'text-green-700' : 'text-red-700'}`}>
+                  <span className={`font-medium ${product.inStock ? 'text-green-400' : 'text-red-400'}`}>
                     {product.inStock ? 'In Stock' : 'Out of Stock'}
                   </span>
                 </div>
@@ -276,9 +276,9 @@ export default function ProductPage() {
 
       {/* Related Products */}
       {relatedProducts.length > 0 && (
-        <section className="py-16 bg-slate-50">
+        <section className="py-16 bg-gray-900 border-t border-gray-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold text-slate-900 mb-8">Related Products</h2>
+            <h2 className="text-3xl font-bold text-white mb-8">Related Products</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {relatedProducts.map((relatedProduct, index) => (
                 <ProductCard key={relatedProduct.id} product={relatedProduct} index={index} />
