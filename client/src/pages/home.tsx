@@ -282,49 +282,33 @@ export default function HomePage() {
             </form>
           </motion.div>
 
-          {/* Quick Categories */}
+          {/* Medical Category Pills */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.8 }}
             className="flex flex-wrap justify-center gap-4"
           >
-            {categories.slice(0, 4).map((category, index) => (
-              <Link key={category.slug} href={`/category/${category.slug}`}>
-                <Button
-                  variant="outline"
-                  className="bg-white border-2 border-teal-200 text-teal-600 hover:bg-teal-50 hover:border-teal-300 transition-all duration-300 font-medium px-6 py-3 rounded-lg shadow-md hover:shadow-lg"
-                >
-                  {category.name}
-                </Button>
-              </Link>
-            ))}
+            <button className="px-6 py-3 bg-white border-2 border-teal-200 text-teal-700 rounded-full hover:bg-teal-50 hover:border-teal-300 transition-all duration-300 font-medium shadow-md hover:shadow-lg">
+              Botulinum Toxins
+            </button>
+            <button className="px-6 py-3 bg-white border-2 border-teal-200 text-teal-700 rounded-full hover:bg-teal-50 hover:border-teal-300 transition-all duration-300 font-medium shadow-md hover:shadow-lg">
+              Dermal Fillers
+            </button>
+            <button className="px-6 py-3 bg-white border-2 border-teal-200 text-teal-700 rounded-full hover:bg-teal-50 hover:border-teal-300 transition-all duration-300 font-medium shadow-md hover:shadow-lg">
+              Orthopedic
+            </button>
+            <button className="px-6 py-3 bg-white border-2 border-teal-200 text-teal-700 rounded-full hover:bg-teal-50 hover:border-teal-300 transition-all duration-300 font-medium shadow-md hover:shadow-lg">
+              Rheumatology
+            </button>
+            <button className="px-6 py-3 bg-white border-2 border-teal-200 text-teal-700 rounded-full hover:bg-teal-50 hover:border-teal-300 transition-all duration-300 font-medium shadow-md hover:shadow-lg">
+              Weightloss & Gynecology
+            </button>
           </motion.div>
         </div>
       </section>
 
-      {/* Medical Category Pills Section */}
-      <section className="py-12 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-wrap justify-center gap-4">
-            <button className="px-6 py-3 bg-white border-2 border-teal-200 text-teal-700 rounded-full hover:bg-teal-50 hover:border-teal-300 transition-all duration-300 font-medium">
-              Botulinum Toxins
-            </button>
-            <button className="px-6 py-3 bg-white border-2 border-teal-200 text-teal-700 rounded-full hover:bg-teal-50 hover:border-teal-300 transition-all duration-300 font-medium">
-              Dermal Fillers
-            </button>
-            <button className="px-6 py-3 bg-white border-2 border-teal-200 text-teal-700 rounded-full hover:bg-teal-50 hover:border-teal-300 transition-all duration-300 font-medium">
-              Orthopedic
-            </button>
-            <button className="px-6 py-3 bg-white border-2 border-teal-200 text-teal-700 rounded-full hover:bg-teal-50 hover:border-teal-300 transition-all duration-300 font-medium">
-              Rheumatology
-            </button>
-            <button className="px-6 py-3 bg-white border-2 border-teal-200 text-teal-700 rounded-full hover:bg-teal-50 hover:border-teal-300 transition-all duration-300 font-medium">
-              Weightloss & Gynecology
-            </button>
-          </div>
-        </div>
-      </section>
+
 
       {/* Main Content with Sidebar */}
       <section className="py-20 bg-slate-50">
