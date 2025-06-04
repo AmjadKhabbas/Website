@@ -9,7 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import customerSupportBg from '@assets/customer-support-illustration-concept_23152-154.avif';
 
 const contactFormSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -74,31 +73,22 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen bg-slate-50 pt-20">
       {/* Header */}
-      <section className="relative py-24 overflow-hidden">
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: `url(${customerSupportBg})`,
-            opacity: 0.15
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/80 via-white/90 to-slate-50/80" />
-        
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-16">
+      <section className="bg-gradient-to-br from-blue-50 via-white to-slate-50 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between mb-8">
             <Link href="/">
-              <Button variant="ghost" className="flex items-center space-x-2 bg-white/80 hover:bg-white/90 backdrop-blur-sm">
+              <Button variant="ghost" className="flex items-center space-x-2">
                 <ArrowLeft className="w-4 h-4" />
                 <span>Back to Home</span>
               </Button>
             </Link>
           </div>
           
-          <div className="text-center max-w-4xl mx-auto">
+          <div className="text-center">
             <motion.h1 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-6xl font-bold text-slate-800 mb-8 drop-shadow-sm"
+              className="text-4xl font-bold text-slate-800 mb-4"
             >
               Contact Our Friendly Team
             </motion.h1>
@@ -106,7 +96,7 @@ export default function ContactPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-xl text-slate-700 leading-relaxed bg-white/60 backdrop-blur-sm rounded-2xl p-8 shadow-sm"
+              className="text-lg text-slate-600 max-w-3xl mx-auto"
             >
               Contact us with any questions or concerns that you may have, our friendly customer service team is happy to help between the hours of 9am – 6pm EST from Monday – Friday.
             </motion.p>
