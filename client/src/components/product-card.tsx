@@ -83,12 +83,12 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
           </h3>
         </Link>
         
-        <p className="text-sm text-slate-600 mb-6 line-clamp-2 flex-grow">
+        <p className="text-sm text-slate-600 mb-3 line-clamp-2 flex-grow">
           {product.description}
         </p>
         
         {/* Price */}
-        <div className="mb-6">
+        <div className="mb-4">
           <div className="flex items-center space-x-3">
             <span className="text-2xl font-bold text-blue-600">
               {formatPrice(product.price)}
