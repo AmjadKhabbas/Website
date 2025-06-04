@@ -67,24 +67,52 @@ export function Header() {
                 <Link href="/">
                   <span className={`px-4 py-2 text-sm font-medium transition-all duration-300 rounded-lg cursor-pointer ${
                     location === '/' 
-                      ? 'text-teal-600 bg-teal-50 border border-teal-200' 
-                      : 'text-slate-600 hover:text-teal-600 hover:bg-teal-50 border border-transparent hover:border-teal-200'
+                      ? 'text-blue-600 bg-blue-50 border border-blue-200' 
+                      : 'text-slate-600 hover:text-blue-600 hover:bg-blue-50 border border-transparent hover:border-blue-200'
                   }`}>
-                    HOME
+                    Home
                   </span>
                 </Link>
                 
-                {categories.slice(0, 4).map((category) => (
-                  <Link key={category.slug} href={`/category/${category.slug}`}>
-                    <span className={`px-4 py-2 text-sm font-medium transition-all duration-300 rounded-lg cursor-pointer ${
-                      location === `/category/${category.slug}` 
-                        ? 'text-teal-600 bg-teal-50 border border-teal-200' 
-                        : 'text-slate-600 hover:text-teal-600 hover:bg-teal-50 border border-transparent hover:border-teal-200'
-                    }`}>
-                      {category.name}
-                    </span>
-                  </Link>
-                ))}
+                <Link href="/products">
+                  <span className={`px-4 py-2 text-sm font-medium transition-all duration-300 rounded-lg cursor-pointer ${
+                    location === '/products' 
+                      ? 'text-blue-600 bg-blue-50 border border-blue-200' 
+                      : 'text-slate-600 hover:text-blue-600 hover:bg-blue-50 border border-transparent hover:border-blue-200'
+                  }`}>
+                    Products
+                  </span>
+                </Link>
+
+                <Link href="/referrals">
+                  <span className={`px-4 py-2 text-sm font-medium transition-all duration-300 rounded-lg cursor-pointer ${
+                    location === '/referrals' 
+                      ? 'text-blue-600 bg-blue-50 border border-blue-200' 
+                      : 'text-slate-600 hover:text-blue-600 hover:bg-blue-50 border border-transparent hover:border-blue-200'
+                  }`}>
+                    Referrals
+                  </span>
+                </Link>
+
+                <Link href="/faqs">
+                  <span className={`px-4 py-2 text-sm font-medium transition-all duration-300 rounded-lg cursor-pointer ${
+                    location === '/faqs' 
+                      ? 'text-blue-600 bg-blue-50 border border-blue-200' 
+                      : 'text-slate-600 hover:text-blue-600 hover:bg-blue-50 border border-transparent hover:border-blue-200'
+                  }`}>
+                    FAQS
+                  </span>
+                </Link>
+
+                <Link href="/contact">
+                  <span className={`px-4 py-2 text-sm font-medium transition-all duration-300 rounded-lg cursor-pointer ${
+                    location === '/contact' 
+                      ? 'text-blue-600 bg-blue-50 border border-blue-200' 
+                      : 'text-slate-600 hover:text-blue-600 hover:bg-blue-50 border border-transparent hover:border-blue-200'
+                  }`}>
+                    Contact
+                  </span>
+                </Link>
               </nav>
             </div>
 
@@ -102,7 +130,7 @@ export function Header() {
                 <Button
                   type="submit"
                   size="sm"
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 btn-medical-secondary"
                 >
                   Search
                 </Button>
