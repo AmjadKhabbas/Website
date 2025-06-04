@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, ShoppingCart, User, Menu, ChevronDown, LogIn, LogOut, Package } from 'lucide-react';
+import { Search, ShoppingCart, User, Menu, ChevronDown, LogIn, LogOut, Package, UserPlus } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -179,6 +179,18 @@ export function Header() {
                         >
                           <Package className="w-4 h-4" />
                           <span className="text-sm font-medium">Orders</span>
+                        </Button>
+                      </Link>
+                      
+                      {/* Referrals Link */}
+                      <Link href="/referrals">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="flex items-center space-x-2 p-3 text-slate-600 hover:text-green-600 bg-white hover:bg-green-50 border border-slate-200 hover:border-green-200 rounded-lg transition-all duration-300"
+                        >
+                          <UserPlus className="w-4 h-4" />
+                          <span className="text-sm font-medium">Referrals</span>
                         </Button>
                       </Link>
                       

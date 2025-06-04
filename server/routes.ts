@@ -21,6 +21,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Referrals route
+  app.post('/api/referrals', async (req, res) => {
+    try {
+      const referralData = req.body;
+      const referral = await storage.createReferral(referralData);
+      res.status(201).json({ message: 'Referral submitted successfully', referral });
+    } catch (error) {
+      console.error('Error creating referral:', error);
+      res.status(500).json({ message: 'Failed to submit referral' });
+    }
+  });
+
   // Categories
   app.get("/api/categories", async (req, res) => {
     try {

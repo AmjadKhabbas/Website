@@ -1,7 +1,7 @@
 import { 
-  categories, products, cartItems, users, orders, orderItems,
-  type Category, type Product, type CartItem, type User, type Order, type OrderItem,
-  type InsertCategory, type InsertProduct, type InsertCartItem, type UpsertUser, type InsertOrder, type InsertOrderItem,
+  categories, products, cartItems, users, orders, orderItems, referrals,
+  type Category, type Product, type CartItem, type User, type Order, type OrderItem, type Referral,
+  type InsertCategory, type InsertProduct, type InsertCartItem, type UpsertUser, type InsertOrder, type InsertOrderItem, type InsertReferral,
   type ProductWithCategory, type CartItemWithProduct, type OrderWithItems
 } from "@shared/schema";
 import { db } from "./db";
@@ -43,6 +43,9 @@ export interface IStorage {
   getUserOrders(userId: string): Promise<OrderWithItems[]>;
   getOrderById(orderId: number, userId?: string): Promise<OrderWithItems | undefined>;
   updateOrderStatus(orderId: number, status: string): Promise<Order | undefined>;
+  
+  // Referrals
+  createReferral(referral: InsertReferral): Promise<Referral>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -385,6 +388,15 @@ export class DatabaseStorage implements IStorage {
       .where(eq(orders.id, orderId))
       .returning();
     return updatedOrder;
+  }
+
+  // Referrals
+  async createReferral(referralData: InsertReferral): Promise<Referral> {
+    const [referral] = await db
+      .insert(referrals)
+      .values(referralData)
+      .returning();
+    return referral;
   }
 
   private async initializeData() {
