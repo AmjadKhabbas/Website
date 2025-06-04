@@ -1,6 +1,17 @@
-import { categories, products, cartItems, type Category, type Product, type CartItem, type InsertCategory, type InsertProduct, type InsertCartItem, type ProductWithCategory, type CartItemWithProduct } from "@shared/schema";
+import { 
+  categories, products, cartItems, users, orders, orderItems,
+  type Category, type Product, type CartItem, type User, type Order, type OrderItem,
+  type InsertCategory, type InsertProduct, type InsertCartItem, type UpsertUser, type InsertOrder, type InsertOrderItem,
+  type ProductWithCategory, type CartItemWithProduct, type OrderWithItems
+} from "@shared/schema";
+import { db } from "./db";
+import { eq, and, desc, ilike, or } from "drizzle-orm";
 
 export interface IStorage {
+  // User operations (required for authentication)
+  getUser(id: string): Promise<User | undefined>;
+  upsertUser(user: UpsertUser): Promise<User>;
+  
   // Categories
   getCategories(): Promise<Category[]>;
   getCategoryBySlug(slug: string): Promise<Category | undefined>;
@@ -26,173 +37,90 @@ export interface IStorage {
   updateCartItem(id: number, quantity: number): Promise<CartItem | undefined>;
   removeFromCart(id: number): Promise<boolean>;
   clearCart(sessionId: string): Promise<void>;
+  
+  // Orders and Purchase History
+  createOrder(order: InsertOrder, items: InsertOrderItem[]): Promise<Order>;
+  getUserOrders(userId: string): Promise<OrderWithItems[]>;
+  getOrderById(orderId: number, userId?: string): Promise<OrderWithItems | undefined>;
+  updateOrderStatus(orderId: number, status: string): Promise<Order | undefined>;
 }
 
-export class MemStorage implements IStorage {
-  private categories: Map<number, Category>;
-  private products: Map<number, Product>;
-  private cartItems: Map<number, CartItem>;
-  private currentCategoryId: number;
-  private currentProductId: number;
-  private currentCartItemId: number;
-
-  constructor() {
-    this.categories = new Map();
-    this.products = new Map();
-    this.cartItems = new Map();
-    this.currentCategoryId = 1;
-    this.currentProductId = 1;
-    this.currentCartItemId = 1;
-    
-    this.initializeData();
+export class DatabaseStorage implements IStorage {
+  // User operations (required for authentication)
+  async getUser(id: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
   }
 
-  private initializeData() {
-    // Initialize categories
-    const categoryData: Omit<Category, 'id'>[] = [
-      { name: "Electronics", slug: "electronics", description: "Latest gadgets and technology", icon: "fas fa-laptop", color: "blue", itemCount: 2450 },
-      { name: "Fashion", slug: "fashion", description: "Trendy clothing and accessories", icon: "fas fa-tshirt", color: "pink", itemCount: 3120 },
-      { name: "Home", slug: "home", description: "Home decor and furniture", icon: "fas fa-home", color: "green", itemCount: 1890 },
-      { name: "Sports", slug: "sports", description: "Sports equipment and gear", icon: "fas fa-basketball-ball", color: "orange", itemCount: 1250 },
-      { name: "Books", slug: "books", description: "Books and educational materials", icon: "fas fa-book", color: "purple", itemCount: 5670 },
-      { name: "Health", slug: "health", description: "Health and wellness products", icon: "fas fa-heartbeat", color: "teal", itemCount: 980 },
-    ];
-
-    categoryData.forEach((category) => {
-      const id = this.currentCategoryId++;
-      this.categories.set(id, { ...category, id });
-    });
-
-    // Initialize products
-    const productData: Omit<Product, 'id'>[] = [
-      {
-        name: "iPhone 15 Pro",
-        description: "Latest smartphone with advanced features and premium design",
-        price: "999.00",
-        originalPrice: "1249.00",
-        imageUrl: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400",
-        categoryId: 1,
-        rating: "4.8",
-        reviewCount: 1250,
-        inStock: true,
-        featured: true,
-        tags: ["smartphone", "apple", "premium"],
-      },
-      {
-        name: "Premium Headphones",
-        description: "Noise-canceling wireless headphones with superior sound quality",
-        price: "299.00",
-        originalPrice: "399.00",
-        imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400",
-        categoryId: 1,
-        rating: "4.6",
-        reviewCount: 890,
-        inStock: true,
-        featured: true,
-        tags: ["headphones", "wireless", "audio"],
-      },
-      {
-        name: "Luxury Watch",
-        description: "Elegant timepiece with premium materials and craftsmanship",
-        price: "1299.00",
-        originalPrice: null,
-        imageUrl: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400",
-        categoryId: 2,
-        rating: "4.9",
-        reviewCount: 456,
-        inStock: true,
-        featured: true,
-        tags: ["watch", "luxury", "accessories"],
-      },
-      {
-        name: "Sport Sneakers",
-        description: "Comfortable athletic shoes perfect for daily wear and exercise",
-        price: "129.00",
-        originalPrice: "179.00",
-        imageUrl: "https://images.unsplash.com/photo-1549298916-b41d501d3772?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400",
-        categoryId: 4,
-        rating: "4.7",
-        reviewCount: 2100,
-        inStock: true,
-        featured: true,
-        tags: ["sneakers", "sports", "comfortable"],
-      },
-      {
-        name: "Gaming Laptop",
-        description: "High-performance laptop for gaming and professional work",
-        price: "1599.00",
-        originalPrice: null,
-        imageUrl: "https://images.unsplash.com/photo-1603302576837-37561b2e2302?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400",
-        categoryId: 1,
-        rating: "4.5",
-        reviewCount: 678,
-        inStock: true,
-        featured: false,
-        tags: ["laptop", "gaming", "performance"],
-      },
-      {
-        name: "Wireless Mouse",
-        description: "Ergonomic wireless mouse with precision tracking",
-        price: "49.99",
-        originalPrice: null,
-        imageUrl: "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400",
-        categoryId: 1,
-        rating: "4.3",
-        reviewCount: 324,
-        inStock: true,
-        featured: false,
-        tags: ["mouse", "wireless", "ergonomic"],
-      },
-    ];
-
-    productData.forEach((product) => {
-      const id = this.currentProductId++;
-      this.products.set(id, { ...product, id });
-    });
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(userData)
+      .onConflictDoUpdate({
+        target: users.id,
+        set: {
+          ...userData,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return user;
   }
 
+  // Categories
   async getCategories(): Promise<Category[]> {
-    return Array.from(this.categories.values());
+    // Initialize sample medical categories if database is empty
+    const existingCategories = await db.select().from(categories);
+    if (existingCategories.length === 0) {
+      await this.initializeData();
+    }
+    return await db.select().from(categories);
   }
 
   async getCategoryBySlug(slug: string): Promise<Category | undefined> {
-    return Array.from(this.categories.values()).find(cat => cat.slug === slug);
+    const [category] = await db.select().from(categories).where(eq(categories.slug, slug));
+    return category;
   }
 
+  // Products
   async getProducts(options: {
     categoryId?: number;
     featured?: boolean;
     limit?: number;
     search?: string;
   } = {}): Promise<Product[]> {
-    let products = Array.from(this.products.values());
-
+    let query = db.select().from(products);
+    
+    const conditions = [];
     if (options.categoryId) {
-      products = products.filter(p => p.categoryId === options.categoryId);
+      conditions.push(eq(products.categoryId, options.categoryId));
     }
-
     if (options.featured !== undefined) {
-      products = products.filter(p => p.featured === options.featured);
+      conditions.push(eq(products.featured, options.featured));
     }
-
     if (options.search) {
-      const searchLower = options.search.toLowerCase();
-      products = products.filter(p => 
-        p.name.toLowerCase().includes(searchLower) ||
-        p.description.toLowerCase().includes(searchLower) ||
-        p.tags?.some(tag => tag.toLowerCase().includes(searchLower))
+      conditions.push(
+        or(
+          ilike(products.name, `%${options.search}%`),
+          ilike(products.description, `%${options.search}%`)
+        )
       );
     }
-
-    if (options.limit) {
-      products = products.slice(0, options.limit);
+    
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
     }
-
-    return products;
+    
+    if (options.limit) {
+      query = query.limit(options.limit);
+    }
+    
+    return await query;
   }
 
   async getProduct(id: number): Promise<Product | undefined> {
-    return this.products.get(id);
+    const [product] = await db.select().from(products).where(eq(products.id, id));
+    return product;
   }
 
   async getProductsWithCategory(options: {
@@ -201,61 +129,367 @@ export class MemStorage implements IStorage {
     limit?: number;
     search?: string;
   } = {}): Promise<ProductWithCategory[]> {
-    const products = await this.getProducts(options);
-    return products.map(product => {
-      const category = this.categories.get(product.categoryId)!;
-      return { ...product, category };
-    });
+    let query = db
+      .select({
+        id: products.id,
+        name: products.name,
+        description: products.description,
+        price: products.price,
+        originalPrice: products.originalPrice,
+        imageUrl: products.imageUrl,
+        categoryId: products.categoryId,
+        rating: products.rating,
+        reviewCount: products.reviewCount,
+        inStock: products.inStock,
+        featured: products.featured,
+        tags: products.tags,
+        category: {
+          id: categories.id,
+          name: categories.name,
+          slug: categories.slug,
+          description: categories.description,
+          icon: categories.icon,
+          color: categories.color,
+          itemCount: categories.itemCount,
+        }
+      })
+      .from(products)
+      .leftJoin(categories, eq(products.categoryId, categories.id));
+
+    const conditions = [];
+    if (options.categoryId) {
+      conditions.push(eq(products.categoryId, options.categoryId));
+    }
+    if (options.featured !== undefined) {
+      conditions.push(eq(products.featured, options.featured));
+    }
+    if (options.search) {
+      conditions.push(
+        or(
+          ilike(products.name, `%${options.search}%`),
+          ilike(products.description, `%${options.search}%`)
+        )
+      );
+    }
+    
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+    
+    if (options.limit) {
+      query = query.limit(options.limit);
+    }
+    
+    return await query;
   }
 
+  // Cart operations
   async getCartItems(sessionId: string): Promise<CartItemWithProduct[]> {
-    const items = Array.from(this.cartItems.values()).filter(item => item.sessionId === sessionId);
-    return items.map(item => {
-      const product = this.products.get(item.productId)!;
-      return { ...item, product };
-    });
+    return await db
+      .select({
+        id: cartItems.id,
+        sessionId: cartItems.sessionId,
+        productId: cartItems.productId,
+        quantity: cartItems.quantity,
+        product: {
+          id: products.id,
+          name: products.name,
+          description: products.description,
+          price: products.price,
+          originalPrice: products.originalPrice,
+          imageUrl: products.imageUrl,
+          categoryId: products.categoryId,
+          rating: products.rating,
+          reviewCount: products.reviewCount,
+          inStock: products.inStock,
+          featured: products.featured,
+          tags: products.tags,
+        }
+      })
+      .from(cartItems)
+      .leftJoin(products, eq(cartItems.productId, products.id))
+      .where(eq(cartItems.sessionId, sessionId));
   }
 
-  async addToCart(insertItem: InsertCartItem): Promise<CartItem> {
-    // Check if item already exists
-    const existingItem = Array.from(this.cartItems.values()).find(
-      item => item.sessionId === insertItem.sessionId && item.productId === insertItem.productId
-    );
+  async addToCart(item: InsertCartItem): Promise<CartItem> {
+    // Check if item already exists in cart
+    const [existingItem] = await db
+      .select()
+      .from(cartItems)
+      .where(and(
+        eq(cartItems.sessionId, item.sessionId),
+        eq(cartItems.productId, item.productId)
+      ));
 
     if (existingItem) {
-      // Update quantity
-      const updatedItem = { ...existingItem, quantity: existingItem.quantity + (insertItem.quantity || 1) };
-      this.cartItems.set(existingItem.id, updatedItem);
+      // Update quantity if item exists
+      const [updatedItem] = await db
+        .update(cartItems)
+        .set({ quantity: existingItem.quantity + (item.quantity || 1) })
+        .where(eq(cartItems.id, existingItem.id))
+        .returning();
       return updatedItem;
+    } else {
+      // Insert new item
+      const [newItem] = await db
+        .insert(cartItems)
+        .values(item)
+        .returning();
+      return newItem;
     }
-
-    // Create new item
-    const id = this.currentCartItemId++;
-    const cartItem: CartItem = { ...insertItem, quantity: insertItem.quantity || 1, id };
-    this.cartItems.set(id, cartItem);
-    return cartItem;
   }
 
   async updateCartItem(id: number, quantity: number): Promise<CartItem | undefined> {
-    const item = this.cartItems.get(id);
-    if (!item) return undefined;
-
-    const updatedItem = { ...item, quantity };
-    this.cartItems.set(id, updatedItem);
+    const [updatedItem] = await db
+      .update(cartItems)
+      .set({ quantity })
+      .where(eq(cartItems.id, id))
+      .returning();
     return updatedItem;
   }
 
   async removeFromCart(id: number): Promise<boolean> {
-    return this.cartItems.delete(id);
+    const result = await db.delete(cartItems).where(eq(cartItems.id, id));
+    return result.rowCount > 0;
   }
 
   async clearCart(sessionId: string): Promise<void> {
-    const itemsToRemove = Array.from(this.cartItems.entries())
-      .filter(([_, item]) => item.sessionId === sessionId)
-      .map(([id, _]) => id);
-    
-    itemsToRemove.forEach(id => this.cartItems.delete(id));
+    await db.delete(cartItems).where(eq(cartItems.sessionId, sessionId));
+  }
+
+  // Orders and Purchase History
+  async createOrder(orderData: InsertOrder, orderItemsData: InsertOrderItem[]): Promise<Order> {
+    return await db.transaction(async (tx) => {
+      // Create the order
+      const [order] = await tx.insert(orders).values(orderData).returning();
+      
+      // Create order items
+      const orderItemsWithOrderId = orderItemsData.map(item => ({
+        ...item,
+        orderId: order.id
+      }));
+      
+      await tx.insert(orderItems).values(orderItemsWithOrderId);
+      
+      return order;
+    });
+  }
+
+  async getUserOrders(userId: string): Promise<OrderWithItems[]> {
+    const userOrders = await db
+      .select({
+        id: orders.id,
+        userId: orders.userId,
+        orderNumber: orders.orderNumber,
+        status: orders.status,
+        totalAmount: orders.totalAmount,
+        shippingAddress: orders.shippingAddress,
+        billingAddress: orders.billingAddress,
+        paymentMethod: orders.paymentMethod,
+        paymentStatus: orders.paymentStatus,
+        notes: orders.notes,
+        createdAt: orders.createdAt,
+        updatedAt: orders.updatedAt,
+      })
+      .from(orders)
+      .where(eq(orders.userId, userId))
+      .orderBy(desc(orders.createdAt));
+
+    // Get items for each order
+    const ordersWithItems = [];
+    for (const order of userOrders) {
+      const items = await db
+        .select({
+          id: orderItems.id,
+          orderId: orderItems.orderId,
+          productId: orderItems.productId,
+          quantity: orderItems.quantity,
+          unitPrice: orderItems.unitPrice,
+          totalPrice: orderItems.totalPrice,
+          productName: orderItems.productName,
+          productImageUrl: orderItems.productImageUrl,
+          product: {
+            id: products.id,
+            name: products.name,
+            description: products.description,
+            price: products.price,
+            originalPrice: products.originalPrice,
+            imageUrl: products.imageUrl,
+            categoryId: products.categoryId,
+            rating: products.rating,
+            reviewCount: products.reviewCount,
+            inStock: products.inStock,
+            featured: products.featured,
+            tags: products.tags,
+          }
+        })
+        .from(orderItems)
+        .leftJoin(products, eq(orderItems.productId, products.id))
+        .where(eq(orderItems.orderId, order.id));
+
+      ordersWithItems.push({ ...order, items });
+    }
+
+    return ordersWithItems;
+  }
+
+  async getOrderById(orderId: number, userId?: string): Promise<OrderWithItems | undefined> {
+    const conditions = [eq(orders.id, orderId)];
+    if (userId) {
+      conditions.push(eq(orders.userId, userId));
+    }
+
+    const [order] = await db
+      .select()
+      .from(orders)
+      .where(and(...conditions));
+
+    if (!order) return undefined;
+
+    const items = await db
+      .select({
+        id: orderItems.id,
+        orderId: orderItems.orderId,
+        productId: orderItems.productId,
+        quantity: orderItems.quantity,
+        unitPrice: orderItems.unitPrice,
+        totalPrice: orderItems.totalPrice,
+        productName: orderItems.productName,
+        productImageUrl: orderItems.productImageUrl,
+        product: {
+          id: products.id,
+          name: products.name,
+          description: products.description,
+          price: products.price,
+          originalPrice: products.originalPrice,
+          imageUrl: products.imageUrl,
+          categoryId: products.categoryId,
+          rating: products.rating,
+          reviewCount: products.reviewCount,
+          inStock: products.inStock,
+          featured: products.featured,
+          tags: products.tags,
+        }
+      })
+      .from(orderItems)
+      .leftJoin(products, eq(orderItems.productId, products.id))
+      .where(eq(orderItems.orderId, orderId));
+
+    return { ...order, items };
+  }
+
+  async updateOrderStatus(orderId: number, status: string): Promise<Order | undefined> {
+    const [updatedOrder] = await db
+      .update(orders)
+      .set({ status, updatedAt: new Date() })
+      .where(eq(orders.id, orderId))
+      .returning();
+    return updatedOrder;
+  }
+
+  private async initializeData() {
+    // Initialize medical categories
+    const categoriesData = [
+      { name: "Botulinum Toxins", slug: "botulinum-toxins", description: "Professional botulinum toxin products", icon: "Syringe", color: "blue", itemCount: 24 },
+      { name: "Dermal Fillers", slug: "dermal-fillers", description: "High-quality dermal filler products", icon: "Droplet", color: "teal", itemCount: 18 },
+      { name: "Orthopedic", slug: "orthopedic", description: "Orthopedic medical supplies", icon: "Bone", color: "green", itemCount: 32 },
+      { name: "Rheumatology", slug: "rheumatology", description: "Rheumatology treatment products", icon: "Heart", color: "red", itemCount: 15 },
+      { name: "Weightloss & Gynecology", slug: "weightloss-gynecology", description: "Specialized medical products", icon: "Scale", color: "purple", itemCount: 21 }
+    ];
+
+    for (const categoryData of categoriesData) {
+      await db.insert(categories).values(categoryData).onConflictDoNothing();
+    }
+
+    // Initialize sample medical products
+    const medicalCategories = await db.select().from(categories);
+    const botoxCategory = medicalCategories.find(c => c.slug === "botulinum-toxins");
+    const fillersCategory = medicalCategories.find(c => c.slug === "dermal-fillers");
+    const orthoCategory = medicalCategories.find(c => c.slug === "orthopedic");
+
+    if (botoxCategory && fillersCategory && orthoCategory) {
+      const productsData = [
+        {
+          name: "Botox 100 Units",
+          description: "Professional grade botulinum toxin for medical use",
+          price: "450.00",
+          originalPrice: "500.00",
+          imageUrl: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=400&fit=crop",
+          categoryId: botoxCategory.id,
+          rating: "4.9",
+          reviewCount: 156,
+          inStock: true,
+          featured: true,
+          tags: ["professional", "botox"]
+        },
+        {
+          name: "Juvederm Ultra XC",
+          description: "Hyaluronic acid dermal filler with lidocaine",
+          price: "320.00",
+          imageUrl: "https://images.unsplash.com/photo-1576671081837-49000212a370?w=400&h=400&fit=crop",
+          categoryId: fillersCategory.id,
+          rating: "4.8",
+          reviewCount: 243,
+          inStock: true,
+          featured: true,
+          tags: ["dermal", "filler"]
+        },
+        {
+          name: "Restylane Silk",
+          description: "Premium dermal filler for subtle lip enhancement",
+          price: "380.00",
+          originalPrice: "420.00",
+          imageUrl: "https://images.unsplash.com/photo-1583947215259-38e31be8751f?w=400&h=400&fit=crop",
+          categoryId: fillersCategory.id,
+          rating: "4.7",
+          reviewCount: 189,
+          inStock: true,
+          featured: false,
+          tags: ["lip", "enhancement"]
+        },
+        {
+          name: "Dysport 300 Units",
+          description: "Fast-acting botulinum toxin for wrinkle treatment",
+          price: "425.00",
+          imageUrl: "https://images.unsplash.com/photo-1559757175-0eb30cd8c063?w=400&h=400&fit=crop",
+          categoryId: botoxCategory.id,
+          rating: "4.6",
+          reviewCount: 127,
+          inStock: true,
+          featured: false,
+          tags: ["botulinum", "wrinkle"]
+        },
+        {
+          name: "Orthopedic Injection Kit",
+          description: "Complete injection kit for orthopedic procedures",
+          price: "285.00",
+          imageUrl: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=400&h=400&fit=crop",
+          categoryId: orthoCategory.id,
+          rating: "4.5",
+          reviewCount: 89,
+          inStock: true,
+          featured: true,
+          tags: ["orthopedic", "injection"]
+        },
+        {
+          name: "Radiesse 1.5ml",
+          description: "Calcium hydroxylapatite dermal filler",
+          price: "395.00",
+          imageUrl: "https://images.unsplash.com/photo-1584515933487-779824d29309?w=400&h=400&fit=crop",
+          categoryId: fillersCategory.id,
+          rating: "4.4",
+          reviewCount: 156,
+          inStock: false,
+          featured: false,
+          tags: ["calcium", "volumizing"]
+        }
+      ];
+
+      for (const productData of productsData) {
+        await db.insert(products).values(productData).onConflictDoNothing();
+      }
+    }
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
