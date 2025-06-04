@@ -45,8 +45,8 @@ export function Header() {
         animate={{
           backgroundColor: isScrolled ? 'rgba(15, 15, 35, 0.95)' : 'rgba(15, 15, 35, 0.90)',
         }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 backdrop-blur-xl border-b border-purple-500/30 glass-neon ${
-          isScrolled ? 'shadow-2xl shadow-purple-500/20' : ''
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 backdrop-blur-xl border-b border-blue-500/20 glass-medical ${
+          isScrolled ? 'shadow-2xl shadow-blue-500/10' : ''
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -56,19 +56,19 @@ export function Header() {
               <Link href="/">
                 <motion.h1
                   whileHover={{ scale: 1.05 }}
-                  className="text-3xl font-bold matrix-text cursor-pointer tracking-wider"
+                  className="text-3xl font-bold gradient-text cursor-pointer tracking-wider"
                 >
-                  NEXUS
+                  MedMarket
                 </motion.h1>
               </Link>
               
               {/* Desktop Navigation */}
               <nav className="hidden lg:flex space-x-1">
                 <Link href="/">
-                  <a className={`px-4 py-2 text-sm font-bold uppercase tracking-wider transition-all duration-300 rounded-xl ${
+                  <a className={`px-4 py-2 text-sm font-semibold tracking-wide transition-all duration-300 rounded-xl ${
                     location === '/' 
-                      ? 'text-cyan-400 bg-purple-500/20 border border-cyan-400/50 glow-neon' 
-                      : 'text-purple-300 hover:text-cyan-400 hover:bg-purple-500/10 border border-transparent hover:border-purple-500/30'
+                      ? 'text-blue-400 bg-blue-500/15 border border-blue-400/40 glow-subtle' 
+                      : 'text-blue-300 hover:text-blue-400 hover:bg-blue-500/10 border border-transparent hover:border-blue-500/25'
                   }`}>
                     HOME
                   </a>
@@ -76,10 +76,10 @@ export function Header() {
                 
                 {categories.slice(0, 4).map((category) => (
                   <Link key={category.slug} href={`/category/${category.slug}`}>
-                    <a className={`px-4 py-2 text-sm font-bold uppercase tracking-wider transition-all duration-300 rounded-xl ${
+                    <a className={`px-4 py-2 text-sm font-semibold tracking-wide transition-all duration-300 rounded-xl ${
                       location === `/category/${category.slug}` 
-                        ? 'text-cyan-400 bg-purple-500/20 border border-cyan-400/50 glow-neon' 
-                        : 'text-purple-300 hover:text-cyan-400 hover:bg-purple-500/10 border border-transparent hover:border-purple-500/30'
+                        ? 'text-blue-400 bg-blue-500/15 border border-blue-400/40 glow-subtle' 
+                        : 'text-blue-300 hover:text-blue-400 hover:bg-blue-500/10 border border-transparent hover:border-blue-500/25'
                     }`}>
                       {category.name}
                     </a>
@@ -93,18 +93,18 @@ export function Header() {
               <form onSubmit={handleSearch} className="relative w-full">
                 <Input
                   type="text"
-                  placeholder="SEARCH THE NEXUS..."
+                  placeholder="Search medical products..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 pr-20 py-4 bg-slate-900/50 border-2 border-purple-500/30 rounded-2xl text-white placeholder-purple-300 focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition-all duration-300 font-mono uppercase tracking-wider"
+                  className="w-full pl-12 pr-20 py-3 bg-slate-800/60 border-2 border-blue-500/25 rounded-xl text-white placeholder-blue-300 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-300"
                 />
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-cyan-400 w-5 h-5" />
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-400 w-5 h-5" />
                 <Button
                   type="submit"
                   size="sm"
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-700 hover:to-cyan-600 text-white px-4 py-2 rounded-xl font-bold uppercase tracking-wider transition-all duration-300 transform hover:scale-105"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105"
                 >
-                  SCAN
+                  Search
                 </Button>
               </form>
             </div>
