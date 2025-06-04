@@ -73,9 +73,17 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen bg-slate-50 pt-20">
       {/* Header */}
-      <section className="bg-gradient-to-br from-blue-50 via-white to-slate-50 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-8">
+      <section className="relative bg-gradient-to-br from-blue-50 via-white to-slate-50 py-16 overflow-hidden">
+        <div className="absolute inset-0 flex items-center justify-end pr-8 opacity-20">
+          <img 
+            src="https://images.unsplash.com/photo-1551601651-2a8555f1a136?w=600&h=400&fit=crop&crop=center&auto=format&q=80"
+            alt="Customer Support"
+            className="w-96 h-64 object-cover rounded-2xl"
+          />
+        </div>
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between mb-12">
             <Link href="/">
               <Button variant="ghost" className="flex items-center space-x-2">
                 <ArrowLeft className="w-4 h-4" />
@@ -84,11 +92,11 @@ export default function ContactPage() {
             </Link>
           </div>
           
-          <div className="text-center">
+          <div className="text-center max-w-4xl mx-auto">
             <motion.h1 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-4xl font-bold text-slate-800 mb-4"
+              className="text-5xl font-bold text-slate-800 mb-6"
             >
               Contact Our Friendly Team
             </motion.h1>
@@ -96,7 +104,7 @@ export default function ContactPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-lg text-slate-600 max-w-3xl mx-auto"
+              className="text-xl text-slate-600 leading-relaxed"
             >
               Contact us with any questions or concerns that you may have, our friendly customer service team is happy to help between the hours of 9am – 6pm EST from Monday – Friday.
             </motion.p>
