@@ -101,19 +101,19 @@ export default function HomePage() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
-              className="text-4xl sm:text-5xl lg:text-7xl font-bold text-white mb-8 tracking-wider"
+              className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-8 tracking-wide"
             >
-              ENTER THE
-              <span className="block matrix-text">NEXUS</span>
+              Professional
+              <span className="block gradient-text">Medical Market</span>
             </motion.h1>
             
             <motion.p
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="text-xl text-purple-200 mb-10 max-w-2xl mx-auto font-mono"
+              className="text-xl text-blue-200 mb-10 max-w-2xl mx-auto"
             >
-              QUANTUM MARKETPLACE • NEURAL COMMERCE • DIGITAL EVOLUTION
+              Premium Medical Products • Healthcare Excellence • Professional Quality
             </motion.p>
             
             {/* Enhanced Search */}

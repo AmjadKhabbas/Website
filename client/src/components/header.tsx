@@ -65,24 +65,24 @@ export function Header() {
               {/* Desktop Navigation */}
               <nav className="hidden lg:flex space-x-1">
                 <Link href="/">
-                  <a className={`px-4 py-2 text-sm font-semibold tracking-wide transition-all duration-300 rounded-xl ${
+                  <span className={`px-4 py-2 text-sm font-semibold tracking-wide transition-all duration-300 rounded-xl cursor-pointer ${
                     location === '/' 
                       ? 'text-blue-400 bg-blue-500/15 border border-blue-400/40 glow-subtle' 
                       : 'text-blue-300 hover:text-blue-400 hover:bg-blue-500/10 border border-transparent hover:border-blue-500/25'
                   }`}>
                     HOME
-                  </a>
+                  </span>
                 </Link>
                 
                 {categories.slice(0, 4).map((category) => (
                   <Link key={category.slug} href={`/category/${category.slug}`}>
-                    <a className={`px-4 py-2 text-sm font-semibold tracking-wide transition-all duration-300 rounded-xl ${
+                    <span className={`px-4 py-2 text-sm font-semibold tracking-wide transition-all duration-300 rounded-xl cursor-pointer ${
                       location === `/category/${category.slug}` 
                         ? 'text-blue-400 bg-blue-500/15 border border-blue-400/40 glow-subtle' 
                         : 'text-blue-300 hover:text-blue-400 hover:bg-blue-500/10 border border-transparent hover:border-blue-500/25'
                     }`}>
                       {category.name}
-                    </a>
+                    </span>
                   </Link>
                 ))}
               </nav>
@@ -116,7 +116,7 @@ export function Header() {
                 variant="ghost"
                 size="sm"
                 onClick={openCart}
-                className="relative p-3 text-purple-300 hover:text-cyan-400 bg-slate-900/30 hover:bg-purple-500/20 border border-purple-500/30 hover:border-cyan-400/50 rounded-xl transition-all duration-300 transform hover:scale-105"
+                className="relative p-3 text-blue-300 hover:text-blue-400 bg-slate-800/30 hover:bg-blue-500/15 border border-blue-500/25 hover:border-blue-400/40 rounded-xl transition-all duration-300 transform hover:scale-105"
               >
                 <ShoppingCart className="w-6 h-6" />
                 <AnimatePresence>
@@ -127,7 +127,7 @@ export function Header() {
                       exit={{ scale: 0, opacity: 0 }}
                       className="absolute -top-1 -right-1"
                     >
-                      <Badge className="bg-gradient-to-r from-cyan-500 to-purple-600 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold glow-neon">
+                      <Badge className="bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-medium">
                         {getTotalItems()}
                       </Badge>
                     </motion.div>
@@ -139,10 +139,10 @@ export function Header() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="hidden sm:flex items-center space-x-2 p-3 text-purple-300 hover:text-cyan-400 bg-slate-900/30 hover:bg-purple-500/20 border border-purple-500/30 hover:border-cyan-400/50 rounded-xl transition-all duration-300 transform hover:scale-105"
+                className="hidden sm:flex items-center space-x-2 p-3 text-blue-300 hover:text-blue-400 bg-slate-800/30 hover:bg-blue-500/15 border border-blue-500/25 hover:border-blue-400/40 rounded-xl transition-all duration-300 transform hover:scale-105"
               >
                 <User className="w-5 h-5" />
-                <span className="text-sm font-bold uppercase tracking-wider">ACCESS</span>
+                <span className="text-sm font-medium tracking-wide">Account</span>
                 <ChevronDown className="w-4 h-4" />
               </Button>
 
@@ -151,7 +151,7 @@ export function Header() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsMobileMenuOpen(true)}
-                className="lg:hidden p-3 text-purple-300 hover:text-cyan-400 bg-slate-900/30 hover:bg-purple-500/20 border border-purple-500/30 hover:border-cyan-400/50 rounded-xl transition-all duration-300 transform hover:scale-105"
+                className="lg:hidden p-3 text-blue-300 hover:text-blue-400 bg-slate-800/30 hover:bg-blue-500/15 border border-blue-500/25 hover:border-blue-400/40 rounded-xl transition-all duration-300 transform hover:scale-105"
               >
                 <Menu className="w-6 h-6" />
               </Button>
