@@ -10,16 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ProductCard } from '@/components/product-card';
 import { useLocation } from 'wouter';
-import type { Product, ProductWithCategory } from '@shared/schema';
-
-// Medical categories as shown in your image
-const medicalCategories = [
-  { name: 'Botulinum Toxins', slug: 'botulinum-toxins', count: 24 },
-  { name: 'Dermal Fillers', slug: 'dermal-fillers', count: 18 },
-  { name: 'Orthopedic', slug: 'orthopedic', count: 32 },
-  { name: 'Rheumatology', slug: 'rheumatology', count: 15 },
-  { name: 'Weightloss & Gynecology', slug: 'weightloss-gynecology', count: 21 }
-];
+import type { Product, ProductWithCategory, Category } from '@shared/schema';
 
 export default function ProductsPage() {
   const [location] = useLocation();
@@ -46,6 +37,21 @@ export default function ProductsPage() {
       search: searchQuery 
     }],
   });
+
+  const { data: categories = [] } = useQuery<Category[]>({
+    queryKey: ['/api/categories'],
+  });
+
+  // Get all products for counting purposes (not filtered)
+  const { data: allProducts = [] } = useQuery<ProductWithCategory[]>({
+    queryKey: ['/api/products'],
+  });
+
+  // Calculate product counts for each category based on all products
+  const categoriesWithCounts = categories.map(category => ({
+    ...category,
+    count: allProducts.filter(product => product.categoryId === category.id).length
+  }));
 
   useEffect(() => {
     const handleScroll = () => {
@@ -141,7 +147,7 @@ export default function ProductsPage() {
                     }`} />
                   </button>
 
-                  {medicalCategories.map((category) => (
+                  {categoriesWithCounts.map((category) => (
                     <button
                       key={category.slug}
                       onClick={() => setSelectedCategory(category.slug)}
@@ -279,7 +285,7 @@ export default function ProductsPage() {
                     {searchQuery 
                       ? `Search results for "${searchQuery}"`
                       : selectedCategory 
-                        ? medicalCategories.find(cat => cat.slug === selectedCategory)?.name 
+                        ? categoriesWithCounts.find(cat => cat.slug === selectedCategory)?.name 
                         : 'All Products'
                     }
                   </h2>
