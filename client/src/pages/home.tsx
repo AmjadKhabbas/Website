@@ -325,45 +325,52 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Main Content Area */}
+            {/* Main Content Area - Brand Showcase */}
             <div className="flex-1">
               <div className="text-center mb-16">
-                <h2 className="text-4xl font-bold text-slate-800 mb-6">Premium Medical Products</h2>
-                <p className="text-xl text-slate-600">Professional Healthcare Solutions</p>
+                <h2 className="text-4xl font-bold text-slate-800 mb-6">OUR BRANDS</h2>
+                <p className="text-xl text-slate-600">Discover our range of top brands at amazing prices</p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {featuredProducts.slice(0, 6).map((product, index) => (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 mb-12">
+                {[
+                  'Botulinum Toxins',
+                  'Dermal Fillers', 
+                  'Anti-Aging Serums',
+                  'Medical Equipment',
+                  'Skincare Products'
+                ].map((brandName, index) => (
                   <motion.div
-                    key={product.id}
+                    key={index}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, delay: index * 0.1 }}
-                    className="card-fox p-6 group cursor-pointer"
+                    className="group cursor-pointer"
                   >
-                    <div className="aspect-square bg-gradient-to-br from-teal-100 to-cyan-100 rounded-lg mb-4 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-                      <Heart className="w-12 h-12 text-teal-600" />
+                    <div className="bg-slate-100 rounded-2xl p-8 aspect-square flex items-center justify-center group-hover:bg-slate-200 transition-all duration-300 border-2 border-dashed border-slate-300 group-hover:border-teal-300">
+                      <div className="text-center">
+                        <div className="w-16 h-16 bg-slate-200 rounded-lg mx-auto mb-4 flex items-center justify-center group-hover:bg-teal-100 transition-colors duration-300">
+                          <Heart className="w-8 h-8 text-slate-400 group-hover:text-teal-600" />
+                        </div>
+                        <p className="text-sm text-slate-500 group-hover:text-teal-600 font-medium">Upload Image</p>
+                      </div>
                     </div>
-                    
-                    <div className="space-y-3">
-                      <div>
-                        <h3 className="font-semibold text-slate-800 text-lg group-hover:text-teal-600 transition-colors duration-300">
-                          {product.name}
-                        </h3>
-                        <p className="text-slate-600 text-sm">{product.description}</p>
-                      </div>
-                      
-                      <div className="flex items-center gap-3">
-                        <span className="text-2xl font-bold text-teal-600">${product.price}</span>
-                        <span className="text-lg text-slate-400 line-through">$299.99</span>
-                      </div>
-                      
-                      <Badge className="bg-teal-100 text-teal-700 hover:bg-teal-200">
-                        {product.category?.name || 'Medical'}
-                      </Badge>
+                    <div className="mt-4 text-center">
+                      <h3 className="font-semibold text-slate-800 text-sm group-hover:text-teal-600 transition-colors duration-300">
+                        {brandName}
+                      </h3>
                     </div>
                   </motion.div>
                 ))}
+              </div>
+
+              <div className="flex justify-center gap-4">
+                <Button className="bg-slate-800 hover:bg-slate-700 text-white px-8 py-3 rounded-lg font-medium transition-all duration-300">
+                  ALL PRODUCTS
+                </Button>
+                <Button variant="outline" className="border-2 border-slate-300 text-slate-700 hover:bg-slate-50 px-8 py-3 rounded-lg font-medium transition-all duration-300">
+                  FIND OUT MORE
+                </Button>
               </div>
             </div>
           </div>
