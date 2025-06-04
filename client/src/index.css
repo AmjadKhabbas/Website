@@ -33,22 +33,22 @@
 }
 
 .dark {
-  --background: 222 84% 4.9%; /* #020817 - Very dark navy */
+  --background: 222 84% 4.9%; /* #020817 - Very dark navy background */
   --foreground: 210 40% 98%; /* #F8FAFC - Light text */
-  --muted: 217 32% 17%; /* #1E293B - Dark grey */
+  --muted: 217 32% 17%; /* #1E293B - Dark grey for muted areas */
   --muted-foreground: 215 20% 65%; /* #94A3B8 - Light grey text */
-  --popover: 222 84% 4.9%; /* #020817 - Dark popover */
+  --popover: 217 32% 17%; /* #1E293B - Dark popover background */
   --popover-foreground: 210 40% 98%; /* #F8FAFC - Light text */
-  --card: 222 84% 4.9%; /* #020817 - Dark cards */
+  --card: 217 32% 17%; /* #1E293B - Dark card background */
   --card-foreground: 210 40% 98%; /* #F8FAFC - Light text */
-  --border: 217 32% 17%; /* #1E293B - Dark border */
-  --input: 217 32% 17%; /* #1E293B - Dark input bg */
+  --border: 217 32% 27%; /* #334155 - Lighter dark border */
+  --input: 217 32% 17%; /* #1E293B - Dark input background */
   --primary: 200 98% 39%; /* #0891B2 - Keep teal primary */
   --primary-foreground: 0 0% 98%; /* #FAFAFA - White text */
   --secondary: 217 32% 17%; /* #1E293B - Dark secondary */
   --secondary-foreground: 210 40% 98%; /* #F8FAFC - Light text */
-  --accent: 197 71% 52%; /* #22D3EE - Bright cyan accent */
-  --accent-foreground: 0 0% 9%; /* #171717 - Dark text */
+  --accent: 217 32% 27%; /* #334155 - Dark accent background */
+  --accent-foreground: 210 40% 98%; /* #F8FAFC - Light text */
   --destructive: 0 62% 30%; /* #991B1B - Dark red */
   --destructive-foreground: 0 0% 98%; /* #FAFAFA - White text */
   --ring: 200 98% 39%; /* #0891B2 - Teal ring */
