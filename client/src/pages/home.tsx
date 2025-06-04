@@ -199,17 +199,17 @@ export default function HomePage() {
       </section>
 
       {/* Featured Products Section */}
-      <section className="py-16 bg-slate-50">
+      <section className="py-20 bg-gradient-to-b from-slate-800 to-slate-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center mb-12">
+          <div className="flex justify-between items-center mb-16">
             <div>
-              <h2 className="text-3xl font-bold text-slate-900 mb-4">Featured Products</h2>
-              <p className="text-lg text-slate-600">Hand-picked products that our customers love</p>
+              <h2 className="text-4xl font-bold text-white mb-6 matrix-text">PRIME SELECTIONS</h2>
+              <p className="text-xl text-purple-200 font-mono">NEURAL-CURATED PREMIUM UNITS</p>
             </div>
             <Link href="/products">
-              <Button className="hidden sm:flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl transition-colors duration-200">
-                <span>View All</span>
-                <ArrowRight className="w-4 h-4" />
+              <Button className="hidden sm:flex items-center space-x-2 bg-gradient-to-r from-purple-600 via-cyan-500 to-purple-600 hover:from-purple-700 hover:via-cyan-600 hover:to-purple-700 text-white px-8 py-4 rounded-2xl transition-all duration-300 transform hover:scale-105 font-bold uppercase tracking-wider glow-neon">
+                <span>ACCESS ALL</span>
+                <ArrowRight className="w-5 h-5" />
               </Button>
             </Link>
           </div>
@@ -223,23 +223,23 @@ export default function HomePage() {
       </section>
 
       {/* Newsletter Section */}
-      <section className="py-16 bg-gradient-to-r from-blue-600 to-blue-800">
+      <section className="py-20 bg-gradient-to-r from-purple-900 via-slate-900 to-cyan-900 circuit-bg">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">Stay Updated</h2>
-          <p className="text-xl text-blue-100 mb-8">Get notified about new products, exclusive deals, and special offers</p>
+          <h2 className="text-4xl font-bold text-white mb-6 matrix-text">NEURAL LINK</h2>
+          <p className="text-xl text-purple-200 mb-10 font-mono">SYNCHRONIZE WITH THE NEXUS • RECEIVE PRIORITY ACCESS</p>
           
-          <div className="max-w-md mx-auto">
-            <div className="flex">
+          <div className="max-w-lg mx-auto">
+            <div className="flex gap-3">
               <Input
                 type="email"
-                placeholder="Enter your email"
-                className="flex-1 px-4 py-3 rounded-l-xl border-0 focus:ring-4 focus:ring-blue-300 transition-all duration-200"
+                placeholder="ENTER NEURAL ID..."
+                className="flex-1 px-6 py-4 bg-slate-900/60 border-2 border-purple-500/40 rounded-2xl text-white placeholder-purple-300 focus:ring-4 focus:ring-cyan-400/50 focus:border-cyan-400 transition-all duration-300 font-mono uppercase tracking-wider backdrop-blur-xl"
               />
-              <Button className="bg-amber-500 hover:bg-amber-600 text-white px-6 py-3 rounded-r-xl transition-colors duration-200 font-medium">
-                Subscribe
+              <Button className="bg-gradient-to-r from-cyan-500 via-purple-600 to-pink-500 hover:from-cyan-600 hover:via-purple-700 hover:to-pink-600 text-white px-8 py-4 rounded-2xl font-bold uppercase tracking-wider transition-all duration-300 transform hover:scale-105 glow-neon">
+                CONNECT
               </Button>
             </div>
-            <p className="text-sm text-blue-200 mt-3">No spam, unsubscribe at any time.</p>
+            <p className="text-sm text-cyan-400 mt-4 font-mono">SECURE PROTOCOL • NO DATA MINING • INSTANT DISCONNECT</p>
           </div>
         </div>
       </section>
