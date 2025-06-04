@@ -1,0 +1,248 @@
+import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { motion } from 'framer-motion';
+import { Search, Filter, Grid, List, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { ProductCard } from '@/components/product-card';
+import type { Product, ProductWithCategory } from '@shared/schema';
+
+// Medical categories as shown in your image
+const medicalCategories = [
+  { name: 'Botulinum Toxins', slug: 'botulinum-toxins', count: 24 },
+  { name: 'Dermal Fillers', slug: 'dermal-fillers', count: 18 },
+  { name: 'Orthopedic', slug: 'orthopedic', count: 32 },
+  { name: 'Rheumatology', slug: 'rheumatology', count: 15 },
+  { name: 'Weightloss & Gynecology', slug: 'weightloss-gynecology', count: 21 }
+];
+
+export default function ProductsPage() {
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  const { data: products = [], isLoading } = useQuery<ProductWithCategory[]>({
+    queryKey: ['/api/products', { 
+      categorySlug: selectedCategory,
+      search: searchQuery 
+    }],
+  });
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 100);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const filteredProducts = products.filter(product => {
+    const matchesSearch = !searchQuery || 
+      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.description.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    return matchesSearch;
+  });
+
+  return (
+    <div className="min-h-screen bg-slate-50 pt-20">
+      {/* Hero Section */}
+      <section className="bg-gradient-to-br from-blue-50 via-white to-slate-50 py-16 scroll-reveal">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <motion.h1 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-5xl font-bold text-slate-800 mb-6"
+            >
+              Medical Products
+            </motion.h1>
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-xl text-slate-600 max-w-3xl mx-auto"
+            >
+              Professional medical solutions for healthcare practitioners
+            </motion.p>
+          </div>
+
+          {/* Search Bar */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="max-w-2xl mx-auto relative"
+          >
+            <Input
+              type="text"
+              placeholder="Search medical products..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-12 pr-4 py-4 bg-white border border-slate-300 rounded-xl text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 text-lg"
+            />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 w-6 h-6" />
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Main Content */}
+      <section className="py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex gap-8">
+            {/* Sidebar - Medical Categories */}
+            <motion.aside 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3 }}
+              className="w-80 flex-shrink-0"
+            >
+              <div className={`bg-white rounded-xl shadow-sm border border-slate-200 p-6 transition-all duration-300 ${
+                isScrolled ? 'sticky top-28' : ''
+              }`}>
+                <h3 className="text-lg font-semibold text-slate-800 mb-6">Medical Categories</h3>
+                
+                <div className="space-y-2">
+                  <button
+                    onClick={() => setSelectedCategory(null)}
+                    className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-300 flex items-center justify-between group ${
+                      selectedCategory === null
+                        ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-800'
+                    }`}
+                  >
+                    <span className="font-medium">All Products</span>
+                    <ChevronRight className={`w-4 h-4 transition-transform duration-300 ${
+                      selectedCategory === null ? 'rotate-90 text-blue-600' : 'group-hover:translate-x-1'
+                    }`} />
+                  </button>
+
+                  {medicalCategories.map((category) => (
+                    <button
+                      key={category.slug}
+                      onClick={() => setSelectedCategory(category.slug)}
+                      className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-300 flex items-center justify-between group ${
+                        selectedCategory === category.slug
+                          ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-800'
+                      }`}
+                    >
+                      <span className="font-medium">{category.name}</span>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="text-xs">
+                          {category.count}
+                        </Badge>
+                        <ChevronRight className={`w-4 h-4 transition-transform duration-300 ${
+                          selectedCategory === category.slug ? 'rotate-90 text-blue-600' : 'group-hover:translate-x-1'
+                        }`} />
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Filter Options */}
+                <div className="mt-8 pt-6 border-t border-slate-200">
+                  <h4 className="text-sm font-semibold text-slate-800 mb-4">Filter Options</h4>
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start gap-2 text-slate-600 hover:text-slate-800"
+                  >
+                    <Filter className="w-4 h-4" />
+                    Advanced Filters
+                  </Button>
+                </div>
+              </div>
+            </motion.aside>
+
+            {/* Products Grid */}
+            <motion.main 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="flex-1"
+            >
+              {/* Toolbar */}
+              <div className="flex items-center justify-between mb-8 bg-white rounded-xl p-4 shadow-sm border border-slate-200">
+                <div className="flex items-center gap-4">
+                  <h2 className="text-lg font-semibold text-slate-800">
+                    {selectedCategory 
+                      ? medicalCategories.find(cat => cat.slug === selectedCategory)?.name 
+                      : 'All Products'
+                    }
+                  </h2>
+                  <Badge variant="secondary">
+                    {filteredProducts.length} products
+                  </Badge>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant={viewMode === 'grid' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setViewMode('grid')}
+                    className="px-3"
+                  >
+                    <Grid className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === 'list' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setViewMode('list')}
+                    className="px-3"
+                  >
+                    <List className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Products Display */}
+              {isLoading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="bg-white rounded-xl p-6 animate-pulse">
+                      <div className="aspect-square bg-slate-200 rounded-lg mb-4"></div>
+                      <div className="h-4 bg-slate-200 rounded mb-2"></div>
+                      <div className="h-3 bg-slate-200 rounded w-2/3"></div>
+                    </div>
+                  ))}
+                </div>
+              ) : filteredProducts.length === 0 ? (
+                <div className="text-center py-16 bg-white rounded-xl shadow-sm border border-slate-200">
+                  <div className="text-slate-400 mb-4">
+                    <Search className="w-16 h-16 mx-auto mb-4" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-slate-600 mb-2">No products found</h3>
+                  <p className="text-slate-500">
+                    {searchQuery 
+                      ? `No products match "${searchQuery}"`
+                      : 'No products available in this category'
+                    }
+                  </p>
+                </div>
+              ) : (
+                <div className={viewMode === 'grid' 
+                  ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'
+                  : 'space-y-4'
+                }>
+                  {filteredProducts.map((product, index) => (
+                    <motion.div
+                      key={product.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="scroll-reveal"
+                    >
+                      <ProductCard product={product} index={index} />
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </motion.main>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}

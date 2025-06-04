@@ -9,12 +9,14 @@ import { ToastContainer, useToast } from "@/components/toast";
 import HomePage from "@/pages/home";
 import CategoryPage from "@/pages/category";
 import ProductPage from "@/pages/product";
+import ProductsPage from "@/pages/products";
 import NotFound from "@/pages/not-found";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={HomePage} />
+      <Route path="/products" component={ProductsPage} />
       <Route path="/category/:slug" component={CategoryPage} />
       <Route path="/product/:id" component={ProductPage} />
       <Route component={NotFound} />
