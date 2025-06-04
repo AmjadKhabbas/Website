@@ -65,7 +65,7 @@ export function Header() {
                   <img 
                     src={medsGoLogo} 
                     alt="Meds-Go" 
-                    className="h-10 w-auto object-contain"
+                    className="h-10 w-auto object-contain brightness-125 contrast-110"
                   />
                   <div>
                     <h1 className="text-2xl font-bold text-slate-800">Meds-Go</h1>
