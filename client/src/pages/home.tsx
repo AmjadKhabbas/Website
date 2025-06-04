@@ -89,7 +89,7 @@ const HeroSlideshow = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="text-4xl sm:text-5xl lg:text-7xl font-bold text-white mb-8 tracking-wide"
+            className="text-4xl sm:text-5xl lg:text-7xl font-bold text-slate-800 mb-8 tracking-wide"
           >
             <span className="gradient-text">{bestSellers[currentSlide].title}</span>
           </motion.h1>
@@ -99,7 +99,7 @@ const HeroSlideshow = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-xl text-blue-200 mb-8 max-w-3xl mx-auto leading-relaxed"
+            className="text-xl text-slate-600 mb-8 max-w-3xl mx-auto leading-relaxed"
           >
             {bestSellers[currentSlide].description}
           </motion.p>
@@ -112,7 +112,7 @@ const HeroSlideshow = () => {
             className="flex flex-wrap justify-center gap-4 mb-8"
           >
             {bestSellers[currentSlide].features.map((feature, index) => (
-              <Badge key={index} variant="outline" className="border-blue-400/50 text-blue-300 px-4 py-2">
+              <Badge key={index} variant="outline" className="border-teal-300 text-teal-600 bg-white px-4 py-2">
                 {feature}
               </Badge>
             ))}
@@ -125,10 +125,10 @@ const HeroSlideshow = () => {
             transition={{ duration: 0.6, delay: 0.6 }}
             className="flex items-center justify-center gap-4 mb-10"
           >
-            <span className="text-4xl font-bold text-blue-400">
+            <span className="text-4xl font-bold text-teal-600">
               {bestSellers[currentSlide].price}
             </span>
-            <span className="text-xl text-gray-400 line-through">
+            <span className="text-xl text-slate-400 line-through">
               {bestSellers[currentSlide].originalPrice}
             </span>
             <Badge className="bg-green-600 text-white px-3 py-1">
@@ -142,7 +142,7 @@ const HeroSlideshow = () => {
       <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
         <button
           onClick={prevSlide}
-          className="p-3 bg-blue-600/80 hover:bg-blue-700 rounded-full text-white transition-all duration-200 backdrop-blur-sm hover:scale-110"
+          className="p-3 bg-white shadow-lg hover:shadow-xl border border-slate-200 rounded-full text-teal-600 hover:text-teal-700 transition-all duration-200 hover:scale-110"
         >
           <ChevronLeft className="w-6 h-6" />
         </button>
@@ -151,7 +151,7 @@ const HeroSlideshow = () => {
       <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
         <button
           onClick={nextSlide}
-          className="p-3 bg-blue-600/80 hover:bg-blue-700 rounded-full text-white transition-all duration-200 backdrop-blur-sm hover:scale-110"
+          className="p-3 bg-white shadow-lg hover:shadow-xl border border-slate-200 rounded-full text-teal-600 hover:text-teal-700 transition-all duration-200 hover:scale-110"
         >
           <ChevronRight className="w-6 h-6" />
         </button>
@@ -165,8 +165,8 @@ const HeroSlideshow = () => {
             onClick={() => setCurrentSlide(index)}
             className={`h-3 rounded-full transition-all duration-300 ${
               index === currentSlide 
-                ? 'bg-blue-400 w-12' 
-                : 'bg-blue-600/50 hover:bg-blue-500 w-3'
+                ? 'bg-teal-500 w-12' 
+                : 'bg-slate-300 hover:bg-teal-300 w-3'
             }`}
           />
         ))}
