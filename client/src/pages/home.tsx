@@ -140,6 +140,31 @@ export default function HomePage() {
   const [, navigate] = useLocation();
   const [featuredIndex, setFeaturedIndex] = useState(0);
   const [showAllFeatured, setShowAllFeatured] = useState(false);
+  const [scrollY, setScrollY] = useState(0);
+
+  // Scroll animation effect
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+      
+      // Update CSS custom property for parallax effects
+      document.documentElement.style.setProperty('--scroll-y', `${window.scrollY * 0.5}px`);
+      
+      // Reveal elements on scroll
+      const elements = document.querySelectorAll('.scroll-reveal');
+      elements.forEach((element) => {
+        const elementTop = element.getBoundingClientRect().top;
+        const windowHeight = window.innerHeight;
+        
+        if (elementTop < windowHeight * 0.8) {
+          element.classList.add('revealed');
+        }
+      });
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ['/api/categories'],
@@ -176,16 +201,18 @@ export default function HomePage() {
       {/* Hero Section */}
       <section className="relative pt-20 pb-16 overflow-hidden medical-gradient bg-gradient-to-br from-blue-50 via-sky-50 to-cyan-50">
         {/* Clean Background Elements */}
-        <div className="absolute inset-0 bg-grid-pattern opacity-30"></div>
+        <div className="absolute inset-0 bg-grid-pattern opacity-30 parallax-slow"></div>
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1 }}
-          className="absolute inset-0 bg-gradient-to-r from-teal-500/5 via-transparent to-cyan-500/5"
+          className="absolute inset-0 bg-gradient-to-r from-teal-500/5 via-transparent to-cyan-500/5 parallax-fast"
         />
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-[600px]">
-          <HeroSlideshow />
+          <div className="float-animation">
+            <HeroSlideshow />
+          </div>
           
           {/* Enhanced Search */}
           <motion.div
@@ -239,9 +266,9 @@ export default function HomePage() {
       </section>
 
       {/* Brand Showcase Section */}
-      <section className="py-20 bg-slate-50">
+      <section className="py-20 bg-slate-50 scroll-reveal">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+          <div className="text-center mb-16 scroll-reveal">
             <h2 className="text-4xl font-bold text-slate-800 mb-6">OUR BRANDS</h2>
             <p className="text-xl text-slate-600">Discover our range of top brands at amazing prices</p>
           </div>
@@ -259,7 +286,7 @@ export default function HomePage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: index * 0.1 }}
-                  className="group cursor-pointer"
+                  className="group cursor-pointer scroll-reveal scale-on-scroll"
                 >
                   <div className="bg-blue-50 rounded-2xl p-8 aspect-square flex items-center justify-center group-hover:bg-blue-100 transition-all duration-300 border-2 border-dashed border-blue-300 group-hover:border-blue-500">
                     <div className="text-center">
@@ -293,9 +320,9 @@ export default function HomePage() {
       </section>
 
       {/* Featured Products Section */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-white scroll-reveal">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center mb-16">
+          <div className="flex justify-between items-center mb-16 scroll-reveal">
             <div>
               <h2 className="text-4xl font-bold text-slate-800 mb-4">Featured Products</h2>
               <p className="text-xl text-slate-600">Premium Medical Solutions</p>
@@ -346,7 +373,7 @@ export default function HomePage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.1 }}
-                className="card-fox p-6 group cursor-pointer"
+                className="card-fox p-6 group cursor-pointer scroll-reveal scale-on-scroll"
               >
                 <div className="aspect-square bg-gradient-to-br from-teal-100 to-cyan-100 rounded-lg mb-4 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
                   <Heart className="w-12 h-12 text-teal-600" />
@@ -376,10 +403,12 @@ export default function HomePage() {
       </section>
 
       {/* Newsletter Section */}
-      <section className="py-20 bg-white border-t border-slate-200">
+      <section className="py-20 bg-white border-t border-slate-200 scroll-reveal">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-bold text-slate-800 mb-6">Stay Updated</h2>
-          <p className="text-xl text-slate-600 mb-10">Get the latest medical product updates and exclusive offers</p>
+          <div className="scroll-reveal">
+            <h2 className="text-4xl font-bold text-slate-800 mb-6">Stay Updated</h2>
+            <p className="text-xl text-slate-600 mb-10">Get the latest medical product updates and exclusive offers</p>
+          </div>
           
           <div className="max-w-lg mx-auto">
             <div className="flex gap-3">
