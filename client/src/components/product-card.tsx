@@ -50,10 +50,10 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: index * 0.1 }}
-      className="group bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col h-full"
+      className="group bg-card rounded-xl shadow-sm border border-border overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col h-full"
     >
       {/* Image Container */}
-      <div className="relative aspect-square bg-gradient-to-br from-blue-50 to-slate-50 overflow-hidden">
+      <div className="relative aspect-square bg-gradient-to-br from-blue-50 to-slate-50 dark:from-blue-900/20 dark:to-slate-800/20 overflow-hidden">
         <Link href={`/product/${product.id}`}>
           <img
             src={product.imageUrl}
@@ -78,23 +78,23 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
       {/* Content */}
       <div className="p-6 flex flex-col h-full">
         <Link href={`/product/${product.id}`}>
-          <h3 className="font-semibold text-slate-800 mb-2 group-hover:text-blue-600 transition-colors duration-300 cursor-pointer text-lg">
+          <h3 className="font-semibold text-card-foreground mb-2 group-hover:text-primary transition-colors duration-300 cursor-pointer text-lg">
             {product.name}
           </h3>
         </Link>
         
-        <p className="text-sm text-slate-600 mb-3 line-clamp-2 flex-grow">
+        <p className="text-sm text-muted-foreground mb-3 line-clamp-2 flex-grow">
           {product.description}
         </p>
         
         {/* Price */}
         <div className="mb-4">
           <div className="flex items-center space-x-3">
-            <span className="text-2xl font-bold text-blue-600">
+            <span className="text-2xl font-bold text-primary">
               {formatPrice(product.price)}
             </span>
             {hasDiscount && (
-              <span className="text-sm text-slate-400 line-through">
+              <span className="text-sm text-muted-foreground line-through">
                 {formatPrice(product.originalPrice!)}
               </span>
             )}
@@ -106,7 +106,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
           <Button
             onClick={() => addToCartMutation.mutate()}
             disabled={!product.inStock || addToCartMutation.isPending}
-            className="w-full bg-white border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white py-3 rounded-lg transition-all duration-300 font-semibold transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-background border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground py-3 rounded-lg transition-all duration-300 font-semibold transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {addToCartMutation.isPending ? (
               <div className="flex items-center justify-center space-x-2">
