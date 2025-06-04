@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, ShoppingCart, User, Menu, ChevronDown, LogIn, LogOut, Package, UserPlus } from 'lucide-react';
+import { Search, ShoppingCart, User, Menu, ChevronDown, LogIn, LogOut, Package, UserPlus, HelpCircle } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -191,6 +191,18 @@ export function Header() {
                         >
                           <UserPlus className="w-4 h-4" />
                           <span className="text-sm font-medium">Referrals</span>
+                        </Button>
+                      </Link>
+                      
+                      {/* FAQ Link */}
+                      <Link href="/faq">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="flex items-center space-x-2 p-3 text-slate-600 hover:text-purple-600 bg-white hover:bg-purple-50 border border-slate-200 hover:border-purple-200 rounded-lg transition-all duration-300"
+                        >
+                          <HelpCircle className="w-4 h-4" />
+                          <span className="text-sm font-medium">FAQ</span>
                         </Button>
                       </Link>
                       
