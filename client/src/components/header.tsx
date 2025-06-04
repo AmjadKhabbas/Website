@@ -142,8 +142,8 @@ export function Header() {
                     className="h-10 w-auto object-contain brightness-125 contrast-110"
                   />
                   <div>
-                    <h1 className="text-2xl font-bold text-foreground">Meds-Go</h1>
-                    <p className="text-xs text-muted-foreground -mt-1">Professional Healthcare Products</p>
+                    <h1 className="text-2xl font-bold text-slate-800">Meds-Go</h1>
+                    <p className="text-xs text-slate-600 -mt-1">Professional Healthcare Products</p>
                   </div>
                 </motion.div>
               </Link>
@@ -153,8 +153,8 @@ export function Header() {
                 <Link href="/">
                   <span className={`px-4 py-2 text-sm font-medium transition-all duration-300 rounded-lg cursor-pointer ${
                     location === '/' 
-                      ? 'text-primary bg-primary/10 border border-primary/20' 
-                      : 'text-muted-foreground hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/20'
+                      ? 'text-teal-600 bg-teal-50 border border-teal-200' 
+                      : 'text-slate-600 hover:text-teal-600 hover:bg-teal-50 border border-transparent hover:border-teal-200'
                   }`}>
                     Home
                   </span>
@@ -163,8 +163,8 @@ export function Header() {
                 <Link href="/products">
                   <span className={`px-4 py-2 text-sm font-medium transition-all duration-300 rounded-lg cursor-pointer ${
                     location === '/products' 
-                      ? 'text-primary bg-primary/10 border border-primary/20' 
-                      : 'text-muted-foreground hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/20'
+                      ? 'text-teal-600 bg-teal-50 border border-teal-200' 
+                      : 'text-slate-600 hover:text-teal-600 hover:bg-teal-50 border border-transparent hover:border-teal-200'
                   }`}>
                     Products
                   </span>
@@ -173,8 +173,8 @@ export function Header() {
                 <Link href="/referrals">
                   <span className={`px-4 py-2 text-sm font-medium transition-all duration-300 rounded-lg cursor-pointer ${
                     location === '/referrals' 
-                      ? 'text-primary bg-primary/10 border border-primary/20' 
-                      : 'text-muted-foreground hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/20'
+                      ? 'text-teal-600 bg-teal-50 border border-teal-200' 
+                      : 'text-slate-600 hover:text-teal-600 hover:bg-teal-50 border border-transparent hover:border-teal-200'
                   }`}>
                     Referrals
                   </span>
@@ -183,8 +183,8 @@ export function Header() {
                 <Link href="/faq">
                   <span className={`px-4 py-2 text-sm font-medium transition-all duration-300 rounded-lg cursor-pointer ${
                     location === '/faq' 
-                      ? 'text-primary bg-primary/10 border border-primary/20' 
-                      : 'text-muted-foreground hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/20'
+                      ? 'text-teal-600 bg-teal-50 border border-teal-200' 
+                      : 'text-slate-600 hover:text-teal-600 hover:bg-teal-50 border border-transparent hover:border-teal-200'
                   }`}>
                     FAQ
                   </span>
@@ -193,8 +193,8 @@ export function Header() {
                 <Link href="/contact">
                   <span className={`px-4 py-2 text-sm font-medium transition-all duration-300 rounded-lg cursor-pointer ${
                     location === '/contact' 
-                      ? 'text-primary bg-primary/10 border border-primary/20' 
-                      : 'text-muted-foreground hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/20'
+                      ? 'text-teal-600 bg-teal-50 border border-teal-200' 
+                      : 'text-slate-600 hover:text-teal-600 hover:bg-teal-50 border border-transparent hover:border-teal-200'
                   }`}>
                     Contact
                   </span>
@@ -427,7 +427,7 @@ export function Header() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsMobileMenuOpen(true)}
-                className="lg:hidden p-3 text-muted-foreground hover:text-primary bg-background dark:bg-slate-800 hover:bg-accent border border-border hover:border-primary/20 rounded-lg transition-all duration-300"
+                className="lg:hidden p-3 text-slate-600 hover:text-teal-600 bg-white hover:bg-teal-50 border border-slate-200 hover:border-teal-200 rounded-lg transition-all duration-300"
               >
                 <Menu className="w-6 h-6" />
               </Button>
