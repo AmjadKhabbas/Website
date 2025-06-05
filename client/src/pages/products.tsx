@@ -21,6 +21,7 @@ export default function ProductsPage() {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 2000]);
   const [selectedConcentration, setSelectedConcentration] = useState<string | null>(null);
   const [inStockOnly, setInStockOnly] = useState(false);
+  const [isCategoriesOpen, setIsCategoriesOpen] = useState(true);
 
   // Parse URL search parameters
   useEffect(() => {
@@ -134,45 +135,63 @@ export default function ProductsPage() {
               className="w-80 flex-shrink-0"
             >
               <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto">
-                <h3 className="text-lg font-semibold text-slate-800 mb-6">Medical Categories</h3>
+                {/* Categories Tab Header */}
+                <button
+                  onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
+                  className="w-full flex items-center justify-between text-lg font-semibold text-slate-800 mb-6 hover:text-blue-600 transition-colors duration-200"
+                >
+                  <span>Medical Categories</span>
+                  <ChevronRight className={`w-5 h-5 transition-transform duration-300 ${
+                    isCategoriesOpen ? 'rotate-90' : ''
+                  }`} />
+                </button>
                 
-                <div className="space-y-2">
-                  <button
-                    onClick={() => setSelectedCategory(null)}
-                    className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-300 flex items-center justify-between group ${
-                      selectedCategory === null
-                        ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-800'
-                    }`}
+                {/* Collapsible Categories List */}
+                {isCategoriesOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="space-y-2"
                   >
-                    <span className="font-medium">All Products</span>
-                    <ChevronRight className={`w-4 h-4 transition-transform duration-300 ${
-                      selectedCategory === null ? 'rotate-90 text-blue-600' : 'group-hover:translate-x-1'
-                    }`} />
-                  </button>
-
-                  {categoriesWithCounts.map((category) => (
                     <button
-                      key={category.slug}
-                      onClick={() => setSelectedCategory(category.slug)}
+                      onClick={() => setSelectedCategory(null)}
                       className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-300 flex items-center justify-between group ${
-                        selectedCategory === category.slug
+                        selectedCategory === null
                           ? 'bg-blue-50 text-blue-700 border border-blue-200'
                           : 'text-slate-600 hover:bg-slate-50 hover:text-slate-800'
                       }`}
                     >
-                      <span className="font-medium">{category.name}</span>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary" className="text-xs">
-                          {category.count}
-                        </Badge>
-                        <ChevronRight className={`w-4 h-4 transition-transform duration-300 ${
-                          selectedCategory === category.slug ? 'rotate-90 text-blue-600' : 'group-hover:translate-x-1'
-                        }`} />
-                      </div>
+                      <span className="font-medium">All Products</span>
+                      <ChevronRight className={`w-4 h-4 transition-transform duration-300 ${
+                        selectedCategory === null ? 'rotate-90 text-blue-600' : 'group-hover:translate-x-1'
+                      }`} />
                     </button>
-                  ))}
-                </div>
+
+                    {categoriesWithCounts.map((category) => (
+                      <button
+                        key={category.slug}
+                        onClick={() => setSelectedCategory(category.slug)}
+                        className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-300 flex items-center justify-between group ${
+                          selectedCategory === category.slug
+                            ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                            : 'text-slate-600 hover:bg-slate-50 hover:text-slate-800'
+                        }`}
+                      >
+                        <span className="font-medium">{category.name}</span>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="secondary" className="text-xs">
+                            {category.count}
+                          </Badge>
+                          <ChevronRight className={`w-4 h-4 transition-transform duration-300 ${
+                            selectedCategory === category.slug ? 'rotate-90 text-blue-600' : 'group-hover:translate-x-1'
+                          }`} />
+                        </div>
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
 
                 {/* Filter Options */}
                 <div className="mt-8 pt-6 border-t border-slate-200 space-y-6">
