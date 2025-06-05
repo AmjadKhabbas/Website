@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ArrowRight, Laptop, Shirt, Home, Dumbbell, Book, Heart, Star, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, ArrowRight, Laptop, Shirt, Home, Dumbbell, Book, Heart, Star, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -137,10 +137,34 @@ const HeroSlideshow = () => {
 
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isSearchLoading, setIsSearchLoading] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
   const [, navigate] = useLocation();
   const [featuredIndex, setFeaturedIndex] = useState(0);
   const [showAllFeatured, setShowAllFeatured] = useState(false);
   const [scrollY, setScrollY] = useState(0);
+
+  // Handle click outside search to close suggestions
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Show suggestions when user types
+  useEffect(() => {
+    if (searchQuery.trim().length > 1) {
+      setShowSuggestions(true);
+    } else {
+      setShowSuggestions(false);
+    }
+  }, [searchQuery]);
 
   // Scroll animation effect
   useEffect(() => {
@@ -174,10 +198,47 @@ export default function HomePage() {
     queryKey: ['/api/products', { featured: true }],
   });
 
+  // Fetch all products for search suggestions
+  const { data: products = [] } = useQuery<ProductWithCategory[]>({
+    queryKey: ['/api/products'],
+  });
+
+  // Filter products based on search query for suggestions
+  const searchSuggestions = searchQuery.trim() 
+    ? products.filter(product => 
+        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (product.category?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
+      ).slice(0, 6) // Limit to 6 suggestions
+    : [];
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
+      setIsSearchLoading(true);
       navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+      setShowSuggestions(false);
+      setTimeout(() => setIsSearchLoading(false), 500);
+    }
+  };
+
+  const handleSuggestionClick = (product: ProductWithCategory) => {
+    setSearchQuery(product.name);
+    setShowSuggestions(false);
+    navigate(`/product/${product.id}`);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+  };
+
+  const handleViewAllResults = () => {
+    if (searchQuery.trim()) {
+      setIsSearchLoading(true);
+      navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+      setShowSuggestions(false);
+      setTimeout(() => setIsSearchLoading(false), 500);
     }
   };
 
@@ -214,29 +275,109 @@ export default function HomePage() {
             <HeroSlideshow />
           </div>
           
-          {/* Enhanced Search */}
+          {/* Enhanced Search with Live Suggestions */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
             className="max-w-3xl mx-auto mb-12"
+            ref={searchRef}
           >
-            <form onSubmit={handleSearch} className="relative">
-              <Input
-                type="text"
-                placeholder="Search medical products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-16 pr-24 py-6 text-lg bg-white border-2 border-slate-300 rounded-lg text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-300 shadow-lg"
-              />
-              <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 text-slate-400 w-6 h-6" />
-              <Button
-                type="submit"
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 btn-medical-secondary"
-              >
-                Search
-              </Button>
-            </form>
+            <div className="relative">
+              <form onSubmit={handleSearch} className="relative">
+                <Input
+                  type="text"
+                  placeholder="Search medical products..."
+                  value={searchQuery}
+                  onChange={handleInputChange}
+                  onFocus={() => searchQuery.trim().length > 1 && setShowSuggestions(true)}
+                  className="w-full pl-16 pr-24 py-6 text-lg bg-white border-2 border-slate-300 rounded-lg text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-300 shadow-lg"
+                />
+                <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 text-slate-400 w-6 h-6" />
+                <Button
+                  type="submit"
+                  disabled={isSearchLoading}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 btn-medical-secondary"
+                >
+                  {isSearchLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    "Search"
+                  )}
+                </Button>
+              </form>
+
+              {/* Live Search Suggestions Dropdown */}
+              <AnimatePresence>
+                {showSuggestions && searchSuggestions.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto"
+                  >
+                    {/* Search Results Header */}
+                    <div className="px-4 py-3 border-b border-slate-200 bg-slate-50">
+                      <p className="text-sm font-medium text-slate-700">
+                        {searchSuggestions.length} product{searchSuggestions.length !== 1 ? 's' : ''} found
+                      </p>
+                    </div>
+
+                    {/* Product Suggestions */}
+                    <div className="py-2">
+                      {searchSuggestions.map((product, index) => (
+                        <motion.div
+                          key={product.id}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.05 }}
+                          onClick={() => handleSuggestionClick(product)}
+                          className="px-4 py-3 hover:bg-slate-50 cursor-pointer transition-colors duration-200 flex items-center space-x-3"
+                        >
+                          <img
+                            src={product.imageUrl}
+                            alt={product.name}
+                            className="w-12 h-12 object-cover rounded-md border border-slate-200"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-medium text-slate-800 truncate">
+                              {product.name}
+                            </h4>
+                            <p className="text-sm text-slate-600 truncate">
+                              {product.description}
+                            </p>
+                            <div className="flex items-center justify-between mt-1">
+                              <span className="text-sm font-semibold text-teal-600">
+                                ${product.price}
+                              </span>
+                              {product.category && (
+                                <Badge variant="secondary" className="text-xs">
+                                  {product.category.name}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+
+                    {/* View All Results Footer */}
+                    <div className="px-4 py-3 border-t border-slate-200 bg-slate-50">
+                      <Button
+                        onClick={handleViewAllResults}
+                        variant="outline"
+                        size="sm"
+                        className="w-full text-teal-600 border-teal-600 hover:bg-teal-50"
+                      >
+                        View all results for "{searchQuery}"
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </Button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </motion.div>
 
           {/* Medical Category Pills */}
