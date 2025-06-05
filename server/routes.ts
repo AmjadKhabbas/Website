@@ -2,18 +2,119 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertCartItemSchema, insertOrderSchema, insertOrderItemSchema } from "@shared/schema";
+import { insertCartItemSchema, insertOrderSchema, insertOrderItemSchema, insertEhriAccountSchema, insertUserSchema } from "@shared/schema";
 import session from "express-session";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
 
+  // Ehri Account Linking Routes
+  app.post('/api/auth/link-ehri', async (req, res) => {
+    try {
+      const { ehriId, email } = req.body;
+      
+      // Check if Ehri account already exists
+      const existingAccount = await storage.getEhriAccountByEhriId(ehriId);
+      if (existingAccount) {
+        return res.status(400).json({ message: 'Ehri account already linked' });
+      }
+      
+      // Generate verification token
+      const verificationToken = Math.random().toString(36).substring(2, 15);
+      
+      // Create Ehri account entry
+      const ehriAccount = await storage.createEhriAccount({
+        ehriId,
+        email,
+        verificationToken
+      });
+      
+      res.json({ 
+        message: 'Ehri account linking initiated. Please verify with the provided token.',
+        verificationToken,
+        ehriAccountId: ehriAccount.id
+      });
+    } catch (error) {
+      console.error('Error linking Ehri account:', error);
+      res.status(500).json({ message: 'Failed to link Ehri account' });
+    }
+  });
+
+  app.post('/api/auth/verify-ehri', async (req, res) => {
+    try {
+      const { ehriId, token } = req.body;
+      
+      const verified = await storage.verifyEhriAccount(ehriId, token);
+      if (verified) {
+        res.json({ message: 'Ehri account verified successfully' });
+      } else {
+        res.status(400).json({ message: 'Invalid verification token or Ehri ID' });
+      }
+    } catch (error) {
+      console.error('Error verifying Ehri account:', error);
+      res.status(500).json({ message: 'Failed to verify Ehri account' });
+    }
+  });
+
+  app.post('/api/auth/register', async (req, res) => {
+    try {
+      const userData = req.body;
+      
+      // Validate that the Ehri account exists and is verified
+      const ehriAccount = await storage.getEhriAccountByEhriId(userData.ehriId);
+      if (!ehriAccount) {
+        return res.status(400).json({ message: 'Ehri account not found. Please link your Ehri account first.' });
+      }
+      
+      if (!ehriAccount.isVerified) {
+        return res.status(400).json({ message: 'Ehri account not verified. Please verify your Ehri account first.' });
+      }
+      
+      // Check if user already exists with this email
+      const existingUser = await storage.getUserByEmail(userData.email);
+      if (existingUser) {
+        return res.status(400).json({ message: 'User with this email already exists' });
+      }
+      
+      // Create user with Ehri account reference
+      const userToCreate = {
+        ...userData,
+        ehriAccountId: ehriAccount.id
+      };
+      
+      const newUser = await storage.createUser(userToCreate);
+      res.status(201).json({ 
+        message: 'Registration successful. Your account is pending approval.',
+        user: newUser
+      });
+    } catch (error) {
+      console.error('Error registering user:', error);
+      res.status(500).json({ message: 'Failed to register user' });
+    }
+  });
+
+  app.get('/api/auth/check-ehri/:ehriId', async (req, res) => {
+    try {
+      const { ehriId } = req.params;
+      const ehriAccount = await storage.getEhriAccountByEhriId(ehriId);
+      
+      res.json({
+        exists: !!ehriAccount,
+        verified: ehriAccount?.isVerified || false,
+        linked: ehriAccount?.linkedAt ? true : false
+      });
+    } catch (error) {
+      console.error('Error checking Ehri account:', error);
+      res.status(500).json({ message: 'Failed to check Ehri account' });
+    }
+  });
+
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
+      const user = await storage.getUser(parseInt(userId));
       res.json(user);
     } catch (error) {
       console.error("Error fetching user:", error);
