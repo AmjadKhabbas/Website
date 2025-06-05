@@ -339,25 +339,25 @@ export default function ProductsPage() {
                     variant="ghost"
                     size="sm"
                     onClick={() => setViewMode('grid')}
-                    className={`px-3 py-2 rounded-md transition-all duration-200 ${
+                    className={`px-4 py-3 rounded-md transition-all duration-200 min-w-[44px] min-h-[44px] flex items-center justify-center ${
                       viewMode === 'grid' 
                         ? 'bg-white text-blue-600 shadow-sm' 
                         : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50'
                     }`}
                   >
-                    <Grid className="w-4 h-4" />
+                    <Grid className="w-5 h-5" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => setViewMode('list')}
-                    className={`px-3 py-2 rounded-md transition-all duration-200 ${
+                    className={`px-4 py-3 rounded-md transition-all duration-200 min-w-[44px] min-h-[44px] flex items-center justify-center ${
                       viewMode === 'list' 
                         ? 'bg-white text-blue-600 shadow-sm' 
                         : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50'
                     }`}
                   >
-                    <List className="w-4 h-4" />
+                    <List className="w-5 h-5" />
                   </Button>
                 </div>
               </div>
