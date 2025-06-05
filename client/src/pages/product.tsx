@@ -283,36 +283,17 @@ export default function ProductPage() {
                 {/* Action Buttons */}
                 <div className="flex space-x-4">
                   <Button
-                    onClick={() => addToCartMutation.mutate()}
-                    disabled={!product.inStock || addToCartMutation.isPending}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-4 text-lg font-semibold rounded-xl"
-                  >
-                    {addToCartMutation.isPending ? (
-                      <div className="flex items-center space-x-2">
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        <span>Adding...</span>
-                      </div>
-                    ) : !product.inStock ? (
-                      'Out of Stock'
-                    ) : (
-                      <div className="flex items-center justify-center space-x-2">
-                        <ShoppingCart className="w-5 h-5" />
-                        <span>Add to Cart</span>
-                      </div>
-                    )}
-                  </Button>
-
-                  <Button
                     variant="outline"
                     size="lg"
                     onClick={() => setIsWishlisted(!isWishlisted)}
-                    className="px-6 border-gray-600 text-gray-300 hover:text-white hover:bg-gray-800"
+                    className="flex-1 border-gray-600 text-gray-300 hover:text-white hover:bg-gray-800"
                   >
                     <Heart
-                      className={`w-5 h-5 ${
+                      className={`w-5 h-5 mr-2 ${
                         isWishlisted ? 'text-red-500 fill-red-500' : 'text-gray-300'
                       }`}
                     />
+                    {isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'}
                   </Button>
 
                   <Button variant="outline" size="lg" className="px-6 border-gray-600 text-gray-300 hover:text-white hover:bg-gray-800">
