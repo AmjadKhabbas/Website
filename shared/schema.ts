@@ -46,13 +46,53 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
-// User storage table for authentication
+// Ehri account linking table
+export const ehriAccounts = pgTable("ehri_accounts", {
+  id: serial("id").primaryKey(),
+  ehriId: varchar("ehri_id").notNull().unique(),
+  email: varchar("email").notNull(),
+  isVerified: boolean("is_verified").notNull().default(false),
+  verificationToken: varchar("verification_token"),
+  linkedAt: timestamp("linked_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// User registration table
 export const users = pgTable("users", {
-  id: varchar("id").primaryKey().notNull(),
-  email: varchar("email").unique(),
-  firstName: varchar("first_name"),
-  lastName: varchar("last_name"),
-  profileImageUrl: varchar("profile_image_url"),
+  id: serial("id").primaryKey(),
+  ehriAccountId: integer("ehri_account_id").notNull(),
+  // Personal Information
+  firstName: varchar("first_name").notNull(),
+  lastName: varchar("last_name").notNull(),
+  email: varchar("email").notNull().unique(),
+  phone: varchar("phone").notNull(),
+  
+  // Professional Information
+  licenseNumber: varchar("license_number").notNull(),
+  licenseState: varchar("license_state").notNull(),
+  licenseExpiration: varchar("license_expiration").notNull(),
+  specialty: varchar("specialty").notNull(),
+  
+  // Practice Information
+  practiceName: varchar("practice_name").notNull(),
+  practiceType: varchar("practice_type").notNull(),
+  practiceAddress: varchar("practice_address").notNull(),
+  practiceCity: varchar("practice_city").notNull(),
+  practiceState: varchar("practice_state").notNull(),
+  practiceZip: varchar("practice_zip").notNull(),
+  
+  // Additional Information
+  deaNumber: varchar("dea_number"),
+  npiNumber: varchar("npi_number"),
+  yearsInPractice: varchar("years_in_practice").notNull(),
+  averagePatientsPerMonth: varchar("average_patients_per_month").notNull(),
+  
+  // Account Status
+  isApproved: boolean("is_approved").notNull().default(false),
+  approvedAt: timestamp("approved_at"),
+  approvedBy: varchar("approved_by"),
+  
+  // Timestamps
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -120,7 +160,19 @@ export const insertCartItemSchema = createInsertSchema(cartItems).omit({
   id: true,
 });
 
+// Schema validation for new tables
+export const insertEhriAccountSchema = createInsertSchema(ehriAccounts).omit({
+  id: true,
+  isVerified: true,
+  linkedAt: true,
+  createdAt: true,
+});
+
 export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+  isApproved: true,
+  approvedAt: true,
+  approvedBy: true,
   createdAt: true,
   updatedAt: true,
 });
@@ -143,7 +195,18 @@ export const insertReferralSchema = createInsertSchema(referrals).omit({
 });
 
 // Database relations
-export const usersRelations = relations(users, ({ many }) => ({
+export const ehriAccountsRelations = relations(ehriAccounts, ({ one }) => ({
+  user: one(users, {
+    fields: [ehriAccounts.id],
+    references: [users.ehriAccountId],
+  }),
+}));
+
+export const usersRelations = relations(users, ({ one, many }) => ({
+  ehriAccount: one(ehriAccounts, {
+    fields: [users.ehriAccountId],
+    references: [ehriAccounts.id],
+  }),
   orders: many(orders),
 }));
 
@@ -187,7 +250,11 @@ export type Product = typeof products.$inferSelect;
 export type InsertCartItem = z.infer<typeof insertCartItemSchema>;
 export type CartItem = typeof cartItems.$inferSelect;
 
-export type UpsertUser = typeof users.$inferInsert;
+// Authentication types
+export type InsertEhriAccount = z.infer<typeof insertEhriAccountSchema>;
+export type EhriAccount = typeof ehriAccounts.$inferSelect;
+
+export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 
 export type InsertOrder = z.infer<typeof insertOrderSchema>;

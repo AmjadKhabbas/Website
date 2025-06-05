@@ -8,9 +8,18 @@ import { db } from "./db";
 import { eq, and, desc, ilike, or } from "drizzle-orm";
 
 export interface IStorage {
-  // User operations (required for authentication)
-  getUser(id: string): Promise<User | undefined>;
-  upsertUser(user: UpsertUser): Promise<User>;
+  // Ehri Account operations
+  createEhriAccount(account: InsertEhriAccount): Promise<EhriAccount>;
+  getEhriAccountByEhriId(ehriId: string): Promise<EhriAccount | undefined>;
+  getEhriAccountByEmail(email: string): Promise<EhriAccount | undefined>;
+  verifyEhriAccount(ehriId: string, token: string): Promise<boolean>;
+  
+  // User operations
+  createUser(user: InsertUser): Promise<User>;
+  getUser(id: number): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  getUserByEhriId(ehriId: string): Promise<User | undefined>;
+  approveUser(userId: number, approvedBy: string): Promise<User | undefined>;
   
   // Categories
   getCategories(): Promise<Category[]>;
