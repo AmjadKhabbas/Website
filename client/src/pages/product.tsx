@@ -9,14 +9,15 @@ import { Separator } from '@/components/ui/separator';
 import { ProductCard } from '@/components/product-card';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/components/toast';
+import { useCartStore } from '@/lib/cart';
 import type { Product, ProductWithCategory } from '@shared/schema';
 
 export default function ProductPage() {
   const { id } = useParams<{ id: string }>();
-  const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const { success, error } = useToast();
   const queryClient = useQueryClient();
+  const { items } = useCartStore();
 
   const { data: product, isLoading } = useQuery<Product>({
     queryKey: ['/api/products', id],
@@ -38,21 +39,53 @@ export default function ProductPage() {
     enabled: !!product,
   });
 
+  // Get current quantity in cart
+  const cartItem = items.find(item => item.product.id === parseInt(id!));
+  const currentQuantity = cartItem?.quantity || 0;
+
   const addToCartMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (quantity: number) => {
       await apiRequest('POST', '/api/cart', {
         productId: parseInt(id!),
-        quantity,
+        quantity: quantity,
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/cart'] });
-      success(`Added ${quantity} item(s) to cart!`);
+      success('Cart updated!');
     },
     onError: () => {
-      error('Failed to add product to cart');
+      error('Failed to update cart');
     },
   });
+
+  const updateQuantityMutation = useMutation({
+    mutationFn: async ({ cartItemId, quantity }: { cartItemId: number; quantity: number }) => {
+      if (quantity === 0) {
+        await apiRequest('DELETE', `/api/cart/${cartItemId}`);
+      } else {
+        await apiRequest('PUT', `/api/cart/${cartItemId}`, { quantity });
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/cart'] });
+    },
+    onError: () => {
+      error('Failed to update quantity');
+    },
+  });
+
+  const handleQuantityChange = (newQuantity: number) => {
+    if (newQuantity < 0) return;
+    
+    if (cartItem) {
+      // Item exists in cart, update it
+      updateQuantityMutation.mutate({ cartItemId: cartItem.id, quantity: newQuantity });
+    } else if (newQuantity > 0) {
+      // Item doesn't exist, add it
+      addToCartMutation.mutate(newQuantity);
+    }
+  };
 
   const formatPrice = (price: string) => {
     return new Intl.NumberFormat('en-US', {
@@ -192,33 +225,59 @@ export default function ProductPage() {
 
               <Separator className="bg-gray-700" />
 
-              {/* Quantity and Actions */}
+              {/* Quantity Controls */}
               <div className="space-y-6">
-                {/* Quantity Selector */}
-                <div className="flex items-center space-x-4">
-                  <span className="text-lg font-semibold text-white">Quantity:</span>
-                  <div className="flex items-center border border-gray-600 rounded-lg bg-gray-800">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                      disabled={quantity <= 1}
-                      className="px-3 py-2 text-gray-300 hover:text-white hover:bg-gray-700"
-                    >
-                      <Minus className="w-4 h-4" />
+                <div className="space-y-4">
+                  <span className="text-lg font-semibold text-white">Add to Cart:</span>
+                  {!product.inStock ? (
+                    <Button disabled className="w-full py-4 rounded-lg font-semibold text-lg">
+                      Out of Stock
                     </Button>
-                    <span className="px-4 py-2 text-lg font-semibold border-x border-gray-600 text-white">
-                      {quantity}
-                    </span>
+                  ) : currentQuantity === 0 ? (
                     <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setQuantity(quantity + 1)}
-                      className="px-3 py-2 text-gray-300 hover:text-white hover:bg-gray-700"
+                      onClick={() => handleQuantityChange(1)}
+                      disabled={addToCartMutation.isPending}
+                      className="w-full bg-white border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white py-4 rounded-lg transition-all duration-300 font-semibold text-lg transform hover:scale-[1.02]"
                     >
-                      <Plus className="w-4 h-4" />
+                      {addToCartMutation.isPending ? (
+                        <div className="flex items-center justify-center space-x-2">
+                          <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                          <span>Adding...</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-center space-x-2">
+                          <ShoppingCart className="w-5 h-5" />
+                          <span>Add to Cart</span>
+                        </div>
+                      )}
                     </Button>
-                  </div>
+                  ) : (
+                    <div className="flex items-center justify-between bg-blue-50 border-2 border-blue-600 rounded-lg p-4">
+                      <Button
+                        onClick={() => handleQuantityChange(currentQuantity - 1)}
+                        disabled={updateQuantityMutation.isPending}
+                        size="lg"
+                        variant="ghost"
+                        className="h-12 w-12 p-0 text-blue-600 hover:bg-blue-100 text-xl"
+                      >
+                        <Minus className="w-6 h-6" />
+                      </Button>
+                      
+                      <span className="flex-1 text-center font-bold text-blue-700 text-2xl">
+                        {currentQuantity}
+                      </span>
+                      
+                      <Button
+                        onClick={() => handleQuantityChange(currentQuantity + 1)}
+                        disabled={updateQuantityMutation.isPending}
+                        size="lg"
+                        variant="ghost"
+                        className="h-12 w-12 p-0 text-blue-600 hover:bg-blue-100 text-xl"
+                      >
+                        <Plus className="w-6 h-6" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Action Buttons */}

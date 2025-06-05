@@ -1,12 +1,13 @@
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, Plus, Minus } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import type { ProductWithCategory } from '@shared/schema';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/components/toast';
 import { Link } from 'wouter';
+import { useCartStore } from '@/lib/cart';
 
 interface ProductCardProps {
   product: ProductWithCategory;
@@ -16,22 +17,55 @@ interface ProductCardProps {
 export function ProductCard({ product, index = 0 }: ProductCardProps) {
   const { success, error } = useToast();
   const queryClient = useQueryClient();
+  const { items } = useCartStore();
+
+  // Get current quantity in cart
+  const cartItem = items.find(item => item.product.id === product.id);
+  const currentQuantity = cartItem?.quantity || 0;
 
   const addToCartMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (quantity: number) => {
       await apiRequest('POST', '/api/cart', {
         productId: product.id,
-        quantity: 1,
+        quantity: quantity,
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/cart'] });
-      success('Product added to cart!');
+      success('Cart updated!');
     },
     onError: () => {
-      error('Failed to add product to cart');
+      error('Failed to update cart');
     },
   });
+
+  const updateQuantityMutation = useMutation({
+    mutationFn: async ({ cartItemId, quantity }: { cartItemId: number; quantity: number }) => {
+      if (quantity === 0) {
+        await apiRequest('DELETE', `/api/cart/${cartItemId}`);
+      } else {
+        await apiRequest('PUT', `/api/cart/${cartItemId}`, { quantity });
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/cart'] });
+    },
+    onError: () => {
+      error('Failed to update quantity');
+    },
+  });
+
+  const handleQuantityChange = (newQuantity: number) => {
+    if (newQuantity < 0) return;
+    
+    if (cartItem) {
+      // Item exists in cart, update it
+      updateQuantityMutation.mutate({ cartItemId: cartItem.id, quantity: newQuantity });
+    } else if (newQuantity > 0) {
+      // Item doesn't exist, add it
+      addToCartMutation.mutate(newQuantity);
+    }
+  };
 
   const formatPrice = (price: string) => {
     return new Intl.NumberFormat('en-US', {
@@ -101,27 +135,57 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
           </div>
         </div>
         
-        {/* Add to Cart Button - Always at bottom */}
+        {/* Quantity Controls - Always at bottom */}
         <div className="mt-auto">
-          <Button
-            onClick={() => addToCartMutation.mutate()}
-            disabled={!product.inStock || addToCartMutation.isPending}
-            className="w-full bg-white border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white py-3 rounded-lg transition-all duration-300 font-semibold transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {addToCartMutation.isPending ? (
-              <div className="flex items-center justify-center space-x-2">
-                <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                <span>Adding...</span>
-              </div>
-            ) : !product.inStock ? (
-              'Out of Stock'
-            ) : (
-              <div className="flex items-center justify-center space-x-2">
-                <ShoppingCart className="w-4 h-4" />
-                <span>Add to Cart</span>
-              </div>
-            )}
-          </Button>
+          {!product.inStock ? (
+            <Button disabled className="w-full py-3 rounded-lg font-semibold">
+              Out of Stock
+            </Button>
+          ) : currentQuantity === 0 ? (
+            <Button
+              onClick={() => handleQuantityChange(1)}
+              disabled={addToCartMutation.isPending}
+              className="w-full bg-white border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white py-3 rounded-lg transition-all duration-300 font-semibold transform hover:scale-[1.02]"
+            >
+              {addToCartMutation.isPending ? (
+                <div className="flex items-center justify-center space-x-2">
+                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  <span>Adding...</span>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center space-x-2">
+                  <ShoppingCart className="w-4 h-4" />
+                  <span>Add to Cart</span>
+                </div>
+              )}
+            </Button>
+          ) : (
+            <div className="flex items-center justify-between bg-blue-50 border-2 border-blue-600 rounded-lg p-2">
+              <Button
+                onClick={() => handleQuantityChange(currentQuantity - 1)}
+                disabled={updateQuantityMutation.isPending}
+                size="sm"
+                variant="ghost"
+                className="h-8 w-8 p-0 text-blue-600 hover:bg-blue-100"
+              >
+                <Minus className="w-4 h-4" />
+              </Button>
+              
+              <span className="flex-1 text-center font-semibold text-blue-700 text-lg">
+                {currentQuantity}
+              </span>
+              
+              <Button
+                onClick={() => handleQuantityChange(currentQuantity + 1)}
+                disabled={updateQuantityMutation.isPending}
+                size="sm"
+                variant="ghost"
+                className="h-8 w-8 p-0 text-blue-600 hover:bg-blue-100"
+              >
+                <Plus className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </motion.div>
