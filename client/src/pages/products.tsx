@@ -83,9 +83,9 @@ export default function ProductsPage() {
   return (
     <div className="min-h-screen bg-slate-50 pt-20">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-blue-50 via-white to-slate-50 py-8 scroll-reveal">
+      <section className="bg-gradient-to-br from-blue-50 via-white to-slate-50 py-4 scroll-reveal">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-6">
+          <div className="text-center mb-3">
             <motion.h1 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -123,7 +123,7 @@ export default function ProductsPage() {
       </section>
 
       {/* Main Content */}
-      <section className="py-4">
+      <section className="pb-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex gap-8">
             {/* Sidebar - Medical Categories */}
