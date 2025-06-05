@@ -379,7 +379,7 @@ export default function ProductsPage() {
                       transition={{ delay: index * 0.1 }}
                       className="scroll-reveal"
                     >
-                      <ProductCard product={product} index={index} />
+                      <ProductCard product={product} index={index} viewMode={viewMode} />
                     </motion.div>
                   ))}
                 </div>
