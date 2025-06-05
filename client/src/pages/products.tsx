@@ -133,9 +133,7 @@ export default function ProductsPage() {
               transition={{ delay: 0.3 }}
               className="w-80 flex-shrink-0"
             >
-              <div className={`bg-white rounded-xl shadow-sm border border-slate-200 p-6 transition-all duration-300 ${
-                isScrolled ? 'sticky top-28' : ''
-              }`}>
+              <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto">
                 <h3 className="text-lg font-semibold text-slate-800 mb-6">Medical Categories</h3>
                 
                 <div className="space-y-2">
