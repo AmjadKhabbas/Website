@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useNavigate } from "wouter";
+import { useLocation } from "wouter";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Loader2, CheckCircle, AlertCircle } from "lucide-react";
@@ -23,7 +23,7 @@ export default function LinkEhriPage() {
   const [step, setStep] = useState<"link" | "verify">("link");
   const [verificationToken, setVerificationToken] = useState("");
   const [ehriId, setEhriId] = useState("");
-  const [, navigate] = useNavigate();
+  const [, setLocation] = useLocation();
 
   const form = useForm<LinkEhriFormData>({
     resolver: zodResolver(linkEhriSchema),
@@ -35,11 +35,13 @@ export default function LinkEhriPage() {
 
   const linkEhriMutation = useMutation({
     mutationFn: async (data: LinkEhriFormData) => {
-      const response = await apiRequest("/api/auth/link-ehri", {
+      const response = await fetch("/api/auth/link-ehri", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-      return response;
+      if (!response.ok) throw new Error("Failed to link Ehri account");
+      return response.json();
     },
     onSuccess: (data) => {
       setVerificationToken(data.verificationToken);
@@ -50,14 +52,16 @@ export default function LinkEhriPage() {
 
   const verifyEhriMutation = useMutation({
     mutationFn: async (token: string) => {
-      const response = await apiRequest("/api/auth/verify-ehri", {
+      const response = await fetch("/api/auth/verify-ehri", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ehriId, token }),
       });
-      return response;
+      if (!response.ok) throw new Error("Failed to verify Ehri account");
+      return response.json();
     },
     onSuccess: () => {
-      navigate("/register");
+      setLocation("/register");
     },
   });
 

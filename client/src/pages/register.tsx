@@ -8,7 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useNavigate } from "wouter";
+import { useLocation } from "wouter";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Loader2, AlertCircle, CheckCircle } from "lucide-react";
@@ -75,7 +75,7 @@ const usStates = [
 ];
 
 export default function RegisterPage() {
-  const [, navigate] = useNavigate();
+  const [, setLocation] = useLocation();
   const [registrationComplete, setRegistrationComplete] = useState(false);
 
   const form = useForm<RegistrationFormData>({
@@ -105,11 +105,13 @@ export default function RegisterPage() {
 
   const registrationMutation = useMutation({
     mutationFn: async (data: RegistrationFormData) => {
-      const response = await apiRequest("/api/auth/register", {
+      const response = await fetch("/api/auth/register", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-      return response;
+      if (!response.ok) throw new Error("Failed to register user");
+      return response.json();
     },
     onSuccess: () => {
       setRegistrationComplete(true);
@@ -139,7 +141,7 @@ export default function RegisterPage() {
                 Thank you for registering. Your account is pending approval from our team. 
                 You will receive an email notification once your account has been approved.
               </p>
-              <Button onClick={() => navigate("/")} className="w-full">
+              <Button onClick={() => setLocation("/")} className="w-full">
                 Return to Home
               </Button>
             </CardContent>
@@ -519,7 +521,7 @@ export default function RegisterPage() {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => navigate("/link-ehri")}
+                    onClick={() => setLocation("/link-ehri")}
                   >
                     Back to Ehri Linking
                   </Button>
