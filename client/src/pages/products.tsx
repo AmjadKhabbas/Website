@@ -322,20 +322,28 @@ export default function ProductsPage() {
                   )}
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 bg-slate-100 rounded-lg p-1">
                   <Button
-                    variant={viewMode === 'grid' ? 'default' : 'outline'}
+                    variant="ghost"
                     size="sm"
                     onClick={() => setViewMode('grid')}
-                    className="px-3"
+                    className={`px-3 py-2 rounded-md transition-all duration-200 ${
+                      viewMode === 'grid' 
+                        ? 'bg-white text-blue-600 shadow-sm' 
+                        : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50'
+                    }`}
                   >
                     <Grid className="w-4 h-4" />
                   </Button>
                   <Button
-                    variant={viewMode === 'list' ? 'default' : 'outline'}
+                    variant="ghost"
                     size="sm"
                     onClick={() => setViewMode('list')}
-                    className="px-3"
+                    className={`px-3 py-2 rounded-md transition-all duration-200 ${
+                      viewMode === 'list' 
+                        ? 'bg-white text-blue-600 shadow-sm' 
+                        : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50'
+                    }`}
                   >
                     <List className="w-4 h-4" />
                   </Button>
