@@ -58,13 +58,27 @@ export function Header() {
     }
   }, [searchQuery]);
   
-  const { getTotalItems, openCart } = useCartStore();
+  const { getTotalItems, openCart, setItems } = useCartStore();
   const { user, isLoading, isAuthenticated } = useAuth();
 
+  // Fetch cart data and sync with store
+  const { data: cartData } = useQuery({
+    queryKey: ['/api/cart'],
+    enabled: true, // Always fetch cart data
+  });
+
+  // Sync cart data with store when it changes
+  useEffect(() => {
+    if (cartData) {
+      setItems(cartData);
+    }
+  }, [cartData, setItems]);
+
   // Fetch products for search suggestions
-  const { data: products = [] } = useQuery<ProductWithCategory[]>({
+  const { data: productsResponse } = useQuery({
     queryKey: ['/api/products'],
   });
+  const products = productsResponse?.products || [];
 
   // Filter products based on search query for suggestions
   const searchSuggestions = searchQuery.trim() 
@@ -233,7 +247,7 @@ export function Header() {
                 <form onSubmit={handleSearch} className="relative w-full">
                   <Input
                     type="text"
-                    placeholder="Search medical products..."
+                    placeholder="Search"
                     value={searchQuery}
                     onChange={handleInputChange}
                     onFocus={() => searchQuery.trim().length > 1 && setShowSuggestions(true)}

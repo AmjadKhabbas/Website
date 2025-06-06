@@ -289,7 +289,7 @@ export default function HomePage() {
               <form onSubmit={handleSearch} className="relative">
                 <Input
                   type="text"
-                  placeholder="Search medical products..."
+                  placeholder="Search"
                   value={searchQuery}
                   onChange={handleInputChange}
                   onFocus={() => searchQuery.trim().length > 1 && setShowSuggestions(true)}
