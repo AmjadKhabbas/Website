@@ -38,7 +38,7 @@ export default function ProductsPage() {
     }
   }, [location]);
 
-  const { data: products = [], isLoading } = useQuery<ProductWithCategory[]>({
+  const { data: productsResponse, isLoading } = useQuery({
     queryKey: ['/api/products', { 
       categorySlug: selectedCategory,
       search: searchQuery 
@@ -53,20 +53,24 @@ export default function ProductsPage() {
       return response.json();
     }
   });
+  
+  const products = productsResponse?.products || [];
+  const isAdmin = productsResponse?.isAdmin || false;
 
   const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ['/api/categories'],
   });
 
   // Get all products for counting purposes (not filtered)
-  const { data: allProducts = [] } = useQuery<ProductWithCategory[]>({
+  const { data: allProductsResponse } = useQuery({
     queryKey: ['/api/products'],
   });
+  const allProducts = (allProductsResponse as any)?.products || [];
 
   // Calculate product counts for each category based on all products
   const categoriesWithCounts = categories.map(category => ({
     ...category,
-    count: allProducts.filter(product => product.categoryId === category.id).length
+    count: allProducts.filter((product: ProductWithCategory) => product.categoryId === category.id).length
   }));
 
   useEffect(() => {
@@ -77,7 +81,7 @@ export default function ProductsPage() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const filteredProducts = products.filter(product => {
+  const filteredProducts = products.filter((product: ProductWithCategory) => {
     const matchesSearch = !searchQuery || 
       product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       product.description.toLowerCase().includes(searchQuery.toLowerCase());
@@ -400,7 +404,7 @@ export default function ProductsPage() {
                   ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'
                   : 'space-y-4'
                 }>
-                  {filteredProducts.map((product, index) => (
+                  {filteredProducts.map((product: ProductWithCategory, index: number) => (
                     <motion.div
                       key={product.id}
                       initial={{ opacity: 0, y: 20 }}
