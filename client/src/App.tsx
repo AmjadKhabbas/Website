@@ -14,8 +14,7 @@ import OrdersPage from "@/pages/orders";
 import ReferralsPage from "@/pages/referrals";
 import FAQPage from "@/pages/faq";
 import ContactPage from "@/pages/contact";
-import LinkEhriPage from "@/pages/link-ehri";
-import RegisterPage from "@/pages/register";
+import AuthPage from "@/pages/auth";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -29,8 +28,7 @@ function Router() {
       <Route path="/referrals" component={ReferralsPage} />
       <Route path="/faq" component={FAQPage} />
       <Route path="/contact" component={ContactPage} />
-      <Route path="/link-ehri" component={LinkEhriPage} />
-      <Route path="/register" component={RegisterPage} />
+      <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />
     </Switch>
   );

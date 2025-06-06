@@ -433,15 +433,16 @@ export function Header() {
                       </Button>
                     </div>
                   ) : (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => window.location.href = '/api/login'}
-                      className="hidden sm:flex items-center space-x-2 p-3 text-slate-600 hover:text-blue-600 bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-200 rounded-lg transition-all duration-300"
-                    >
-                      <LogIn className="w-5 h-5" />
-                      <span className="text-sm font-medium">Login</span>
-                    </Button>
+                    <Link href="/auth">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="hidden sm:flex items-center space-x-2 p-3 text-slate-600 hover:text-blue-600 bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-200 rounded-lg transition-all duration-300"
+                      >
+                        <LogIn className="w-5 h-5" />
+                        <span className="text-sm font-medium">Sign In</span>
+                      </Button>
+                    </Link>
                   )}
                 </>
               )}
