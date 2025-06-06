@@ -10,6 +10,7 @@ import { useCartStore } from '@/lib/cart';
 import { MobileMenu } from '@/components/mobile-menu';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
+import { useAdmin } from '@/hooks/useAdmin';
 import type { Category, ProductWithCategory } from '@shared/schema';
 
 export function Header() {

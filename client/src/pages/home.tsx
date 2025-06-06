@@ -194,14 +194,16 @@ export default function HomePage() {
     queryKey: ['/api/categories'],
   });
 
-  const { data: featuredProducts = [] } = useQuery<ProductWithCategory[]>({
+  const { data: featuredProductsResponse } = useQuery({
     queryKey: ['/api/products', { featured: true }],
   });
+  const featuredProducts = featuredProductsResponse?.products || [];
 
   // Fetch all products for search suggestions
-  const { data: products = [] } = useQuery<ProductWithCategory[]>({
+  const { data: productsResponse } = useQuery({
     queryKey: ['/api/products'],
   });
+  const products = productsResponse?.products || [];
 
   // Filter products based on search query for suggestions
   const searchSuggestions = searchQuery.trim() 

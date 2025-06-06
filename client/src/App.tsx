@@ -30,6 +30,7 @@ function Router() {
       <Route path="/faq" component={FAQPage} />
       <Route path="/contact" component={ContactPage} />
       <Route path="/auth" component={AuthPage} />
+      <Route path="/admin" component={AdminLoginPage} />
       <Route component={NotFound} />
     </Switch>
   );
