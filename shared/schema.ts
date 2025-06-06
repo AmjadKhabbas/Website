@@ -57,38 +57,29 @@ export const ehriAccounts = pgTable("ehri_accounts", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// User registration table
+// Medical professionals user table with license verification
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
-  ehriAccountId: integer("ehri_account_id").notNull(),
-  // Personal Information
-  firstName: varchar("first_name").notNull(),
-  lastName: varchar("last_name").notNull(),
-  email: varchar("email").notNull().unique(),
-  phone: varchar("phone").notNull(),
   
-  // Professional Information
+  // Authentication Information
+  email: varchar("email").notNull().unique(),
+  password: varchar("password").notNull(), // bcrypt hashed password
+  
+  // Personal Information
+  fullName: varchar("full_name").notNull(),
+  
+  // Medical License Information
   licenseNumber: varchar("license_number").notNull(),
-  licenseState: varchar("license_state").notNull(),
-  licenseExpiration: varchar("license_expiration").notNull(),
-  specialty: varchar("specialty").notNull(),
+  collegeName: varchar("college_name").notNull(), // Professional Association Name
+  provinceState: varchar("province_state").notNull(), // Province or State of Registration
   
   // Practice Information
   practiceName: varchar("practice_name").notNull(),
-  practiceType: varchar("practice_type").notNull(),
-  practiceAddress: varchar("practice_address").notNull(),
-  practiceCity: varchar("practice_city").notNull(),
-  practiceState: varchar("practice_state").notNull(),
-  practiceZip: varchar("practice_zip").notNull(),
+  practiceAddress: text("practice_address").notNull(),
   
-  // Additional Information
-  deaNumber: varchar("dea_number"),
-  npiNumber: varchar("npi_number"),
-  yearsInPractice: varchar("years_in_practice").notNull(),
-  averagePatientsPerMonth: varchar("average_patients_per_month").notNull(),
-  
-  // Account Status
+  // Account Status & Verification
   isApproved: boolean("is_approved").notNull().default(false),
+  isLicenseVerified: boolean("is_license_verified").notNull().default(false),
   approvedAt: timestamp("approved_at"),
   approvedBy: varchar("approved_by"),
   
@@ -171,6 +162,7 @@ export const insertEhriAccountSchema = createInsertSchema(ehriAccounts).omit({
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   isApproved: true,
+  isLicenseVerified: true,
   approvedAt: true,
   approvedBy: true,
   createdAt: true,
@@ -195,18 +187,7 @@ export const insertReferralSchema = createInsertSchema(referrals).omit({
 });
 
 // Database relations
-export const ehriAccountsRelations = relations(ehriAccounts, ({ one }) => ({
-  user: one(users, {
-    fields: [ehriAccounts.id],
-    references: [users.ehriAccountId],
-  }),
-}));
-
-export const usersRelations = relations(users, ({ one, many }) => ({
-  ehriAccount: one(ehriAccounts, {
-    fields: [users.ehriAccountId],
-    references: [ehriAccounts.id],
-  }),
+export const usersRelations = relations(users, ({ many }) => ({
   orders: many(orders),
 }));
 
