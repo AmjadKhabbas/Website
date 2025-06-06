@@ -2,12 +2,188 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, requireAuth, requireApprovedUser } from "./auth";
+import { adminAuthService, requireAdminAuth, checkAdminStatus } from "./adminAuth";
 import { insertCartItemSchema, insertOrderSchema, insertOrderItemSchema, insertReferralSchema } from "@shared/schema";
 import session from "express-session";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication system with Passport.js
   setupAuth(app);
+  
+  // Initialize admin user on startup
+  await adminAuthService.initializeAdminUser();
+
+  // Admin Authentication Routes
+  app.post('/api/admin/login', async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({
+          message: 'Email and password are required',
+          code: 'MISSING_CREDENTIALS'
+        });
+      }
+      
+      const admin = await adminAuthService.authenticateAdmin(email, password);
+      
+      if (!admin) {
+        return res.status(401).json({
+          message: 'Invalid admin credentials',
+          code: 'INVALID_CREDENTIALS'
+        });
+      }
+      
+      // Store admin ID in session
+      req.session.adminId = admin.id;
+      
+      res.json({
+        message: 'Admin login successful',
+        admin: {
+          id: admin.id,
+          email: admin.email,
+          name: admin.name,
+          role: admin.role
+        }
+      });
+    } catch (error) {
+      console.error('Admin login error:', error);
+      res.status(500).json({
+        message: 'Internal server error',
+        code: 'SERVER_ERROR'
+      });
+    }
+  });
+
+  app.post('/api/admin/logout', (req, res) => {
+    req.session.adminId = null;
+    res.json({ message: 'Admin logout successful' });
+  });
+
+  app.get('/api/admin/status', async (req, res) => {
+    const adminId = req.session?.adminId;
+    
+    if (!adminId) {
+      return res.json({ isAdmin: false, admin: null });
+    }
+    
+    try {
+      const admin = await adminAuthService.verifyAdmin(adminId);
+      
+      if (!admin) {
+        req.session.adminId = null;
+        return res.json({ isAdmin: false, admin: null });
+      }
+      
+      res.json({
+        isAdmin: true,
+        admin: {
+          id: admin.id,
+          email: admin.email,
+          name: admin.name,
+          role: admin.role
+        }
+      });
+    } catch (error) {
+      console.error('Admin status check error:', error);
+      res.json({ isAdmin: false, admin: null });
+    }
+  });
+
+  // Admin Product Management Routes
+  app.put('/api/admin/products/:id/price', requireAdminAuth, async (req, res) => {
+    try {
+      const productId = parseInt(req.params.id);
+      const { price } = req.body;
+      
+      if (!price || isNaN(parseFloat(price))) {
+        return res.status(400).json({
+          message: 'Valid price is required',
+          code: 'INVALID_PRICE'
+        });
+      }
+      
+      const updatedProduct = await storage.updateProductPrice(productId, price);
+      
+      if (!updatedProduct) {
+        return res.status(404).json({
+          message: 'Product not found',
+          code: 'PRODUCT_NOT_FOUND'
+        });
+      }
+      
+      res.json({
+        message: 'Product price updated successfully',
+        product: updatedProduct
+      });
+    } catch (error) {
+      console.error('Update product price error:', error);
+      res.status(500).json({
+        message: 'Failed to update product price',
+        code: 'UPDATE_FAILED'
+      });
+    }
+  });
+
+  app.put('/api/admin/products/:id/image', requireAdminAuth, async (req, res) => {
+    try {
+      const productId = parseInt(req.params.id);
+      const { imageUrl } = req.body;
+      
+      if (!imageUrl) {
+        return res.status(400).json({
+          message: 'Image URL is required',
+          code: 'MISSING_IMAGE_URL'
+        });
+      }
+      
+      const updatedProduct = await storage.updateProductImage(productId, imageUrl);
+      
+      if (!updatedProduct) {
+        return res.status(404).json({
+          message: 'Product not found',
+          code: 'PRODUCT_NOT_FOUND'
+        });
+      }
+      
+      res.json({
+        message: 'Product image updated successfully',
+        product: updatedProduct
+      });
+    } catch (error) {
+      console.error('Update product image error:', error);
+      res.status(500).json({
+        message: 'Failed to update product image',
+        code: 'UPDATE_FAILED'
+      });
+    }
+  });
+
+  // Add admin status check to products route
+  app.get('/api/products', checkAdminStatus, async (req, res) => {
+    try {
+      const categoryId = req.query.categoryId ? parseInt(req.query.categoryId as string) : undefined;
+      const featured = req.query.featured === 'true';
+      const search = req.query.search as string;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
+      
+      const products = await storage.getProductsWithCategory({
+        categoryId,
+        featured,
+        search,
+        limit
+      });
+      
+      // Include admin status in response
+      res.json({
+        products,
+        isAdmin: req.isAdmin || false
+      });
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      res.status(500).json({ message: "Failed to fetch products" });
+    }
+  });
 
   // Referrals route
   app.post('/api/referrals', async (req, res) => {
@@ -43,34 +219,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Products
-  app.get("/api/products", async (req, res) => {
-    try {
-      const { categoryId, categorySlug, featured, limit, search } = req.query;
-      
-      let finalCategoryId = categoryId ? parseInt(categoryId as string) : undefined;
-      
-      // If categorySlug is provided, find the category ID
-      if (categorySlug && !finalCategoryId) {
-        const category = await storage.getCategoryBySlug(categorySlug as string);
-        if (category) {
-          finalCategoryId = category.id;
-        }
-      }
-      
-      const options = {
-        categoryId: finalCategoryId,
-        featured: featured === 'true' ? true : featured === 'false' ? false : undefined,
-        limit: limit ? parseInt(limit as string) : undefined,
-        search: search as string,
-      };
-      
-      const products = await storage.getProductsWithCategory(options);
-      res.json(products);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch products" });
-    }
-  });
+
 
   app.get("/api/products/:id", async (req, res) => {
     try {

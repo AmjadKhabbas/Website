@@ -1,6 +1,6 @@
 import { 
-  ehriAccounts, categories, products, cartItems, users, orders, orderItems, referrals,
-  type EhriAccount, type InsertEhriAccount, type Category, type Product, type CartItem, type User, type Order, type OrderItem, type Referral,
+  ehriAccounts, categories, products, cartItems, users, orders, orderItems, referrals, adminUsers,
+  type EhriAccount, type InsertEhriAccount, type Category, type Product, type CartItem, type User, type Order, type OrderItem, type Referral, type AdminUser, type InsertAdminUser,
   type InsertCategory, type InsertProduct, type InsertCartItem, type InsertUser, type InsertOrder, type InsertOrderItem, type InsertReferral,
   type ProductWithCategory, type CartItemWithProduct, type OrderWithItems
 } from "@shared/schema";
@@ -54,6 +54,16 @@ export interface IStorage {
   
   // Referrals
   createReferral(referral: InsertReferral): Promise<Referral>;
+  
+  // Admin operations
+  createAdminUser(admin: InsertAdminUser): Promise<AdminUser>;
+  getAdminByEmail(email: string): Promise<AdminUser | undefined>;
+  getAdminById(id: number): Promise<AdminUser | undefined>;
+  updateAdminLastLogin(id: number): Promise<void>;
+  
+  // Admin product management
+  updateProductPrice(productId: number, price: string): Promise<Product | undefined>;
+  updateProductImage(productId: number, imageUrl: string): Promise<Product | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -344,6 +354,48 @@ export class DatabaseStorage implements IStorage {
   async createReferral(referralData: InsertReferral): Promise<Referral> {
     const [referral] = await db.insert(referrals).values(referralData).returning();
     return referral;
+  }
+
+  // Admin operations
+  async createAdminUser(adminData: InsertAdminUser): Promise<AdminUser> {
+    const [admin] = await db.insert(adminUsers).values(adminData).returning();
+    return admin;
+  }
+
+  async getAdminByEmail(email: string): Promise<AdminUser | undefined> {
+    const [admin] = await db.select().from(adminUsers).where(eq(adminUsers.email, email));
+    return admin || undefined;
+  }
+
+  async getAdminById(id: number): Promise<AdminUser | undefined> {
+    const [admin] = await db.select().from(adminUsers).where(eq(adminUsers.id, id));
+    return admin || undefined;
+  }
+
+  async updateAdminLastLogin(id: number): Promise<void> {
+    await db
+      .update(adminUsers)
+      .set({ lastLoginAt: new Date() })
+      .where(eq(adminUsers.id, id));
+  }
+
+  // Admin product management
+  async updateProductPrice(productId: number, price: string): Promise<Product | undefined> {
+    const [product] = await db
+      .update(products)
+      .set({ price })
+      .where(eq(products.id, productId))
+      .returning();
+    return product || undefined;
+  }
+
+  async updateProductImage(productId: number, imageUrl: string): Promise<Product | undefined> {
+    const [product] = await db
+      .update(products)
+      .set({ imageUrl })
+      .where(eq(products.id, productId))
+      .returning();
+    return product || undefined;
   }
 
   private async initializeData() {
