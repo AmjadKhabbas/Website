@@ -16,9 +16,8 @@ export interface IStorage {
   
   // User operations
   createUser(user: InsertUser): Promise<User>;
-  getUser(id: number): Promise<User | undefined>;
+  getUserById(id: number): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
-  getUserByEhriId(ehriId: string): Promise<User | undefined>;
   approveUser(userId: number, approvedBy: string): Promise<User | undefined>;
   
   // Categories
@@ -100,7 +99,7 @@ export class DatabaseStorage implements IStorage {
     return newUser;
   }
 
-  async getUser(id: number): Promise<User | undefined> {
+  async getUserById(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user || undefined;
   }
@@ -108,15 +107,6 @@ export class DatabaseStorage implements IStorage {
   async getUserByEmail(email: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.email, email));
     return user || undefined;
-  }
-
-  async getUserByEhriId(ehriId: string): Promise<User | undefined> {
-    const [result] = await db
-      .select()
-      .from(users)
-      .innerJoin(ehriAccounts, eq(users.ehriAccountId, ehriAccounts.id))
-      .where(eq(ehriAccounts.ehriId, ehriId));
-    return result?.users || undefined;
   }
 
   async approveUser(userId: number, approvedBy: string): Promise<User | undefined> {
