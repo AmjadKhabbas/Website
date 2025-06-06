@@ -43,6 +43,15 @@ export default function ProductsPage() {
       categorySlug: selectedCategory,
       search: searchQuery 
     }],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (selectedCategory) params.append('categorySlug', selectedCategory);
+      if (searchQuery) params.append('search', searchQuery);
+      
+      const response = await fetch(`/api/products?${params.toString()}`);
+      if (!response.ok) throw new Error('Failed to fetch products');
+      return response.json();
+    }
   });
 
   const { data: categories = [] } = useQuery<Category[]>({
