@@ -164,12 +164,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/products', checkAdminStatus, async (req, res) => {
     try {
       const categoryId = req.query.categoryId ? parseInt(req.query.categoryId as string) : undefined;
+      const categorySlug = req.query.categorySlug as string;
       const featured = req.query.featured === 'true';
       const search = req.query.search as string;
       const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
       
       const products = await storage.getProductsWithCategory({
         categoryId,
+        categorySlug,
         featured,
         search,
         limit

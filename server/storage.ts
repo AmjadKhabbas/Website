@@ -176,6 +176,7 @@ export class DatabaseStorage implements IStorage {
 
   async getProductsWithCategory(options: {
     categoryId?: number;
+    categorySlug?: string;
     featured?: boolean;
     limit?: number;
     search?: string;
@@ -187,6 +188,10 @@ export class DatabaseStorage implements IStorage {
 
     if (options.categoryId) {
       query = query.where(eq(products.categoryId, options.categoryId));
+    }
+
+    if (options.categorySlug) {
+      query = query.where(eq(categories.slug, options.categorySlug));
     }
 
     if (options.featured) {
