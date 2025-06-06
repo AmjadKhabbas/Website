@@ -117,7 +117,7 @@ export function requireAdminAuth(req: any, res: any, next: any) {
   adminAuthService.verifyAdmin(adminId)
     .then(admin => {
       if (!admin) {
-        req.session.adminId = null; // Clear invalid session
+        delete req.session.adminId; // Clear invalid session
         return res.status(401).json({ 
           message: 'Invalid admin session',
           code: 'INVALID_ADMIN_SESSION'

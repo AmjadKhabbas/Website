@@ -15,6 +15,7 @@ import ReferralsPage from "@/pages/referrals";
 import FAQPage from "@/pages/faq";
 import ContactPage from "@/pages/contact";
 import AuthPage from "@/pages/auth";
+import AdminLoginPage from "@/pages/admin-login";
 import NotFound from "@/pages/not-found";
 
 function Router() {

@@ -5,6 +5,7 @@ import { setupAuth, requireAuth, requireApprovedUser } from "./auth";
 import { adminAuthService, requireAdminAuth, checkAdminStatus } from "./adminAuth";
 import { insertCartItemSchema, insertOrderSchema, insertOrderItemSchema, insertReferralSchema } from "@shared/schema";
 import session from "express-session";
+import "./types";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication system with Passport.js
@@ -56,7 +57,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post('/api/admin/logout', (req, res) => {
-    req.session.adminId = null;
+    delete req.session.adminId;
     res.json({ message: 'Admin logout successful' });
   });
 
@@ -71,7 +72,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const admin = await adminAuthService.verifyAdmin(adminId);
       
       if (!admin) {
-        req.session.adminId = null;
+        delete req.session.adminId;
         return res.json({ isAdmin: false, admin: null });
       }
       

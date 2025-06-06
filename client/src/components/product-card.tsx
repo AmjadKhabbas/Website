@@ -1,13 +1,17 @@
-import { ShoppingCart, Plus, Minus } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Edit2, ImageIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import type { ProductWithCategory } from '@shared/schema';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/components/toast';
 import { Link } from 'wouter';
 import { useCartStore } from '@/lib/cart';
+import { useAdmin } from '@/hooks/useAdmin';
+import { useState } from 'react';
 
 interface ProductCardProps {
   product: ProductWithCategory;
@@ -19,6 +23,9 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
   const { success, error } = useToast();
   const queryClient = useQueryClient();
   const { items } = useCartStore();
+  const { isAdmin, updatePriceMutation, updateImageMutation } = useAdmin();
+  const [newPrice, setNewPrice] = useState(product.price);
+  const [newImageUrl, setNewImageUrl] = useState(product.imageUrl || '');
 
   // Get current quantity in cart
   const cartItem = items.find(item => item.product.id === product.id);
@@ -109,6 +116,91 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
               </Badge>
             )}
           </div>
+
+          {/* Admin Controls */}
+          {isAdmin && (
+            <div className="absolute top-2 right-2 space-y-1">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button 
+                    variant="secondary" 
+                    size="sm" 
+                    className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-md"
+                  >
+                    <Edit2 className="h-4 w-4" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Edit Product Price</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium">Price</label>
+                      <Input
+                        type="text"
+                        value={newPrice}
+                        onChange={(e) => setNewPrice(e.target.value)}
+                        placeholder="Enter new price"
+                      />
+                    </div>
+                    <Button
+                      onClick={() => {
+                        updatePriceMutation.mutate({ 
+                          productId: product.id, 
+                          price: newPrice 
+                        });
+                      }}
+                      disabled={updatePriceMutation.isPending}
+                      className="w-full"
+                    >
+                      {updatePriceMutation.isPending ? 'Updating...' : 'Update Price'}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button 
+                    variant="secondary" 
+                    size="sm" 
+                    className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-md"
+                  >
+                    <ImageIcon className="h-4 w-4" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Edit Product Image</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium">Image URL</label>
+                      <Input
+                        type="url"
+                        value={newImageUrl}
+                        onChange={(e) => setNewImageUrl(e.target.value)}
+                        placeholder="Enter new image URL"
+                      />
+                    </div>
+                    <Button
+                      onClick={() => {
+                        updateImageMutation.mutate({ 
+                          productId: product.id, 
+                          imageUrl: newImageUrl 
+                        });
+                      }}
+                      disabled={updateImageMutation.isPending}
+                      className="w-full"
+                    >
+                      {updateImageMutation.isPending ? 'Updating...' : 'Update Image'}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+          )}
         </div>
         
         {/* Content - List View */}
