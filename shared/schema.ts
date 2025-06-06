@@ -139,6 +139,19 @@ export const referrals = pgTable("referrals", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Admin users table for secure admin access
+export const adminUsers = pgTable("admin_users", {
+  id: serial("id").primaryKey(),
+  email: varchar("email").notNull().unique(),
+  passwordHash: varchar("password_hash").notNull(),
+  name: varchar("name").notNull(),
+  role: varchar("role").notNull().default("admin"),
+  isActive: boolean("is_active").notNull().default(true),
+  lastLoginAt: timestamp("last_login_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const insertCategorySchema = createInsertSchema(categories).omit({
   id: true,
 });
@@ -184,6 +197,13 @@ export const insertReferralSchema = createInsertSchema(referrals).omit({
   status: true,
   createdAt: true,
   updatedAt: true,
+});
+
+export const insertAdminUserSchema = createInsertSchema(adminUsers).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  lastLoginAt: true,
 });
 
 // Database relations
@@ -246,6 +266,9 @@ export type OrderItem = typeof orderItems.$inferSelect;
 
 export type InsertReferral = z.infer<typeof insertReferralSchema>;
 export type Referral = typeof referrals.$inferSelect;
+
+export type InsertAdminUser = z.infer<typeof insertAdminUserSchema>;
+export type AdminUser = typeof adminUsers.$inferSelect;
 
 export type ProductWithCategory = Product & { category: Category };
 export type CartItemWithProduct = CartItem & { product: Product };
