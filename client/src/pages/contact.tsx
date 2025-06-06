@@ -59,7 +59,7 @@ export default function ContactPage() {
     {
       icon: Mail,
       title: "Email",
-      details: ["support@meds-go.com", "Response within 1-2 business days"],
+      details: ["info@meds-go.com", "Response within 1-2 business days"],
       color: "text-green-600"
     },
     {
