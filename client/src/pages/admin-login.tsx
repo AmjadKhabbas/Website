@@ -40,7 +40,7 @@ export default function AdminLoginPage() {
   const onSubmit = (data: AdminLoginFormData) => {
     loginMutation.mutate(data, {
       onSuccess: () => {
-        setLocation("/");
+        setLocation("/admin/dashboard");
       },
     });
   };
