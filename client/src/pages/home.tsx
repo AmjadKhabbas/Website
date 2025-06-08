@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, ArrowRight, Laptop, Shirt, Home, Dumbbell, Book, Heart, Star, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { AnimatedVial } from '@/components/animated-vial';
 import { Link, useLocation } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -443,8 +444,8 @@ export default function HomePage() {
                 >
                   <div className="bg-blue-50 rounded-2xl p-8 aspect-square flex items-center justify-center group-hover:bg-blue-100 transition-all duration-300 border-2 border-dashed border-blue-300 group-hover:border-blue-500">
                     <div className="text-center">
-                      <div className="w-16 h-16 bg-blue-100 rounded-lg mx-auto mb-4 flex items-center justify-center group-hover:bg-blue-200 transition-colors duration-300">
-                        <Heart className="w-8 h-8 text-blue-500 group-hover:text-blue-700" />
+                      <div className="w-16 h-16 bg-gradient-to-br from-teal-50 to-cyan-50 rounded-lg mx-auto mb-4 flex items-center justify-center group-hover:from-teal-100 group-hover:to-cyan-100 transition-all duration-300">
+                        <AnimatedVial size="sm" className="transform-gpu" />
                       </div>
                       <p className="text-sm text-blue-600 group-hover:text-blue-800 font-medium">Upload Image</p>
                     </div>

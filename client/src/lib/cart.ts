@@ -5,6 +5,7 @@ import type { CartItemWithProduct } from '@shared/schema';
 interface CartStore {
   items: CartItemWithProduct[];
   isOpen: boolean;
+  sessionId: string;
   setItems: (items: CartItemWithProduct[]) => void;
   addItem: (item: CartItemWithProduct) => void;
   removeItem: (id: number) => void;
@@ -14,13 +15,20 @@ interface CartStore {
   closeCart: () => void;
   getTotalItems: () => number;
   getTotalPrice: () => number;
+  generateSessionId: () => string;
 }
+
+// Generate a unique session ID for cart tracking
+const generateUniqueSessionId = (): string => {
+  return Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+};
 
 export const useCartStore = create<CartStore>()(
   persist(
     (set, get) => ({
       items: [],
       isOpen: false,
+      sessionId: generateUniqueSessionId(),
       setItems: (items) => set({ items }),
       addItem: (item) => set((state) => {
         const existingItem = state.items.find(i => i.productId === item.productId);
@@ -33,7 +41,7 @@ export const useCartStore = create<CartStore>()(
             )
           };
         }
-        return { items: [...state.items, item] };
+        return { items: [...state.items, { ...item, sessionId: state.sessionId }] };
       }),
       removeItem: (id) => set((state) => ({
         items: state.items.filter(item => item.id !== id)
@@ -46,6 +54,11 @@ export const useCartStore = create<CartStore>()(
       clearCart: () => set({ items: [] }),
       openCart: () => set({ isOpen: true }),
       closeCart: () => set({ isOpen: false }),
+      generateSessionId: () => {
+        const newSessionId = generateUniqueSessionId();
+        set({ sessionId: newSessionId });
+        return newSessionId;
+      },
       getTotalItems: () => {
         const { items } = get();
         return items.reduce((total, item) => total + item.quantity, 0);

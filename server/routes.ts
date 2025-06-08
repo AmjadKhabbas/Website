@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, requireAuth, requireApprovedUser } from "./auth";
+import { setupAuth, requireAuth, requireApprovedUser, hashPassword } from "./auth";
 import { adminAuthService, requireAdminAuth, checkAdminStatus } from "./adminAuth";
 import { insertCartItemSchema, insertOrderSchema, insertOrderItemSchema, insertReferralSchema } from "@shared/schema";
 import session from "express-session";
@@ -185,6 +185,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching products:", error);
       res.status(500).json({ message: "Failed to fetch products" });
+    }
+  });
+
+  // Doctor registration endpoint with email confirmation
+  app.post("/api/auth/register", async (req, res) => {
+    try {
+      // Validate required fields
+      const requiredFields = [
+        'firstName', 'lastName', 'email', 'phone', 'licenseNumber', 
+        'collegeName', 'provinceState', 'practiceName', 'practiceAddress'
+      ];
+      
+      for (const field of requiredFields) {
+        if (!req.body[field]) {
+          return res.status(400).json({ 
+            message: `Missing required field: ${field}` 
+          });
+        }
+      }
+
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(req.body.email);
+      if (existingUser) {
+        return res.status(400).json({ 
+          message: "An account with this email already exists" 
+        });
+      }
+
+      // Create user data with proper field mapping
+      const userData = {
+        email: req.body.email,
+        password: await hashPassword(req.body.password || 'temp123'), // Temporary password
+        fullName: `${req.body.firstName} ${req.body.lastName}`,
+        licenseNumber: req.body.licenseNumber,
+        collegeName: req.body.collegeName,
+        provinceState: req.body.provinceState,
+        practiceName: req.body.practiceName,
+        practiceAddress: req.body.practiceAddress,
+        isApproved: false,
+        isLicenseVerified: false
+      };
+
+      const newUser = await storage.createUser(userData);
+      
+      // Send confirmation email
+      const { emailService } = await import('./email');
+      await emailService.sendDoctorRegistrationConfirmation(
+        newUser.email, 
+        newUser.fullName
+      );
+      
+      // Send admin notification
+      await emailService.sendAdminNotification({
+        fullName: newUser.fullName,
+        email: newUser.email,
+        licenseNumber: newUser.licenseNumber,
+        collegeName: newUser.collegeName,
+        practiceName: newUser.practiceName,
+        practiceAddress: newUser.practiceAddress
+      });
+      
+      res.status(201).json({ 
+        message: "Thank you. Your account is pending approval.",
+        user: {
+          id: newUser.id,
+          email: newUser.email,
+          fullName: newUser.fullName,
+          isApproved: newUser.isApproved
+        }
+      });
+    } catch (error) {
+      console.error("Registration error:", error);
+      res.status(500).json({ 
+        message: "Registration failed. Please try again." 
+      });
     }
   });
 
