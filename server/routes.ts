@@ -191,14 +191,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Doctor registration endpoint with email confirmation
   app.post("/api/auth/register", async (req, res) => {
     try {
+      // Map form fields to database fields
+      const formData = {
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        email: req.body.email,
+        phone: req.body.phone,
+        licenseNumber: req.body.licenseNumber,
+        collegeName: req.body.collegeName,
+        provinceState: req.body.provinceState,
+        practiceName: req.body.practiceName,
+        practiceAddress: req.body.practiceAddress,
+        password: req.body.password || 'temp123' // Default temporary password for doctors
+      };
+
       // Validate required fields
-      const requiredFields = [
-        'firstName', 'lastName', 'email', 'phone', 'licenseNumber', 
-        'collegeName', 'provinceState', 'practiceName', 'practiceAddress'
-      ];
+      const requiredFields = ['firstName', 'lastName', 'email', 'licenseNumber', 'collegeName', 'provinceState', 'practiceName', 'practiceAddress'];
       
       for (const field of requiredFields) {
-        if (!req.body[field]) {
+        if (!formData[field as keyof typeof formData]) {
           return res.status(400).json({ 
             message: `Missing required field: ${field}` 
           });
@@ -206,7 +217,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Check if user already exists
-      const existingUser = await storage.getUserByEmail(req.body.email);
+      const existingUser = await storage.getUserByEmail(formData.email);
       if (existingUser) {
         return res.status(400).json({ 
           message: "An account with this email already exists" 
@@ -215,14 +226,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Create user data with proper field mapping
       const userData = {
-        email: req.body.email,
-        password: await hashPassword(req.body.password || 'temp123'), // Temporary password
-        fullName: `${req.body.firstName} ${req.body.lastName}`,
-        licenseNumber: req.body.licenseNumber,
-        collegeName: req.body.collegeName,
-        provinceState: req.body.provinceState,
-        practiceName: req.body.practiceName,
-        practiceAddress: req.body.practiceAddress,
+        email: formData.email,
+        password: await hashPassword(formData.password), // Hash the password
+        fullName: `${formData.firstName} ${formData.lastName}`,
+        licenseNumber: formData.licenseNumber,
+        collegeName: formData.collegeName,
+        provinceState: formData.provinceState,
+        practiceName: formData.practiceName,
+        practiceAddress: formData.practiceAddress,
         isApproved: false,
         isLicenseVerified: false
       };
