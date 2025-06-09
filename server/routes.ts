@@ -240,17 +240,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const newUser = await storage.createUser(userData);
       
       // Send admin notification email to amjadkhabbas2002@gmail.com
-      const { emailService } = await import('./email');
-      await emailService.sendAdminNotification({
-        fullName: newUser.fullName,
-        email: newUser.email,
-        phone: formData.phone,
-        licenseNumber: newUser.licenseNumber,
-        collegeName: newUser.collegeName,
-        provinceState: newUser.provinceState,
-        practiceName: newUser.practiceName,
-        practiceAddress: newUser.practiceAddress
-      });
+      try {
+        const { emailService } = await import('./email');
+        await emailService.sendAdminNotification({
+          fullName: newUser.fullName,
+          email: newUser.email,
+          phone: formData.phone || 'Not provided',
+          licenseNumber: newUser.licenseNumber,
+          collegeName: newUser.collegeName,
+          provinceState: newUser.provinceState,
+          practiceName: newUser.practiceName,
+          practiceAddress: newUser.practiceAddress
+        });
+        console.log('Admin notification email sent successfully');
+      } catch (emailError) {
+        console.error('Failed to send admin notification email:', emailError);
+        // Continue with registration even if email fails
+      }
       
       res.status(201).json({ 
         message: "Your account is pending approval. You will receive an update via email soon.",
