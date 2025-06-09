@@ -130,6 +130,25 @@ export class DatabaseStorage implements IStorage {
     return user || undefined;
   }
 
+  async getPendingUsers(): Promise<User[]> {
+    return await db
+      .select()
+      .from(users)
+      .where(eq(users.isApproved, false));
+  }
+
+  async deleteUser(userId: number): Promise<boolean> {
+    try {
+      await db
+        .delete(users)
+        .where(eq(users.id, userId));
+      return true;
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      return false;
+    }
+  }
+
   async getCategories(): Promise<Category[]> {
     return await db.select().from(categories);
   }

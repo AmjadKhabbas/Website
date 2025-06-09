@@ -193,8 +193,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Map form fields to database fields
       const formData = {
-        firstName: req.body.firstName,
-        lastName: req.body.lastName,
+        fullName: req.body.fullName,
         email: req.body.email,
         phone: req.body.phone || '',
         licenseNumber: req.body.licenseNumber,
@@ -206,7 +205,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       // Validate required fields
-      const requiredFields = ['firstName', 'lastName', 'email', 'licenseNumber', 'collegeName', 'provinceState', 'practiceName', 'practiceAddress'];
+      const requiredFields = ['fullName', 'email', 'licenseNumber', 'collegeName', 'provinceState', 'practiceName', 'practiceAddress'];
       
       for (const field of requiredFields) {
         if (!formData[field as keyof typeof formData]) {
@@ -228,7 +227,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userData = {
         email: formData.email,
         password: await hashPassword(formData.password), // Hash the password
-        fullName: `${formData.firstName} ${formData.lastName}`,
+        fullName: formData.fullName,
         licenseNumber: formData.licenseNumber,
         collegeName: formData.collegeName,
         provinceState: formData.provinceState,
