@@ -26,11 +26,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      console.log('Admin login attempt:', { email, password });
-      
       // Direct authentication for the primary admin
       if (email === 'amjadkhabbas2002@gmail.com' && password === 'Iamawesome1234!') {
-        console.log('Primary admin authentication successful');
         req.session.adminId = 1;
         
         res.json({
@@ -44,8 +41,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
         return;
       }
-      
-      console.log('Primary admin check failed, trying database auth');
       
       // Fallback to database authentication
       const admin = await adminAuthService.authenticateAdmin(email, password);
@@ -90,6 +85,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.json({ isAdmin: false, admin: null });
     }
     
+    // Handle primary admin session
+    if (adminId === 1) {
+      return res.json({
+        isAdmin: true,
+        admin: {
+          id: 1,
+          email: 'amjadkhabbas2002@gmail.com',
+          name: 'Amjad Khabbas',
+          role: 'admin'
+        }
+      });
+    }
+    
     try {
       const admin = await adminAuthService.verifyAdmin(adminId);
       
@@ -114,6 +122,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin Product Management Routes
+  app.post('/api/admin/products', requireAdminAuth, async (req, res) => {
+    try {
+      const { name, description, price, categoryId, imageUrl, featured = false } = req.body;
+      
+      if (!name || !description || !price || !categoryId) {
+        return res.status(400).json({
+          message: 'Name, description, price, and category are required',
+          code: 'MISSING_REQUIRED_FIELDS'
+        });
+      }
+      
+      const productData = {
+        name,
+        description,
+        price: price.toString(),
+        categoryId: parseInt(categoryId),
+        imageUrl: imageUrl || '/api/placeholder/300/300',
+        featured: Boolean(featured)
+      };
+      
+      const newProduct = await storage.createProduct(productData);
+      
+      res.status(201).json({
+        message: 'Product created successfully',
+        product: newProduct
+      });
+    } catch (error) {
+      console.error('Create product error:', error);
+      res.status(500).json({
+        message: 'Failed to create product',
+        code: 'CREATE_FAILED'
+      });
+    }
+  });
+
   app.put('/api/admin/products/:id/price', requireAdminAuth, async (req, res) => {
     try {
       const productId = parseInt(req.params.id);

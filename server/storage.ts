@@ -40,6 +40,7 @@ export interface IStorage {
     limit?: number;
     search?: string;
   }): Promise<ProductWithCategory[]>;
+  createProduct(product: InsertProduct): Promise<Product>;
   
   // Cart
   getCartItems(sessionId: string): Promise<CartItemWithProduct[]>;
@@ -193,6 +194,14 @@ export class DatabaseStorage implements IStorage {
   async getProduct(id: number): Promise<Product | undefined> {
     const [product] = await db.select().from(products).where(eq(products.id, id));
     return product || undefined;
+  }
+
+  async createProduct(productData: InsertProduct): Promise<Product> {
+    const [product] = await db
+      .insert(products)
+      .values(productData)
+      .returning();
+    return product;
   }
 
   async getProductsWithCategory(options: {
