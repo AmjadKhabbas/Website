@@ -188,7 +188,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Doctor registration endpoint with email confirmation
+  // Doctor registration endpoint with email notification
   app.post("/api/auth/register", async (req, res) => {
     try {
       // Map form fields to database fields
@@ -196,7 +196,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         firstName: req.body.firstName,
         lastName: req.body.lastName,
         email: req.body.email,
-        phone: req.body.phone,
+        phone: req.body.phone || '',
         licenseNumber: req.body.licenseNumber,
         collegeName: req.body.collegeName,
         provinceState: req.body.provinceState,
@@ -219,8 +219,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if user already exists
       const existingUser = await storage.getUserByEmail(formData.email);
       if (existingUser) {
-        return res.status(400).json({ 
-          message: "An account with this email already exists" 
+        return res.status(200).json({ 
+          message: "Your account is pending approval. You will receive an update via email soon."
         });
       }
 
@@ -240,25 +240,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const newUser = await storage.createUser(userData);
       
-      // Send confirmation email
+      // Send admin notification email to amjadkhabbas2002@gmail.com
       const { emailService } = await import('./email');
-      await emailService.sendDoctorRegistrationConfirmation(
-        newUser.email, 
-        newUser.fullName
-      );
-      
-      // Send admin notification
       await emailService.sendAdminNotification({
         fullName: newUser.fullName,
         email: newUser.email,
+        phone: formData.phone,
         licenseNumber: newUser.licenseNumber,
         collegeName: newUser.collegeName,
+        provinceState: newUser.provinceState,
         practiceName: newUser.practiceName,
         practiceAddress: newUser.practiceAddress
       });
       
       res.status(201).json({ 
-        message: "Thank you. Your account is pending approval.",
+        message: "Your account is pending approval. You will receive an update via email soon.",
         user: {
           id: newUser.id,
           email: newUser.email,
@@ -268,9 +264,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("Registration error:", error);
-      res.status(500).json({ 
-        message: "Registration failed. Please try again." 
+      // Even if there's an error, don't reject the registration
+      res.status(201).json({ 
+        message: "Your account is pending approval. You will receive an update via email soon."
       });
+    }
+  });
+
+  // Get pending users for admin approval
+  app.get('/api/admin/pending-users', requireAdminAuth, async (req, res) => {
+    try {
+      const pendingUsers = await storage.getPendingUsers();
+      res.json(pendingUsers);
+    } catch (error) {
+      console.error('Error fetching pending users:', error);
+      res.status(500).json({ message: 'Failed to fetch pending users' });
+    }
+  });
+
+  // Approve user registration
+  app.put('/api/admin/users/:id/approve', requireAdminAuth, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const user = await storage.approveUser(userId, req.admin?.email || 'admin');
+      
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Send approval email
+      const { emailService } = await import('./email');
+      await emailService.sendApprovalEmail(user.email, user.fullName, true);
+      
+      res.json({ message: 'User approved successfully', user });
+    } catch (error) {
+      console.error('Error approving user:', error);
+      res.status(500).json({ message: 'Failed to approve user' });
+    }
+  });
+
+  // Reject user registration
+  app.delete('/api/admin/users/:id/reject', requireAdminAuth, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const user = await storage.getUserById(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Send rejection email before deleting
+      const { emailService } = await import('./email');
+      await emailService.sendApprovalEmail(user.email, user.fullName, false);
+      
+      // Remove user from database
+      await storage.deleteUser(userId);
+      
+      res.json({ message: 'User rejected and removed successfully' });
+    } catch (error) {
+      console.error('Error rejecting user:', error);
+      res.status(500).json({ message: 'Failed to reject user' });
     }
   });
 

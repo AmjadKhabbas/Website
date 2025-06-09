@@ -19,6 +19,8 @@ export interface IStorage {
   getUserById(id: number): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   approveUser(userId: number, approvedBy: string): Promise<User | undefined>;
+  getPendingUsers(): Promise<User[]>;
+  deleteUser(userId: number): Promise<boolean>;
   
   // Categories
   getCategories(): Promise<Category[]>;

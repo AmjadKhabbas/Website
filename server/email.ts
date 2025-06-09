@@ -166,40 +166,43 @@ class EmailService {
    * Send admin notification about new doctor registration
    */
   async sendAdminNotification(doctorData: any): Promise<boolean> {
-    const adminEmail = process.env.ADMIN_EMAIL || 'amjadkhabbas2002@gmail.com';
+    const adminEmail = 'amjadkhabbas2002@gmail.com';
     
     const emailHtml = `
       <!DOCTYPE html>
       <html>
       <head>
         <meta charset="utf-8">
-        <title>New Doctor Registration</title>
+        <title>New Registration Request</title>
         <style>
           body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
           .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-          .header { background: #1e40af; color: white; padding: 20px; text-align: center; }
-          .content { background: #f1f5f9; padding: 20px; }
-          .detail-row { margin: 10px 0; padding: 8px; background: white; border-radius: 4px; }
+          .header { background: #1e40af; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+          .content { background: #f8fafc; padding: 20px; border: 1px solid #e2e8f0; border-radius: 0 0 8px 8px; }
+          .detail-row { margin: 10px 0; padding: 12px; background: white; border-radius: 6px; border-left: 4px solid #3b82f6; }
+          .label { font-weight: bold; color: #1e40af; }
         </style>
       </head>
       <body>
         <div class="container">
           <div class="header">
-            <h2>🔔 New Doctor Registration</h2>
+            <h2>New Registration Request</h2>
           </div>
           <div class="content">
-            <p><strong>A new medical professional has registered and requires approval.</strong></p>
+            <p><strong>A new medical professional has submitted a registration request:</strong></p>
             
-            <div class="detail-row"><strong>Name:</strong> ${doctorData.fullName}</div>
-            <div class="detail-row"><strong>Email:</strong> ${doctorData.email}</div>
-            <div class="detail-row"><strong>License Number:</strong> ${doctorData.licenseNumber}</div>
-            <div class="detail-row"><strong>College:</strong> ${doctorData.collegeName}</div>
-            <div class="detail-row"><strong>Practice:</strong> ${doctorData.practiceName}</div>
-            <div class="detail-row"><strong>Address:</strong> ${doctorData.practiceAddress}</div>
-            <div class="detail-row"><strong>Registration Date:</strong> ${new Date().toLocaleString()}</div>
+            <div class="detail-row"><span class="label">Full Name:</span> ${doctorData.fullName}</div>
+            <div class="detail-row"><span class="label">Email:</span> ${doctorData.email}</div>
+            ${doctorData.phone ? `<div class="detail-row"><span class="label">Phone:</span> ${doctorData.phone}</div>` : ''}
+            <div class="detail-row"><span class="label">License Number:</span> ${doctorData.licenseNumber}</div>
+            <div class="detail-row"><span class="label">Medical College:</span> ${doctorData.collegeName}</div>
+            <div class="detail-row"><span class="label">Province/State:</span> ${doctorData.provinceState}</div>
+            <div class="detail-row"><span class="label">Practice Name:</span> ${doctorData.practiceName}</div>
+            <div class="detail-row"><span class="label">Practice Address:</span> ${doctorData.practiceAddress}</div>
+            <div class="detail-row"><span class="label">Registration Date:</span> ${new Date().toLocaleString()}</div>
             
-            <p style="margin-top: 20px;">
-              <strong>Action Required:</strong> Please review and approve/reject this registration in the admin panel.
+            <p style="margin-top: 20px; padding: 15px; background: #fef3c7; border-radius: 6px; border-left: 4px solid #f59e0b;">
+              <strong>Action Required:</strong> Please review this registration and approve or reject via the admin dashboard.
             </p>
           </div>
         </div>
@@ -207,9 +210,87 @@ class EmailService {
       </html>
     `;
 
+    const emailText = `
+      New Registration Request
+
+      A new medical professional has submitted a registration request:
+
+      Name: ${doctorData.fullName}
+      Email: ${doctorData.email}
+      ${doctorData.phone ? `Phone: ${doctorData.phone}` : ''}
+      License Number: ${doctorData.licenseNumber}
+      Medical College: ${doctorData.collegeName}
+      Province/State: ${doctorData.provinceState}
+      Practice Name: ${doctorData.practiceName}
+      Practice Address: ${doctorData.practiceAddress}
+      Registration Date: ${new Date().toLocaleString()}
+
+      Please review this registration and approve or reject via the admin dashboard.
+    `;
+
     return await this.sendEmail({
       to: adminEmail,
-      subject: `New Doctor Registration: ${doctorData.fullName}`,
+      subject: 'New Registration Request',
+      html: emailHtml,
+      text: emailText,
+    });
+  }
+
+  /**
+   * Send approval/rejection email to doctor
+   */
+  async sendApprovalEmail(doctorEmail: string, doctorName: string, approved: boolean): Promise<boolean> {
+    const status = approved ? 'Approved' : 'Rejected';
+    const statusColor = approved ? '#10b981' : '#ef4444';
+    
+    const emailHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Registration ${status}</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: ${statusColor}; color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+          .content { background: #f8fafc; padding: 30px; border-radius: 0 0 8px 8px; }
+          .status-badge { background: ${statusColor}; color: white; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: bold; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Medical Marketplace</h1>
+            <p>Registration ${status}</p>
+          </div>
+          <div class="content">
+            <h2>Hello Dr. ${doctorName},</h2>
+            
+            <div style="text-align: center; margin: 20px 0;">
+              <span class="status-badge">${approved ? '✓' : '✗'} ${status}</span>
+            </div>
+            
+            ${approved ? `
+              <p><strong>Congratulations!</strong> Your medical professional account has been approved.</p>
+              <p>You now have full access to our medical product catalog and can begin placing orders.</p>
+              <p>You can log in to your account using the credentials you provided during registration.</p>
+            ` : `
+              <p>We regret to inform you that your registration application has not been approved at this time.</p>
+              <p>This decision may be due to incomplete information or verification requirements not being met.</p>
+              <p>If you believe this is an error or would like to resubmit your application, please contact our support team.</p>
+            `}
+            
+            <p>Best regards,<br>
+            The Medical Marketplace Team</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    return await this.sendEmail({
+      to: doctorEmail,
+      subject: `Registration ${status} - Medical Marketplace`,
       html: emailHtml,
     });
   }
