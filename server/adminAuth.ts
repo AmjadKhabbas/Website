@@ -4,7 +4,7 @@ import type { AdminUser } from '@shared/schema';
 
 // Hardcoded admin credentials - securely stored with bcrypt
 const ADMIN_EMAIL = 'amjadkhabbas2002@gmail.com';
-const ADMIN_PASSWORD = 'akramsnotcool!';
+const ADMIN_PASSWORD = 'Iamawesome1234!';
 const ADMIN_NAME = 'Amjad Khabbas';
 
 /**

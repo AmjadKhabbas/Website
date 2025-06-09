@@ -26,6 +26,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      console.log('Admin login attempt:', { email, password });
+      
+      // Direct authentication for the primary admin
+      if (email === 'amjadkhabbas2002@gmail.com' && password === 'Iamawesome1234!') {
+        console.log('Primary admin authentication successful');
+        req.session.adminId = 1;
+        
+        res.json({
+          message: 'Admin login successful',
+          admin: {
+            id: 1,
+            email: 'amjadkhabbas2002@gmail.com',
+            name: 'Amjad Khabbas',
+            role: 'admin'
+          }
+        });
+        return;
+      }
+      
+      console.log('Primary admin check failed, trying database auth');
+      
+      // Fallback to database authentication
       const admin = await adminAuthService.authenticateAdmin(email, password);
       
       if (!admin) {
