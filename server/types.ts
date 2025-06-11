@@ -2,6 +2,10 @@ declare module 'express-session' {
   interface SessionData {
     adminId?: number;
   }
+  
+  interface Session {
+    adminId?: number;
+  }
 }
 
 declare global {

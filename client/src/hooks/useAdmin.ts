@@ -37,7 +37,20 @@ export function useAdmin() {
   // Admin login mutation
   const loginMutation = useMutation({
     mutationFn: async (credentials: AdminLoginData) => {
-      const res = await apiRequest("POST", "/api/admin/login", credentials);
+      const res = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include", // Important for session cookies
+        body: JSON.stringify(credentials),
+      });
+      
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Login failed");
+      }
+      
       return await res.json();
     },
     onSuccess: (data) => {

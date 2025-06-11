@@ -29,20 +29,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Direct authentication for the primary admin
-      if (email === 'amjadkhabbas2002@gmail.com') {
+      if (email.toLowerCase().trim() === 'amjadkhabbas2002@gmail.com') {
         console.log('Checking primary admin credentials...');
         if (password === 'akramsnotcool!') {
           console.log('Primary admin login successful');
-          req.session.adminId = 1;
           
-          res.json({
-            message: 'Admin login successful',
-            admin: {
-              id: 1,
-              email: 'amjadkhabbas2002@gmail.com',
-              name: 'Amjad Khabbas',
-              role: 'admin'
+          // Ensure session is saved before responding
+          req.session.adminId = 1;
+          req.session.save((err) => {
+            if (err) {
+              console.error('Session save error:', err);
+              return res.status(500).json({
+                message: 'Session error',
+                code: 'SESSION_ERROR'
+              });
             }
+            
+            res.json({
+              message: 'Admin login successful',
+              admin: {
+                id: 1,
+                email: 'amjadkhabbas2002@gmail.com',
+                name: 'Amjad Khabbas',
+                role: 'admin'
+              }
+            });
           });
           return;
         } else {
@@ -67,17 +78,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       console.log('Database authentication successful for:', email);
-      // Store admin ID in session
+      // Store admin ID in session with proper save
       req.session.adminId = admin.id;
-      
-      res.json({
-        message: 'Admin login successful',
-        admin: {
-          id: admin.id,
-          email: admin.email,
-          name: admin.name,
-          role: admin.role
+      req.session.save((err) => {
+        if (err) {
+          console.error('Session save error:', err);
+          return res.status(500).json({
+            message: 'Session error',
+            code: 'SESSION_ERROR'
+          });
         }
+        
+        res.json({
+          message: 'Admin login successful',
+          admin: {
+            id: admin.id,
+            email: admin.email,
+            name: admin.name,
+            role: admin.role
+          }
+        });
       });
     } catch (error) {
       console.error('Admin login error:', error);
