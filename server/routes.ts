@@ -104,6 +104,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get('/api/admin/user', async (req, res) => {
+    const adminId = req.session?.adminId;
+    
+    if (!adminId) {
+      return res.status(401).json({ message: 'Not authenticated' });
+    }
+    
+    // Handle primary admin session
+    if (adminId === 1) {
+      return res.json({
+        id: 1,
+        email: 'amjadkhabbas2002@gmail.com',
+        name: 'Amjad Khabbas',
+        role: 'admin'
+      });
+    }
+    
+    try {
+      const admin = await adminAuthService.verifyAdmin(adminId);
+      
+      if (!admin) {
+        delete req.session.adminId;
+        return res.status(401).json({ message: 'Not authenticated' });
+      }
+      
+      res.json({
+        id: admin.id,
+        email: admin.email,
+        name: admin.name,
+        role: admin.role
+      });
+    } catch (error) {
+      console.error('Admin user check error:', error);
+      res.status(401).json({ message: 'Not authenticated' });
+    }
+  });
+
   app.post('/api/admin/logout', (req, res) => {
     delete req.session.adminId;
     res.json({ message: 'Admin logout successful' });

@@ -9,8 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { useCartStore } from '@/lib/cart';
 import { MobileMenu } from '@/components/mobile-menu';
 import { useQuery } from '@tanstack/react-query';
-import { useAuth } from '@/hooks/useAuth';
-import { useAdmin } from '@/hooks/useAdmin';
+import { useAuth } from '@/hooks/use-auth';
+import { useAdmin } from '@/hooks/use-admin';
 import type { Category, ProductWithCategory } from '@shared/schema';
 
 export function Header() {
@@ -59,7 +59,8 @@ export function Header() {
   }, [searchQuery]);
   
   const { getTotalItems, openCart, setItems } = useCartStore();
-  const { user, isLoading, isAuthenticated } = useAuth();
+  const { user, isLoading, logoutMutation } = useAuth();
+  const isAuthenticated = !!user;
 
   // Fetch cart data and sync with store
   const { data: cartData } = useQuery({
@@ -440,15 +441,20 @@ export function Header() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => window.location.href = '/api/logout'}
+                        onClick={() => logoutMutation.mutate()}
+                        disabled={logoutMutation.isPending}
                         className="flex items-center space-x-2 p-3 text-slate-600 hover:text-red-600 bg-white hover:bg-red-50 border border-slate-200 hover:border-red-200 rounded-lg transition-all duration-300"
                       >
-                        <LogOut className="w-4 h-4" />
+                        {logoutMutation.isPending ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <LogOut className="w-4 h-4" />
+                        )}
                         <span className="text-sm font-medium">Logout</span>
                       </Button>
                     </div>
                   ) : (
-                    <Link href="/auth">
+                    <Link href="/login">
                       <Button
                         variant="ghost"
                         size="sm"
