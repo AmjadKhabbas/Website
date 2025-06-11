@@ -13,7 +13,7 @@ export interface IStorage {
   getEhriAccountByEhriId(ehriId: string): Promise<EhriAccount | undefined>;
   getEhriAccountByEmail(email: string): Promise<EhriAccount | undefined>;
   verifyEhriAccount(ehriId: string, token: string): Promise<boolean>;
-  
+
   // User operations
   createUser(user: InsertUser): Promise<User>;
   getUserById(id: number): Promise<User | undefined>;
@@ -21,11 +21,11 @@ export interface IStorage {
   approveUser(userId: number, approvedBy: string): Promise<User | undefined>;
   getPendingUsers(): Promise<User[]>;
   deleteUser(userId: number): Promise<boolean>;
-  
+
   // Categories
   getCategories(): Promise<Category[]>;
   getCategoryBySlug(slug: string): Promise<Category | undefined>;
-  
+
   // Products
   getProducts(options?: {
     categoryId?: number;
@@ -41,29 +41,29 @@ export interface IStorage {
     search?: string;
   }): Promise<ProductWithCategory[]>;
   createProduct(product: InsertProduct): Promise<Product>;
-  
+
   // Cart
   getCartItems(sessionId: string): Promise<CartItemWithProduct[]>;
   addToCart(item: InsertCartItem): Promise<CartItem>;
   updateCartItem(id: number, quantity: number): Promise<CartItem | undefined>;
   removeFromCart(id: number): Promise<boolean>;
   clearCart(sessionId: string): Promise<void>;
-  
+
   // Orders and Purchase History
   createOrder(order: InsertOrder, items: InsertOrderItem[]): Promise<Order>;
   getUserOrders(userId: string): Promise<OrderWithItems[]>;
   getOrderById(orderId: number, userId?: string): Promise<OrderWithItems | undefined>;
   updateOrderStatus(orderId: number, status: string): Promise<Order | undefined>;
-  
+
   // Referrals
   createReferral(referral: InsertReferral): Promise<Referral>;
-  
+
   // Admin operations
   createAdminUser(admin: InsertAdminUser): Promise<AdminUser>;
   getAdminByEmail(email: string): Promise<AdminUser | undefined>;
   getAdminById(id: number): Promise<AdminUser | undefined>;
   updateAdminLastLogin(id: number): Promise<void>;
-  
+
   // Admin product management
   updateProductPrice(productId: number, price: string): Promise<Product | undefined>;
   updateProductImage(productId: number, imageUrl: string): Promise<Product | undefined>;
@@ -95,7 +95,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(ehriAccounts)
       .where(and(eq(ehriAccounts.ehriId, ehriId), eq(ehriAccounts.verificationToken, token)));
-    
+
     if (ehriAccount) {
       await db
         .update(ehriAccounts)
@@ -308,15 +308,15 @@ export class DatabaseStorage implements IStorage {
 
   async createOrder(orderData: InsertOrder, orderItemsData: InsertOrderItem[]): Promise<Order> {
     const [order] = await db.insert(orders).values(orderData).returning();
-    
+
     // Add order ID to each order item
     const itemsWithOrderId = orderItemsData.map(item => ({
       ...item,
       orderId: order.id
     }));
-    
+
     await db.insert(orderItems).values(itemsWithOrderId);
-    
+
     return order;
   }
 
@@ -352,7 +352,7 @@ export class DatabaseStorage implements IStorage {
 
   async getOrderById(orderId: number, userId?: string): Promise<OrderWithItems | undefined> {
     let query = db.select().from(orders).where(eq(orders.id, orderId));
-    
+
     if (userId) {
       query = query.where(and(eq(orders.id, orderId), eq(orders.userId, userId)));
     }

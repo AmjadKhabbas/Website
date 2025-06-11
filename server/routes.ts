@@ -27,78 +27,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
           code: 'MISSING_CREDENTIALS'
         });
       }
+
+      const normalizedEmail = email.toLowerCase().trim();
+      console.log('Normalized email:', normalizedEmail);
       
-      // Direct authentication for the primary admin
-      if (email.toLowerCase().trim() === 'amjadkhabbas2002@gmail.com') {
-        console.log('Checking primary admin credentials...');
-        if (password === 'akramsnotcool!') {
-          console.log('Primary admin login successful');
-          
-          // Ensure session is saved before responding
-          req.session.adminId = 1;
-          req.session.save((err) => {
-            if (err) {
-              console.error('Session save error:', err);
-              return res.status(500).json({
-                message: 'Session error',
-                code: 'SESSION_ERROR'
-              });
-            }
-            
-            res.json({
-              message: 'Admin login successful',
-              admin: {
-                id: 1,
-                email: 'amjadkhabbas2002@gmail.com',
-                name: 'Amjad Khabbas',
-                role: 'admin'
-              }
+      // Try database authentication first
+      console.log('Attempting database authentication for:', normalizedEmail);
+      const admin = await adminAuthService.authenticateAdmin(normalizedEmail, password);
+      
+      if (admin) {
+        console.log('Database authentication successful for:', normalizedEmail);
+        // Store admin ID in session with proper save
+        req.session.adminId = admin.id;
+        req.session.save((err) => {
+          if (err) {
+            console.error('Session save error:', err);
+            return res.status(500).json({
+              message: 'Session error',
+              code: 'SESSION_ERROR'
             });
-          });
-          return;
-        } else {
-          console.log('Primary admin login failed: incorrect password');
-          return res.status(401).json({
-            message: 'Invalid email or password',
-            code: 'INVALID_CREDENTIALS'
-          });
-        }
-      }
-      
-      console.log('Attempting database authentication for:', email);
-      // Fallback to database authentication
-      const admin = await adminAuthService.authenticateAdmin(email, password);
-      
-      if (!admin) {
-        console.log('Database authentication failed for:', email);
-        return res.status(401).json({
-          message: 'Invalid email or password',
-          code: 'INVALID_CREDENTIALS'
-        });
-      }
-      
-      console.log('Database authentication successful for:', email);
-      // Store admin ID in session with proper save
-      req.session.adminId = admin.id;
-      req.session.save((err) => {
-        if (err) {
-          console.error('Session save error:', err);
-          return res.status(500).json({
-            message: 'Session error',
-            code: 'SESSION_ERROR'
-          });
-        }
-        
-        res.json({
-          message: 'Admin login successful',
-          admin: {
-            id: admin.id,
-            email: admin.email,
-            name: admin.name,
-            role: admin.role
           }
+          
+          res.json({
+            message: 'Admin login successful',
+            admin: {
+              id: admin.id,
+              email: admin.email,
+              name: admin.name,
+              role: admin.role
+            }
+          });
         });
+        return;
+      }
+      
+      // Fallback to hardcoded admin if database auth fails
+      if (normalizedEmail === 'amjadkhabbas2002@gmail.com' && password === 'akramsnotcool!') {
+        console.log('Fallback hardcoded admin login successful');
+        
+        // Ensure session is saved before responding
+        req.session.adminId = 1;
+        req.session.save((err) => {
+          if (err) {
+            console.error('Session save error:', err);
+            return res.status(500).json({
+              message: 'Session error',
+              code: 'SESSION_ERROR'
+            });
+          }
+          
+          res.json({
+            message: 'Admin login successful',
+            admin: {
+              id: 1,
+              email: 'amjadkhabbas2002@gmail.com',
+              name: 'Amjad Khabbas',
+              role: 'admin'
+            }
+          });
+        });
+        return;
+      }
+      
+      console.log('All authentication methods failed for:', normalizedEmail);
+      return res.status(401).json({
+        message: 'Invalid email or password',
+        code: 'INVALID_CREDENTIALS'
       });
+      
     } catch (error) {
       console.error('Admin login error:', error);
       res.status(500).json({
