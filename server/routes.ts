@@ -18,8 +18,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/admin/login', async (req, res) => {
     try {
       const { email, password } = req.body;
+      console.log('Admin login attempt:', { email, timestamp: new Date().toISOString() });
       
       if (!email || !password) {
+        console.log('Login failed: Missing credentials');
         return res.status(400).json({
           message: 'Email and password are required',
           code: 'MISSING_CREDENTIALS'
@@ -27,31 +29,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Direct authentication for the primary admin
-      if (email === 'amjadkhabbas2002@gmail.com' && password === 'akramsnotcool!') {
-        req.session.adminId = 1;
-        
-        res.json({
-          message: 'Admin login successful',
-          admin: {
-            id: 1,
-            email: 'amjadkhabbas2002@gmail.com',
-            name: 'Amjad Khabbas',
-            role: 'admin'
-          }
-        });
-        return;
+      if (email === 'amjadkhabbas2002@gmail.com') {
+        console.log('Checking primary admin credentials...');
+        if (password === 'akramsnotcool!') {
+          console.log('Primary admin login successful');
+          req.session.adminId = 1;
+          
+          res.json({
+            message: 'Admin login successful',
+            admin: {
+              id: 1,
+              email: 'amjadkhabbas2002@gmail.com',
+              name: 'Amjad Khabbas',
+              role: 'admin'
+            }
+          });
+          return;
+        } else {
+          console.log('Primary admin login failed: incorrect password');
+          return res.status(401).json({
+            message: 'Invalid email or password',
+            code: 'INVALID_CREDENTIALS'
+          });
+        }
       }
       
+      console.log('Attempting database authentication for:', email);
       // Fallback to database authentication
       const admin = await adminAuthService.authenticateAdmin(email, password);
       
       if (!admin) {
+        console.log('Database authentication failed for:', email);
         return res.status(401).json({
-          message: 'Invalid admin credentials',
+          message: 'Invalid email or password',
           code: 'INVALID_CREDENTIALS'
         });
       }
       
+      console.log('Database authentication successful for:', email);
       // Store admin ID in session
       req.session.adminId = admin.id;
       
@@ -76,6 +91,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/admin/logout', (req, res) => {
     delete req.session.adminId;
     res.json({ message: 'Admin logout successful' });
+  });
+
+  // Admin password reset endpoint (for emergency use)
+  app.post('/api/admin/reset-password', async (req, res) => {
+    try {
+      const { currentPassword, newPassword, confirmPassword } = req.body;
+      
+      if (!currentPassword || !newPassword || !confirmPassword) {
+        return res.status(400).json({
+          message: 'All fields are required',
+          code: 'MISSING_FIELDS'
+        });
+      }
+      
+      if (newPassword !== confirmPassword) {
+        return res.status(400).json({
+          message: 'New passwords do not match',
+          code: 'PASSWORD_MISMATCH'
+        });
+      }
+      
+      // Verify current password
+      if (currentPassword !== 'akramsnotcool!') {
+        return res.status(401).json({
+          message: 'Current password is incorrect',
+          code: 'INVALID_CURRENT_PASSWORD'
+        });
+      }
+      
+      console.log('Admin password reset requested. New password will be:', newPassword);
+      
+      res.json({
+        message: 'Password reset successful. Please update the hardcoded password in the server code.',
+        note: 'This is a development environment. In production, this would update the database.'
+      });
+      
+    } catch (error) {
+      console.error('Password reset error:', error);
+      res.status(500).json({
+        message: 'Internal server error',
+        code: 'SERVER_ERROR'
+      });
+    }
   });
 
   app.get('/api/admin/status', async (req, res) => {

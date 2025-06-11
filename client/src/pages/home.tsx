@@ -470,7 +470,7 @@ export default function HomePage() {
       </section>
 
       {/* Featured Products Section */}
-      <section className="py-20 bg-white scroll-reveal">
+      <section className="py-20 bg-white scroll-reveal relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center mb-16 scroll-reveal">
             <div>
@@ -478,32 +478,6 @@ export default function HomePage() {
               <p className="text-xl text-slate-600">Premium Medical Solutions</p>
             </div>
             <div className="flex items-center gap-4">
-              {!showAllFeatured && (
-                <div className="flex gap-2">
-                  <button 
-                    onClick={() => setFeaturedIndex(Math.max(0, featuredIndex - 1))}
-                    disabled={featuredIndex === 0}
-                    className={`p-2 rounded-lg border transition-all duration-300 ${
-                      featuredIndex === 0 
-                        ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed'
-                        : 'bg-white border-blue-300 text-blue-600 hover:bg-blue-50 hover:border-blue-400 hover:text-blue-700'
-                    }`}
-                  >
-                    <ChevronLeft className="w-5 h-5" />
-                  </button>
-                  <button 
-                    onClick={() => setFeaturedIndex(Math.min(featuredProducts.length - 4, featuredIndex + 1))}
-                    disabled={featuredIndex >= featuredProducts.length - 4}
-                    className={`p-2 rounded-lg border transition-all duration-300 ${
-                      featuredIndex >= featuredProducts.length - 4
-                        ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed'
-                        : 'bg-white border-blue-300 text-blue-600 hover:bg-blue-50 hover:border-blue-400 hover:text-blue-700'
-                    }`}
-                  >
-                    <ChevronRight className="w-5 h-5" />
-                  </button>
-                </div>
-              )}
               <Button 
                 onClick={() => setShowAllFeatured(!showAllFeatured)}
                 className="btn-medical-secondary"
@@ -513,6 +487,34 @@ export default function HomePage() {
               </Button>
             </div>
           </div>
+
+          {/* Navigation arrows positioned at screen edges */}
+          {!showAllFeatured && (
+            <>
+              <button 
+                onClick={() => setFeaturedIndex(Math.max(0, featuredIndex - 1))}
+                disabled={featuredIndex === 0}
+                className={`fixed left-4 top-1/2 transform -translate-y-1/2 z-10 p-3 rounded-full shadow-lg transition-all duration-300 ${
+                  featuredIndex === 0 
+                    ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed'
+                    : 'bg-white border-blue-300 text-blue-600 hover:bg-blue-50 hover:border-blue-400 hover:text-blue-700 hover:scale-110'
+                }`}
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+              <button 
+                onClick={() => setFeaturedIndex(Math.min(featuredProducts.length - 4, featuredIndex + 1))}
+                disabled={featuredIndex >= featuredProducts.length - 4}
+                className={`fixed right-4 top-1/2 transform -translate-y-1/2 z-10 p-3 rounded-full shadow-lg transition-all duration-300 ${
+                  featuredIndex >= featuredProducts.length - 4
+                    ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed'
+                    : 'bg-white border-blue-300 text-blue-600 hover:bg-blue-50 hover:border-blue-400 hover:text-blue-700 hover:scale-110'
+                }`}
+              >
+                <ChevronRight className="w-6 h-6" />
+              </button>
+            </>
+          )}
 
           <div className={`grid gap-6 transition-all duration-500 ${
             showAllFeatured ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'
