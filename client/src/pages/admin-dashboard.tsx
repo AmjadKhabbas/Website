@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { CheckCircle, XCircle, User, Mail, FileText, Building, MapPin, LogOut, Loader2 } from 'lucide-react';
 import { useToast } from '@/components/toast';
 import { apiRequest } from '@/lib/queryClient';
+import { useAdmin } from '@/hooks/useAdmin';
 
 interface PendingUser {
   id: number;
@@ -27,17 +28,12 @@ export default function AdminDashboard() {
   const [, setLocation] = useLocation();
   const { addToast } = useToast();
   const queryClient = useQueryClient();
-
-  // Check admin status
-  const { data: adminData, isLoading: isCheckingAdmin } = useQuery({
-    queryKey: ['/api/admin/status'],
-    retry: false
-  });
+  const { isAdmin, admin, logoutMutation: adminLogout } = useAdmin();
 
   // Fetch pending users
   const { data: pendingUsers = [], isLoading, error } = useQuery<PendingUser[]>({
     queryKey: ['/api/admin/pending-users'],
-    enabled: !!adminData?.isAdmin
+    enabled: isAdmin === true
   });
 
   // Approve user mutation
@@ -68,26 +64,12 @@ export default function AdminDashboard() {
     }
   });
 
-  // Logout mutation
-  const logoutMutation = useMutation({
-    mutationFn: async () => {
-      return await apiRequest('POST', '/api/admin/logout');
-    },
-    onSuccess: () => {
-      queryClient.clear();
-      setLocation('/admin/login');
-    }
-  });
-
-  if (isCheckingAdmin) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
+  if (!admin && !isAdmin) {
+    setLocation('/admin/login');
+    return null;
   }
 
-  if (!adminData?.isAdmin) {
+  if (!isAdmin) {
     setLocation('/admin/login');
     return null;
   }
@@ -107,8 +89,8 @@ export default function AdminDashboard() {
           </div>
           <Button
             variant="outline"
-            onClick={() => logoutMutation.mutate()}
-            disabled={logoutMutation.isPending}
+            onClick={() => adminLogout.mutate()}
+            disabled={adminLogout.isPending}
             className="flex items-center gap-2"
           >
             <LogOut className="h-4 w-4" />
