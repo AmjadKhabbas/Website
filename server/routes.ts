@@ -28,41 +28,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Authenticate admin
-      const admin = await adminAuthService.authenticateAdmin(email, password);
-      
-      if (admin) {
-        console.log('✅ Admin authentication successful');
-        
-        // Set admin session
-        req.session.adminId = admin.id;
-        
-        return res.json({
-          message: 'Admin login successful',
-          admin: {
-            id: admin.id,
-            email: admin.email,
-            name: admin.name,
-            role: admin.role
-          }
-        });
-      }
-      
-      console.log('❌ Admin authentication failed');
-      return res.status(401).json({
-        message: 'Invalid email or password',
-        code: 'INVALID_CREDENTIALS'
-      });
-      
-    } catch (error) {
-      console.error('Admin login error:', error);
-      res.status(500).json({
-        message: 'Internal server error',
-        code: 'SERVER_ERROR'
-      });
-    }
-  });
-
       const normalizedEmail = email.toLowerCase().trim();
       console.log('Normalized email:', normalizedEmail);
       
