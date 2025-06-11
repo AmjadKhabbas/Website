@@ -750,7 +750,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Orders (Protected routes for logged-in users)
   app.post("/api/orders", requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id.toString();
       const orderData = insertOrderSchema.parse({
         ...req.body,
         userId,
@@ -772,7 +772,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/orders", requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id.toString();
       const orders = await storage.getUserOrders(userId);
       res.json(orders);
     } catch (error) {
@@ -783,7 +783,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/orders/:id", requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id.toString();
       const orderId = parseInt(req.params.id);
       const order = await storage.getOrderById(orderId, userId);
       if (!order) {
