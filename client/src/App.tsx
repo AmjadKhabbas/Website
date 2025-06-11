@@ -6,6 +6,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Header } from "@/components/header";
 import { CartSidebar } from "@/components/cart-sidebar";
 import { ToastContainer, useToast } from "@/components/toast";
+import { AuthProvider } from "@/hooks/use-auth";
+import { AdminProvider } from "@/hooks/use-admin";
 import HomePage from "@/pages/home";
 import CategoryPage from "@/pages/category";
 import ProductPage from "@/pages/product";
@@ -14,7 +16,7 @@ import OrdersPage from "@/pages/orders";
 import ReferralsPage from "@/pages/referrals";
 import FAQPage from "@/pages/faq";
 import ContactPage from "@/pages/contact";
-import AuthPage from "@/pages/auth";
+import LoginPage from "@/pages/login";
 import AdminLoginPage from "@/pages/admin-login";
 import AdminDashboard from "@/pages/admin-dashboard";
 import NotFound from "@/pages/not-found";
@@ -30,8 +32,8 @@ function Router() {
       <Route path="/referrals" component={ReferralsPage} />
       <Route path="/faq" component={FAQPage} />
       <Route path="/contact" component={ContactPage} />
-      <Route path="/auth" component={AuthPage} />
-      <Route path="/admin" component={AdminDashboard} />
+      <Route path="/login" component={LoginPage} />
+      <Route path="/admin/dashboard" component={AdminDashboard} />
       <Route path="/admin/login" component={AdminLoginPage} />
       <Route component={NotFound} />
     </Switch>
@@ -43,17 +45,21 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <div className="min-h-screen bg-slate-50">
-          <Header />
-          <main>
-            <Router />
-          </main>
-          <CartSidebar />
-          <ToastContainer toasts={toasts} onDismiss={dismissToast} />
-          <Toaster />
-        </div>
-      </TooltipProvider>
+      <AuthProvider>
+        <AdminProvider>
+          <TooltipProvider>
+            <div className="min-h-screen bg-slate-50">
+              <Header />
+              <main>
+                <Router />
+              </main>
+              <CartSidebar />
+              <ToastContainer toasts={toasts} onDismiss={dismissToast} />
+              <Toaster />
+            </div>
+          </TooltipProvider>
+        </AdminProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
