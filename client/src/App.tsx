@@ -31,8 +31,8 @@ function Router() {
       <Route path="/faq" component={FAQPage} />
       <Route path="/contact" component={ContactPage} />
       <Route path="/auth" component={AuthPage} />
-      <Route path="/admin" component={AdminLoginPage} />
-      <Route path="/admin/dashboard" component={AdminDashboard} />
+      <Route path="/admin" component={AdminDashboard} />
+      <Route path="/admin/login" component={AdminLoginPage} />
       <Route component={NotFound} />
     </Switch>
   );

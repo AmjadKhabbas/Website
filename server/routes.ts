@@ -27,7 +27,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Direct authentication for the primary admin
-      if (email === 'amjadkhabbas2002@gmail.com' && password === 'Iamawesome1234!') {
+      if (email === 'amjadkhabbas2002@gmail.com' && password === 'akramsnotcool!') {
         req.session.adminId = 1;
         
         res.json({
@@ -118,6 +118,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Admin status check error:', error);
       res.json({ isAdmin: false, admin: null });
+    }
+  });
+
+  // Admin Dashboard Routes
+  app.get('/api/admin/pending-users', requireAdminAuth, async (req, res) => {
+    try {
+      const pendingUsers = await storage.getPendingUsers();
+      res.json(pendingUsers);
+    } catch (error) {
+      console.error('Get pending users error:', error);
+      res.status(500).json({
+        message: 'Failed to fetch pending users',
+        code: 'FETCH_FAILED'
+      });
+    }
+  });
+
+  app.post('/api/admin/approve-user/:id', requireAdminAuth, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const approvedBy = req.admin?.email || 'admin';
+      
+      const user = await storage.approveUser(userId, approvedBy);
+      
+      if (!user) {
+        return res.status(404).json({
+          message: 'User not found',
+          code: 'USER_NOT_FOUND'
+        });
+      }
+      
+      res.json({
+        message: 'User approved successfully',
+        user
+      });
+    } catch (error) {
+      console.error('Approve user error:', error);
+      res.status(500).json({
+        message: 'Failed to approve user',
+        code: 'APPROVAL_FAILED'
+      });
+    }
+  });
+
+  app.delete('/api/admin/reject-user/:id', requireAdminAuth, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      
+      const success = await storage.deleteUser(userId);
+      
+      if (!success) {
+        return res.status(404).json({
+          message: 'User not found',
+          code: 'USER_NOT_FOUND'
+        });
+      }
+      
+      res.json({
+        message: 'User rejected and removed successfully'
+      });
+    } catch (error) {
+      console.error('Reject user error:', error);
+      res.status(500).json({
+        message: 'Failed to reject user',
+        code: 'REJECTION_FAILED'
+      });
     }
   });
 
