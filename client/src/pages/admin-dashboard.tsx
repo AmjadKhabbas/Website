@@ -64,11 +64,6 @@ export default function AdminDashboard() {
     }
   });
 
-  if (!admin && !isAdmin) {
-    setLocation('/admin/login');
-    return null;
-  }
-
   if (!isAdmin) {
     setLocation('/admin/login');
     return null;

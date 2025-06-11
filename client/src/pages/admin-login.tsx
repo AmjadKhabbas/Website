@@ -25,7 +25,7 @@ export default function AdminLoginPage() {
 
   // Redirect if already logged in as admin
   if (isAdmin && admin) {
-    setLocation("/");
+    setLocation("/admin");
     return null;
   }
 
