@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { adminAuthService } from "./adminAuth";
 
 const app = express();
 app.use(express.json());
@@ -51,6 +52,9 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 async function main() {
+  // Initialize admin user before starting the server
+  await adminAuthService.initializeAdminUser();
+  
   const server = await registerRoutes(app);
   const port = 5000;
 
