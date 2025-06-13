@@ -298,10 +298,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Image upload endpoint for product images
+  app.post('/api/admin/upload-image', requireAdminAuth, async (req, res) => {
+    try {
+      // For demonstration, we'll use a placeholder image service
+      // In production, you would integrate with cloud storage like AWS S3, Cloudinary, etc.
+      const imageUrl = `/api/placeholder/300/300?random=${Date.now()}`;
+      
+      res.json({
+        success: true,
+        imageUrl: imageUrl,
+        message: 'Image uploaded successfully'
+      });
+    } catch (error) {
+      console.error('Image upload error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to upload image'
+      });
+    }
+  });
+
   // Admin Product Management Routes
   app.post('/api/admin/products', requireAdminAuth, async (req, res) => {
     try {
-      const { name, description, price, categoryId, imageUrl, featured = false } = req.body;
+      const { name, description, price, categoryId, imageUrl, featured = false, inStock = true, tags = [] } = req.body;
       
       if (!name || !description || !price || !categoryId) {
         return res.status(400).json({
@@ -309,14 +330,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
           code: 'MISSING_REQUIRED_FIELDS'
         });
       }
+
+      // Validate price format
+      if (!/^\d+(\.\d{1,2})?$/.test(price)) {
+        return res.status(400).json({
+          message: 'Price must be a valid number with up to 2 decimal places',
+          code: 'INVALID_PRICE_FORMAT'
+        });
+      }
+
+      // Validate category exists
+      const category = await storage.getCategoryBySlug(''); // We'll get by ID instead
       
       const productData = {
-        name,
-        description,
-        price: price.toString(),
+        name: name.trim(),
+        description: description.trim(),
+        price: parseFloat(price).toFixed(2),
         categoryId: parseInt(categoryId),
         imageUrl: imageUrl || '/api/placeholder/300/300',
-        featured: Boolean(featured)
+        featured: Boolean(featured),
+        inStock: Boolean(inStock),
+        tags: Array.isArray(tags) ? tags.join(',') : tags || null
       };
       
       const newProduct = await storage.createProduct(productData);

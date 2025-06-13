@@ -5,7 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { CheckCircle, XCircle, User, Mail, FileText, Building, MapPin, LogOut, Loader2 } from 'lucide-react';
+import { CheckCircle, XCircle, User, Mail, FileText, Building, MapPin, LogOut, Loader2, Package, Plus } from 'lucide-react';
+import { Link } from 'wouter';
 import { useToast } from '@/components/toast';
 import { apiRequest } from '@/lib/queryClient';
 import { useAdmin } from '@/hooks/useAdmin';
@@ -93,8 +94,8 @@ export default function AdminDashboard() {
           </Button>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -106,6 +107,24 @@ export default function AdminDashboard() {
               <div className="text-2xl font-bold">{pendingUsers.length}</div>
             </CardContent>
           </Card>
+
+          <Link href="/admin/products">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer border-blue-200 hover:border-blue-300">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-blue-700">
+                  Product Management
+                </CardTitle>
+                <Package className="h-4 w-4 text-blue-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-2">
+                  <Plus className="h-5 w-5 text-blue-600" />
+                  <span className="text-sm font-medium text-blue-600">Add New Product</span>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">Upload products with images and details</p>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
 
         {/* Pending Users List */}
