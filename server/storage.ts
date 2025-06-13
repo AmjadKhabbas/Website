@@ -67,7 +67,6 @@ export interface IStorage {
   // Admin product management
   updateProductPrice(productId: number, price: string): Promise<Product | undefined>;
   updateProductImage(productId: number, imageUrl: string): Promise<Product | undefined>;
-  deleteProduct(id: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -432,30 +431,6 @@ export class DatabaseStorage implements IStorage {
       .where(eq(products.id, productId))
       .returning();
     return product || undefined;
-  }
-
-  async deleteProduct(id: number): Promise<boolean> {
-    try {
-      // First delete related cart items
-      await db
-        .delete(cartItems)
-        .where(eq(cartItems.productId, id));
-
-      // Then delete related order items
-      await db
-        .delete(orderItems)
-        .where(eq(orderItems.productId, id));
-
-      // Finally delete the product
-      const result = await db
-        .delete(products)
-        .where(eq(products.id, id));
-
-      return true;
-    } catch (error) {
-      console.error('Error deleting product:', error);
-      return false;
-    }
   }
 
   private async initializeData() {

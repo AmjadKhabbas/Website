@@ -10,7 +10,7 @@ import { useCartStore } from '@/lib/cart';
 import { MobileMenu } from '@/components/mobile-menu';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/use-auth';
-import { useAdmin } from '@/hooks/useAdmin';
+import { useAdmin } from '@/hooks/use-admin';
 import type { Category, ProductWithCategory } from '@shared/schema';
 
 export function Header() {
@@ -61,11 +61,6 @@ export function Header() {
   const { getTotalItems, openCart, setItems } = useCartStore();
   const { user, isLoading, logoutMutation } = useAuth();
   const isAuthenticated = !!user;
-  
-  // Use the admin hook to get admin status
-  const { adminStatus } = useAdmin();
-  const isAdmin = adminStatus?.isAdmin || false;
-  const adminUser = adminStatus?.admin;
 
   // Fetch cart data and sync with store
   const { data: cartData } = useQuery({
@@ -371,24 +366,6 @@ export function Header() {
 
             {/* Right Side Actions */}
             <div className="flex items-center space-x-3">
-              {/* Login Status Indicator */}
-              {isAdmin && adminUser && (
-                <div className="hidden sm:flex items-center space-x-2 px-3 py-2 bg-gradient-to-r from-purple-100 to-blue-100 border border-purple-200 rounded-lg">
-                  <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
-                  <span className="text-sm font-medium text-purple-800">
-                    Admin: {adminUser.email}
-                  </span>
-                </div>
-              )}
-              
-              {isAuthenticated && user && !isAdmin && (
-                <div className="hidden sm:flex items-center space-x-2 px-3 py-2 bg-gradient-to-r from-green-100 to-teal-100 border border-green-200 rounded-lg">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                  <span className="text-sm font-medium text-green-800">
-                    User: {user.email}
-                  </span>
-                </div>
-              )}
               {/* Cart Button */}
               <Button
                 variant="ghost"
