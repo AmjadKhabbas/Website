@@ -48,6 +48,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             });
           }
           
+          console.log('Admin session saved successfully for:', admin.email);
           res.json({
             message: 'Admin login successful',
             admin: {
@@ -76,6 +77,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             });
           }
           
+          console.log('Fallback admin session saved successfully');
           res.json({
             message: 'Admin login successful',
             admin: {

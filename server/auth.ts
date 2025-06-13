@@ -45,13 +45,14 @@ export function setupAuth(app: Express) {
       tableName: 'sessions'
     }),
     cookie: {
-      secure: process.env.NODE_ENV === 'production',
+      secure: false, // Set to false for Replit development
       httpOnly: true,
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+      sameSite: 'lax' // Add sameSite for better compatibility
     }
   };
 
-  app.set("trust proxy", 1);
+  app.set("trust proxy", true);
   app.use(session(sessionSettings));
   app.use(passport.initialize());
   app.use(passport.session());
