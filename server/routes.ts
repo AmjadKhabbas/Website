@@ -350,7 +350,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         imageUrl: imageUrl || '/api/placeholder/300/300',
         featured: Boolean(featured),
         inStock: Boolean(inStock),
-        tags: Array.isArray(tags) ? tags.join(',') : tags || null
+        tags: Array.isArray(tags) ? tags.join(', ') : (tags || null)
       };
       
       const newProduct = await storage.createProduct(productData);

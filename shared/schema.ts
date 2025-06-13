@@ -25,7 +25,7 @@ export const products = pgTable("products", {
   reviewCount: integer("review_count").notNull().default(0),
   inStock: boolean("in_stock").notNull().default(true),
   featured: boolean("featured").notNull().default(false),
-  tags: text("tags").array(),
+  tags: text("tags"),
 });
 
 export const cartItems = pgTable("cart_items", {
