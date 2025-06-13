@@ -438,6 +438,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete('/api/admin/products/:id', requireAdminAuth, async (req, res) => {
+    try {
+      const productId = parseInt(req.params.id);
+      
+      const success = await storage.deleteProduct(productId);
+      
+      if (!success) {
+        return res.status(404).json({
+          message: 'Product not found',
+          code: 'PRODUCT_NOT_FOUND'
+        });
+      }
+      
+      res.json({
+        message: 'Product deleted successfully'
+      });
+    } catch (error) {
+      console.error('Delete product error:', error);
+      res.status(500).json({
+        message: 'Failed to delete product',
+        code: 'DELETE_FAILED'
+      });
+    }
+  });
+
   // Add admin status check to products route
   app.get('/api/products', checkAdminStatus, async (req, res) => {
     try {

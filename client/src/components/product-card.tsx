@@ -1,4 +1,4 @@
-import { ShoppingCart, Plus, Minus, Edit2, ImageIcon } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Edit2, ImageIcon, X, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +12,7 @@ import { Link } from 'wouter';
 import { useCartStore } from '@/lib/cart';
 import { useAdmin } from '@/hooks/useAdmin';
 import { useState } from 'react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 interface ProductCardProps {
   product: ProductWithCategory;
@@ -23,9 +24,10 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
   const { success, error } = useToast();
   const queryClient = useQueryClient();
   const { items } = useCartStore();
-  const { isAdmin, updatePriceMutation, updateImageMutation } = useAdmin();
+  const { updatePriceMutation, updateImageMutation, deleteProductMutation, adminStatus } = useAdmin();
   const [newPrice, setNewPrice] = useState(product.price);
   const [newImageUrl, setNewImageUrl] = useState(product.imageUrl || '');
+  const isAdmin = adminStatus?.isAdmin || false;
 
   // Get current quantity in cart
   const cartItem = items.find(item => item.product.id === product.id);
@@ -65,7 +67,7 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
 
   const handleQuantityChange = (newQuantity: number) => {
     if (newQuantity < 0) return;
-    
+
     if (cartItem) {
       // Item exists in cart, update it
       updateQuantityMutation.mutate({ cartItemId: cartItem.id, quantity: newQuantity });
@@ -104,10 +106,10 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
             />
           </Link>
-          
+
           {/* Medical overlay */}
           <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/10 via-transparent to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          
+
           {/* Badges */}
           <div className="absolute top-2 left-2 space-y-1">
             {hasDiscount && (
@@ -199,10 +201,40 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
                   </div>
                 </DialogContent>
               </Dialog>
+              
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" size="sm" className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-md">
+                    <X className="h-4 w-4" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete the product from our servers.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      disabled={deleteProductMutation.isPending}
+                      onClick={() => {
+                        deleteProductMutation.mutate(product.id);
+                      }}
+                    >
+                      {deleteProductMutation.isPending ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : null}
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           )}
         </div>
-        
+
         {/* Content - List View */}
         <div className="flex-1 flex flex-col justify-between min-h-[8rem]">
           <div>
@@ -211,11 +243,11 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
                 {product.name}
               </h3>
             </Link>
-            
+
             <p className="text-sm text-slate-600 mb-3 line-clamp-2">
               {product.description}
             </p>
-            
+
             {/* Price */}
             <div className="flex items-center space-x-3 mb-4">
               <span className="text-xl font-bold text-blue-600">
@@ -229,7 +261,7 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
             </div>
           </div>
         </div>
-        
+
         {/* Quantity Controls - List View */}
         <div className="flex-shrink-0 w-48">
           {!product.inStock ? (
@@ -265,11 +297,11 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
               >
                 <Minus className="w-4 h-4" />
               </Button>
-              
+
               <span className="flex-1 text-center font-semibold text-blue-700 text-lg">
                 {currentQuantity}
               </span>
-              
+
               <Button
                 onClick={() => handleQuantityChange(currentQuantity + 1)}
                 disabled={updateQuantityMutation.isPending}
@@ -302,10 +334,10 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
           />
         </Link>
-        
+
         {/* Medical overlay */}
         <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/10 via-transparent to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-        
+
         {/* Badges */}
         <div className="absolute top-4 left-4 space-y-2">
           {hasDiscount && (
@@ -314,8 +346,123 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
             </Badge>
           )}
         </div>
+
+        {/* Admin Controls */}
+        {isAdmin && (
+          <div className="absolute top-2 right-2 space-y-1">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-md"
+                >
+                  <Edit2 className="h-4 w-4" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Edit Product Price</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium">Price</label>
+                    <Input
+                      type="text"
+                      value={newPrice}
+                      onChange={(e) => setNewPrice(e.target.value)}
+                      placeholder="Enter new price"
+                    />
+                  </div>
+                  <Button
+                    onClick={() => {
+                      updatePriceMutation.mutate({
+                        productId: product.id,
+                        price: newPrice
+                      });
+                    }}
+                    disabled={updatePriceMutation.isPending}
+                    className="w-full"
+                  >
+                    {updatePriceMutation.isPending ? 'Updating...' : 'Update Price'}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-md"
+                >
+                  <ImageIcon className="h-4 w-4" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Edit Product Image</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium">Image URL</label>
+                    <Input
+                      type="url"
+                      value={newImageUrl}
+                      onChange={(e) => setNewImageUrl(e.target.value)}
+                      placeholder="Enter new image URL"
+                    />
+                  </div>
+                  <Button
+                    onClick={() => {
+                      updateImageMutation.mutate({
+                        productId: product.id,
+                        imageUrl: newImageUrl
+                      });
+                    }}
+                    disabled={updateImageMutation.isPending}
+                    className="w-full"
+                  >
+                    {updateImageMutation.isPending ? 'Updating...' : 'Update Image'}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" size="sm" className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-md">
+                  <X className="h-4 w-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete the product from our servers.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    disabled={deleteProductMutation.isPending}
+                    onClick={() => {
+                      deleteProductMutation.mutate(product.id);
+                    }}
+                  >
+                    {deleteProductMutation.isPending ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : null}
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        )}
       </div>
-      
+
       {/* Content */}
       <div className="p-6 flex flex-col h-full">
         <Link href={`/product/${product.id}`}>
@@ -323,11 +470,11 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
             {product.name}
           </h3>
         </Link>
-        
+
         <p className="text-sm text-slate-600 mb-3 line-clamp-2 flex-grow">
           {product.description}
         </p>
-        
+
         {/* Price */}
         <div className="mb-4">
           <div className="flex items-center space-x-3">
@@ -341,7 +488,7 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
             )}
           </div>
         </div>
-        
+
         {/* Quantity Controls - Always at bottom */}
         <div className="mt-auto">
           {!product.inStock ? (
@@ -377,11 +524,11 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
               >
                 <Minus className="w-4 h-4" />
               </Button>
-              
+
               <span className="flex-1 text-center font-semibold text-blue-700 text-lg">
                 {currentQuantity}
               </span>
-              
+
               <Button
                 onClick={() => handleQuantityChange(currentQuantity + 1)}
                 disabled={updateQuantityMutation.isPending}

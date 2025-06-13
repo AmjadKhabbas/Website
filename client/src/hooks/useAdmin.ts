@@ -45,12 +45,12 @@ export function useAdmin() {
         credentials: "include", // Important for session cookies
         body: JSON.stringify(credentials),
       });
-      
+
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.message || "Login failed");
       }
-      
+
       return await res.json();
     },
     onSuccess: (data) => {
@@ -127,7 +127,6 @@ export function useAdmin() {
       return await res.json();
     },
     onSuccess: (data: ProductUpdateResponse) => {
-      // Invalidate products cache to refresh the list
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
       toast({
         title: "Image Updated",
@@ -137,6 +136,28 @@ export function useAdmin() {
     onError: (error: Error) => {
       toast({
         title: "Image Update Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete product mutation
+  const deleteProductMutation = useMutation({
+    mutationFn: async (productId: number) => {
+      const res = await apiRequest("DELETE", `/api/admin/products/${productId}`);
+      return await res.json();
+    },
+    onSuccess: (data: ProductUpdateResponse) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      toast({
+        title: "Product Deleted",
+        description: data.message,
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Product Deletion Failed",
         description: error.message,
         variant: "destructive",
       });
@@ -157,5 +178,6 @@ export function useAdmin() {
     // Product management mutations
     updatePriceMutation,
     updateImageMutation,
+    deleteProductMutation,
   };
 }
