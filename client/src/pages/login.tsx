@@ -38,7 +38,7 @@ export default function LoginPage() {
       const result = await loginMutation.mutateAsync(data);
       // Redirect based on user type
       if (result.admin) {
-        setLocation("/admin/dashboard");
+        setLocation("/admin");
       } else {
         setLocation("/");
       }

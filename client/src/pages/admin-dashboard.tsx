@@ -5,7 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { CheckCircle, XCircle, User, Mail, FileText, Building, MapPin, LogOut, Loader2, Package, Plus } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { CheckCircle, XCircle, User, Mail, FileText, Building, MapPin, LogOut, Loader2, Package, Plus, Trash2, Edit } from 'lucide-react';
 import { Link } from 'wouter';
 import { useToast } from '@/components/toast';
 import { apiRequest } from '@/lib/queryClient';
@@ -25,17 +27,43 @@ interface PendingUser {
   createdAt: string;
 }
 
+interface Product {
+  id: number;
+  name: string;
+  description: string;
+  price: string;
+  imageUrl: string;
+  categoryId: number;
+  inStock: boolean;
+  featured: boolean;
+  category: {
+    id: number;
+    name: string;
+    slug: string;
+  };
+}
+
 export default function AdminDashboard() {
   const [, setLocation] = useLocation();
   const { addToast } = useToast();
   const queryClient = useQueryClient();
   const { isAdmin, admin, logoutMutation } = useAuth();
+  const [activeTab, setActiveTab] = useState('users');
+  const [deleteProductId, setDeleteProductId] = useState<number | null>(null);
 
   // Fetch pending users
   const { data: pendingUsers = [], isLoading, error } = useQuery<PendingUser[]>({
     queryKey: ['/api/admin/pending-users'],
     enabled: isAdmin === true
   });
+
+  // Fetch all products for management
+  const { data: productsData, isLoading: productsLoading } = useQuery<{products: Product[]}>({
+    queryKey: ['/api/products'],
+    enabled: isAdmin === true
+  });
+
+  const products = productsData?.products || [];
 
   // Approve user mutation
   const approveMutation = useMutation({
