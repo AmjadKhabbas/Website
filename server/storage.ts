@@ -68,6 +68,7 @@ export interface IStorage {
   // Admin product management
   updateProductPrice(productId: number, price: string): Promise<Product | undefined>;
   updateProductImage(productId: number, imageUrl: string): Promise<Product | undefined>;
+  updateProduct(productId: number, data: Partial<InsertProduct>): Promise<Product | undefined>;
   updateProduct(id: number, updates: { name?: string; description?: string; price?: string; imageUrl?: string }): Promise<Product | undefined>;
 }
 

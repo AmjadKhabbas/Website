@@ -6,16 +6,17 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { CheckCircle, XCircle, User, Mail, FileText, Building, MapPin, LogOut, Loader2, Package, Plus, Trash2, Edit } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { CheckCircle, XCircle, User, Mail, FileText, Building, MapPin, LogOut, Loader2, Package, Plus, Trash2, Edit, Search } from 'lucide-react';
 import { Link } from 'wouter';
 import { useToast } from '@/components/toast';
 import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Textarea } from '@/components/ui/textarea';
 
 interface PendingUser {
   id: number;
@@ -47,28 +48,37 @@ interface Product {
   };
 }
 
-// Edit Product Dialog Component
-function EditProductDialog({ product, onUpdate }: { product: Product; onUpdate: () => void }) {
-  const [open, setOpen] = useState(false);
+interface Category {
+  id: number;
+  name: string;
+  slug: string;
+}
+
+function EditProductDialog({ product, categories, onClose }: { 
+  product: Product; 
+  categories: Category[];
+  onClose: () => void; 
+}) {
+  const queryClient = useQueryClient();
+  const { addToast } = useToast();
   const [formData, setFormData] = useState({
     name: product.name,
     description: product.description,
     price: product.price,
     imageUrl: product.imageUrl,
+    categoryId: product.categoryId,
     inStock: product.inStock,
-    featured: product.featured,
-    tags: '' // We'll need to handle tags if they exist
+    featured: product.featured
   });
-  const { addToast } = useToast();
 
   const updateProductMutation = useMutation({
-    mutationFn: async (updates: any) => {
-      return await apiRequest('PATCH', `/api/admin/products/${product.id}`, updates);
+    mutationFn: async (data: typeof formData) => {
+      return await apiRequest('PUT', `/api/admin/products/${product.id}`, data);
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/products'] });
       addToast('Product updated successfully', 'success');
-      setOpen(false);
-      onUpdate();
+      onClose();
     },
     onError: (error: any) => {
       addToast(error.message || 'Failed to update product', 'error');
@@ -81,106 +91,106 @@ function EditProductDialog({ product, onUpdate }: { product: Product; onUpdate: 
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          <Edit className="h-4 w-4" />
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-y-auto">
+    <Dialog open={true} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Product</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="name">Product Name</Label>
-            <Input
-              id="name"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="Enter product name"
-              required
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Product Name</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="price">Price ($)</Label>
+              <Input
+                id="price"
+                type="number"
+                step="0.01"
+                value={formData.price}
+                onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+                required
+              />
+            </div>
           </div>
-          
-          <div>
+
+          <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
             <Textarea
               id="description"
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Enter product description"
+              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
               rows={3}
               required
             />
           </div>
-          
-          <div>
-            <Label htmlFor="price">Price</Label>
-            <Input
-              id="price"
-              type="text"
-              value={formData.price}
-              onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-              placeholder="Enter price (e.g., 29.99)"
-              required
-            />
-          </div>
-          
-          <div>
+
+          <div className="space-y-2">
             <Label htmlFor="imageUrl">Image URL</Label>
             <Input
               id="imageUrl"
               type="url"
               value={formData.imageUrl}
-              onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-              placeholder="Enter image URL"
+              onChange={(e) => setFormData(prev => ({ ...prev, imageUrl: e.target.value }))}
+              required
             />
           </div>
-          
-          <div>
-            <Label htmlFor="tags">Tags (comma-separated)</Label>
-            <Input
-              id="tags"
-              value={formData.tags}
-              onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-              placeholder="e.g., FDA Approved, Fast Acting, Premium"
-            />
+
+          <div className="space-y-2">
+            <Label htmlFor="category">Category</Label>
+            <Select 
+              value={formData.categoryId.toString()} 
+              onValueChange={(value) => setFormData(prev => ({ ...prev, categoryId: parseInt(value) }))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((category) => (
+                  <SelectItem key={category.id} value={category.id.toString()}>
+                    {category.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-          
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="inStock"
-              checked={formData.inStock}
-              onCheckedChange={(checked) => setFormData({ ...formData, inStock: checked })}
-            />
-            <Label htmlFor="inStock">In Stock</Label>
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="inStock"
+                checked={formData.inStock}
+                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, inStock: checked }))}
+              />
+              <Label htmlFor="inStock">In Stock</Label>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="featured"
+                checked={formData.featured}
+                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, featured: checked }))}
+              />
+              <Label htmlFor="featured">Featured</Label>
+            </div>
           </div>
-          
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="featured"
-              checked={formData.featured}
-              onCheckedChange={(checked) => setFormData({ ...formData, featured: checked })}
-            />
-            <Label htmlFor="featured">Featured Product</Label>
-          </div>
-          
-          <div className="flex gap-2 pt-4">
-            <Button
-              type="submit"
+
+          <div className="flex space-x-2 pt-4">
+            <Button type="button" variant="outline" onClick={onClose} className="flex-1">
+              Cancel
+            </Button>
+            <Button 
+              type="submit" 
               disabled={updateProductMutation.isPending}
               className="flex-1"
             >
               {updateProductMutation.isPending ? 'Updating...' : 'Update Product'}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setOpen(false)}
-              className="flex-1"
-            >
-              Cancel
             </Button>
           </div>
         </form>
@@ -196,6 +206,8 @@ export default function AdminDashboard() {
   const { isAdmin, admin, logoutMutation } = useAuth();
   const [activeTab, setActiveTab] = useState('users');
   const [deleteProductId, setDeleteProductId] = useState<number | null>(null);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Fetch pending users
   const { data: pendingUsers = [], isLoading, error } = useQuery<PendingUser[]>({
@@ -209,7 +221,20 @@ export default function AdminDashboard() {
     enabled: isAdmin === true
   });
 
+  // Fetch categories for the edit form
+  const { data: categories = [] } = useQuery<Category[]>({
+    queryKey: ['/api/categories'],
+    enabled: isAdmin === true
+  });
+
   const products = productsData?.products || [];
+  
+  // Filter products based on search term
+  const filteredProducts = products.filter(product =>
+    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.category.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   // Approve user mutation
   const approveMutation = useMutation({
@@ -407,24 +432,20 @@ export default function AdminDashboard() {
               <div className="flex justify-center py-12">
                 <Loader2 className="h-8 w-8 animate-spin" />
               </div>
-            ) : products.length === 0 ? (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <p className="text-gray-600 dark:text-gray-400">
-                    No products found
-                  </p>
-                  <Link href="/admin/products">
-                    <Button className="mt-4">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Product
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
             ) : (
               <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-semibold">All Products</h3>
+                <div className="flex justify-between items-center gap-4">
+                  <div className="flex-1 max-w-md">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                      <Input
+                        placeholder="Search products..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
                   <Link href="/admin/products">
                     <Button>
                       <Plus className="h-4 w-4 mr-2" />
@@ -432,55 +453,77 @@ export default function AdminDashboard() {
                     </Button>
                   </Link>
                 </div>
-                
-                <div className="grid gap-4">
-                  {products.map((product) => (
-                    <Card key={product.id} className="border-l-4 border-l-green-500">
-                      <CardContent className="p-6">
-                        <div className="flex items-start justify-between">
-                          <div className="flex gap-4">
-                            <img 
-                              src={product.imageUrl} 
-                              alt={product.name}
-                              className="w-16 h-16 object-cover rounded-lg"
-                            />
-                            <div>
-                              <h4 className="font-semibold text-lg">{product.name}</h4>
-                              <p className="text-gray-600 text-sm mb-2">{product.description}</p>
-                              <div className="flex items-center gap-4 text-sm">
-                                <span className="font-semibold text-green-600">${product.price}</span>
-                                <Badge variant={product.inStock ? "default" : "secondary"}>
-                                  {product.inStock ? "In Stock" : "Out of Stock"}
-                                </Badge>
-                                <Badge variant="outline">{product.category.name}</Badge>
-                                {product.featured && <Badge variant="destructive">Featured</Badge>}
+
+                {filteredProducts.length === 0 ? (
+                  <Card>
+                    <CardContent className="py-12 text-center">
+                      <p className="text-gray-600 dark:text-gray-400">
+                        {searchTerm ? 'No products found matching your search' : 'No products found'}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="grid gap-4">
+                    {filteredProducts.map((product) => (
+                      <Card key={product.id} className="border-l-4 border-l-green-500">
+                        <CardContent className="p-6">
+                          <div className="flex items-start justify-between">
+                            <div className="flex gap-4">
+                              <img 
+                                src={product.imageUrl} 
+                                alt={product.name}
+                                className="w-16 h-16 object-cover rounded-lg"
+                              />
+                              <div>
+                                <h4 className="font-semibold text-lg">{product.name}</h4>
+                                <p className="text-gray-600 text-sm mb-2">{product.description}</p>
+                                <div className="flex items-center gap-4 text-sm">
+                                  <span className="font-semibold text-green-600">${product.price}</span>
+                                  <Badge variant={product.inStock ? "default" : "secondary"}>
+                                    {product.inStock ? "In Stock" : "Out of Stock"}
+                                  </Badge>
+                                  <Badge variant="outline">{product.category.name}</Badge>
+                                  {product.featured && <Badge variant="destructive">Featured</Badge>}
+                                </div>
                               </div>
                             </div>
+                            
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setEditingProduct(product)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => setDeleteProductId(product.id)}
+                                disabled={deleteProductMutation.isPending}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </div>
-                          
-                          <div className="flex gap-2">
-                            <EditProductDialog 
-                              product={product} 
-                              onUpdate={() => queryClient.invalidateQueries({ queryKey: ['/api/products'] })}
-                            />
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => setDeleteProductId(product.id)}
-                              disabled={deleteProductMutation.isPending}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </TabsContent>
         </Tabs>
+
+        {/* Edit Product Dialog */}
+        {editingProduct && (
+          <EditProductDialog
+            product={editingProduct}
+            categories={categories}
+            onClose={() => setEditingProduct(null)}
+          />
+        )}
 
         {/* Delete Product Confirmation Dialog */}
         <Dialog open={deleteProductId !== null} onOpenChange={() => setDeleteProductId(null)}>

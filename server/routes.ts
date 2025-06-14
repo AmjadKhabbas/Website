@@ -640,6 +640,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin product update (comprehensive)
+  app.put('/api/admin/products/:id', requireAdminAuth, async (req, res) => {
+    try {
+      const productId = parseInt(req.params.id);
+      const { name, description, price, imageUrl, categoryId, inStock, featured } = req.body;
+      
+      const updatedProduct = await storage.updateProduct(productId, {
+        name,
+        description,
+        price,
+        imageUrl,
+        categoryId,
+        inStock,
+        featured
+      });
+      
+      if (!updatedProduct) {
+        return res.status(404).json({
+          message: 'Product not found',
+          code: 'PRODUCT_NOT_FOUND'
+        });
+      }
+      
+      res.json({
+        message: 'Product updated successfully',
+        product: updatedProduct
+      });
+    } catch (error) {
+      console.error('Update product error:', error);
+      res.status(500).json({
+        message: 'Failed to update product',
+        code: 'UPDATE_FAILED'
+      });
+    }
+  });
+
   // PATCH endpoint for price updates
   app.patch('/api/admin/products/:id/price', requireAdminAuth, async (req, res) => {
     try {
