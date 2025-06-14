@@ -371,20 +371,20 @@ export default function LoginPage() {
               Create New Account
             </Button>
 
-            <div className="text-center">
-              <Link href="/admin/login" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
-                Admin Login
-              </Link>
-            </div>
+            
           </div>
 
           <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
             <h4 className="font-medium text-blue-900 mb-2">Test Accounts</h4>
             <div className="text-sm text-blue-700 space-y-1">
+              <div><strong>Doctor Accounts:</strong></div>
               <div>dr.johnson@medical.com</div>
               <div>dr.patel@clinic.com</div>
               <div>dr.martinez@hospital.com</div>
               <div className="font-medium">Password: TestPass123!</div>
+              <div className="mt-3"><strong>Admin Account:</strong></div>
+              <div>amjadkhabbas2002@gmail.com</div>
+              <div className="font-medium">Password: akramsnotcool!</div>
             </div>
           </div>
         </CardContent>

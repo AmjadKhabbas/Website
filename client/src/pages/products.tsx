@@ -28,11 +28,11 @@ export default function ProductsPage() {
     const urlParams = new URLSearchParams(location.split('?')[1] || '');
     const searchParam = urlParams.get('search');
     const categoryParam = urlParams.get('category');
-    
+
     if (searchParam) {
       setSearchQuery(decodeURIComponent(searchParam));
     }
-    
+
     if (categoryParam) {
       setSelectedCategory(categoryParam);
     }
@@ -47,13 +47,13 @@ export default function ProductsPage() {
       const params = new URLSearchParams();
       if (selectedCategory) params.append('categorySlug', selectedCategory);
       if (searchQuery) params.append('search', searchQuery);
-      
+
       const response = await fetch(`/api/products?${params.toString()}`);
       if (!response.ok) throw new Error('Failed to fetch products');
       return response.json();
     }
   });
-  
+
   const products = productsResponse?.products || [];
   const isAdmin = productsResponse?.isAdmin || false;
 
@@ -85,12 +85,12 @@ export default function ProductsPage() {
     const matchesSearch = !searchQuery || 
       product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       product.description.toLowerCase().includes(searchQuery.toLowerCase());
-    
+
     const productPrice = parseFloat(product.price);
     const matchesPrice = productPrice >= priceRange[0] && productPrice <= priceRange[1];
-    
+
     const matchesStock = !inStockOnly || product.inStock;
-    
+
     return matchesSearch && matchesPrice && matchesStock;
   });
 
@@ -158,7 +158,7 @@ export default function ProductsPage() {
                     isCategoriesOpen ? 'rotate-90' : ''
                   }`} />
                 </button>
-                
+
                 {/* Collapsible Categories List */}
                 {isCategoriesOpen && (
                   <motion.div
@@ -209,7 +209,7 @@ export default function ProductsPage() {
                 {/* Filter Options */}
                 <div className="mt-8 pt-6 border-t border-slate-200 space-y-6">
                   <h4 className="text-sm font-semibold text-slate-800 mb-4">Filter Options</h4>
-                  
+
                   {/* Price Range */}
                   <div className="space-y-3">
                     <label className="text-sm font-medium text-slate-700">Price Range</label>
@@ -333,7 +333,7 @@ export default function ProductsPage() {
                       Active Search
                     </Badge>
                   )}
-                  
+
                   {/* Inline Search Bar */}
                   <div className="relative ml-4">
                     <Input

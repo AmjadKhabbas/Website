@@ -1,18 +1,21 @@
+
 import { createContext, ReactNode, useContext } from "react";
 import {
   useQuery,
   useMutation,
   UseMutationResult,
 } from "@tanstack/react-query";
-import { User } from "@shared/schema";
+import { User, AdminUser } from "@shared/schema";
 import { queryClient } from "../lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 type AuthContextType = {
   user: User | null;
+  admin: AdminUser | null;
+  isAdmin: boolean;
   isLoading: boolean;
   error: Error | null;
-  loginMutation: UseMutationResult<User, Error, LoginData>;
+  loginMutation: UseMutationResult<any, Error, LoginData>;
   logoutMutation: UseMutationResult<void, Error, void>;
 };
 
@@ -27,20 +30,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   
   const {
-    data: user,
+    data: authData,
     error,
     isLoading,
-  } = useQuery<User | null>({
+  } = useQuery<any>({
     queryKey: ["/api/auth/user"],
     queryFn: async () => {
       const response = await fetch("/api/auth/user");
       if (response.status === 401) {
-        return null;
+        return { user: null, admin: null, isAdmin: false };
       }
       if (!response.ok) {
         throw new Error("Failed to fetch user");
       }
-      return response.json();
+      const data = await response.json();
+      return {
+        user: data.isAdmin ? null : data,
+        admin: data.isAdmin ? data.admin : null,
+        isAdmin: data.isAdmin || false
+      };
     },
   });
 
@@ -61,12 +69,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       return response.json();
     },
-    onSuccess: (user: User) => {
-      queryClient.setQueryData(["/api/auth/user"], user);
-      toast({
-        title: "Login successful",
-        description: `Welcome back, ${user.fullName}!`,
-      });
+    onSuccess: (data: any) => {
+      if (data.isAdmin) {
+        queryClient.setQueryData(["/api/auth/user"], {
+          user: null,
+          admin: data.admin,
+          isAdmin: true
+        });
+        toast({
+          title: "Admin login successful",
+          description: `Welcome back, ${data.admin.name}!`,
+        });
+      } else {
+        queryClient.setQueryData(["/api/auth/user"], {
+          user: data.user,
+          admin: null,
+          isAdmin: false
+        });
+        toast({
+          title: "Login successful",
+          description: `Welcome back, ${data.user.fullName}!`,
+        });
+      }
     },
     onError: (error: Error) => {
       toast({
@@ -88,7 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     },
     onSuccess: () => {
-      queryClient.setQueryData(["/api/auth/user"], null);
+      queryClient.setQueryData(["/api/auth/user"], { user: null, admin: null, isAdmin: false });
       queryClient.invalidateQueries({ queryKey: ["/api/cart"] });
       toast({
         title: "Logged out",
@@ -107,7 +131,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return (
     <AuthContext.Provider
       value={{
-        user: user ?? null,
+        user: authData?.user ?? null,
+        admin: authData?.admin ?? null,
+        isAdmin: authData?.isAdmin ?? false,
         isLoading,
         error,
         loginMutation,

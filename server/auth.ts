@@ -189,8 +189,30 @@ export function setupAuth(app: Express) {
     }
   });
 
-  // Login endpoint
-  app.post("/api/auth/login", (req, res, next) => {
+  // Login endpoint with admin detection
+  app.post("/api/auth/login", async (req, res, next) => {
+    const { email, password } = req.body;
+    
+    // Check if this is an admin login attempt first
+    const { adminAuthService } = await import("./adminAuth");
+    const admin = await adminAuthService.authenticateAdmin(email, password);
+    
+    if (admin) {
+      // Admin login - set admin session
+      req.session.adminId = admin.id;
+      return res.json({
+        message: "Admin login successful",
+        isAdmin: true,
+        admin: {
+          id: admin.id,
+          email: admin.email,
+          name: admin.name,
+          role: admin.role
+        }
+      });
+    }
+    
+    // Regular user login
     passport.authenticate("local", (err: any, user: User | false, info: any) => {
       if (err) {
         return res.status(500).json({ message: "Login failed. Please try again." });
@@ -207,6 +229,7 @@ export function setupAuth(app: Express) {
         
         res.json({
           message: "Login successful",
+          isAdmin: false,
           user: {
             id: user.id,
             email: user.email,
@@ -221,6 +244,11 @@ export function setupAuth(app: Express) {
 
   // Logout endpoint
   app.post("/api/auth/logout", (req, res, next) => {
+    // Clear admin session if exists
+    if (req.session?.adminId) {
+      delete req.session.adminId;
+    }
+    
     req.logout((err) => {
       if (err) {
         return res.status(500).json({ message: "Logout failed" });
@@ -230,12 +258,32 @@ export function setupAuth(app: Express) {
   });
 
   // Get current user endpoint
-  app.get("/api/auth/user", (req, res) => {
+  app.get("/api/auth/user", async (req, res) => {
+    // Check if user is admin first
+    const adminId = req.session?.adminId;
+    if (adminId) {
+      const { adminAuthService } = await import("./adminAuth");
+      const admin = await adminAuthService.verifyAdmin(adminId);
+      if (admin) {
+        return res.json({
+          isAdmin: true,
+          admin: {
+            id: admin.id,
+            email: admin.email,
+            name: admin.name,
+            role: admin.role
+          }
+        });
+      }
+    }
+    
+    // Regular user check
     if (!req.isAuthenticated() || !req.user) {
       return res.status(401).json({ message: "Not authenticated" });
     }
 
     res.json({
+      isAdmin: false,
       id: req.user.id,
       email: req.user.email,
       fullName: req.user.fullName,
