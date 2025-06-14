@@ -9,7 +9,7 @@ import { CheckCircle, XCircle, User, Mail, FileText, Building, MapPin, LogOut, L
 import { Link } from 'wouter';
 import { useToast } from '@/components/toast';
 import { apiRequest } from '@/lib/queryClient';
-import { useAdmin } from '@/hooks/useAdmin';
+import { useAuth } from '@/hooks/use-auth';
 
 interface PendingUser {
   id: number;
@@ -29,7 +29,7 @@ export default function AdminDashboard() {
   const [, setLocation] = useLocation();
   const { addToast } = useToast();
   const queryClient = useQueryClient();
-  const { isAdmin, admin, logoutMutation: adminLogout } = useAdmin();
+  const { isAdmin, admin, logoutMutation } = useAuth();
 
   // Fetch pending users
   const { data: pendingUsers = [], isLoading, error } = useQuery<PendingUser[]>({
@@ -85,8 +85,8 @@ export default function AdminDashboard() {
           </div>
           <Button
             variant="outline"
-            onClick={() => adminLogout.mutate()}
-            disabled={adminLogout.isPending}
+            onClick={() => logoutMutation.mutate()}
+            disabled={logoutMutation.isPending}
             className="flex items-center gap-2"
           >
             <LogOut className="h-4 w-4" />
