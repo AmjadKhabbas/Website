@@ -1,4 +1,4 @@
-import { ShoppingCart, Plus, Minus, Edit2, ImageIcon } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Edit2, ImageIcon, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -26,6 +26,19 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
   const { isAdmin, updatePriceMutation, updateImageMutation } = useAdmin();
   const [newPrice, setNewPrice] = useState(product.price);
   const [newImageUrl, setNewImageUrl] = useState(product.imageUrl || '');
+
+  const deleteProductMutation = useMutation({
+    mutationFn: async (productId: number) => {
+      await apiRequest('DELETE', `/api/admin/products/${productId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/products'] });
+      success('Product deleted successfully!');
+    },
+    onError: () => {
+      error('Failed to delete product');
+    },
+  });
 
   // Get current quantity in cart
   const cartItem = items.find(item => item.product.id === product.id);
@@ -120,6 +133,20 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
           {/* Admin Controls */}
           {isAdmin && (
             <div className="absolute top-2 right-2 space-y-1">
+              <Button 
+                variant="destructive" 
+                size="sm" 
+                className="h-8 w-8 p-0 bg-red-500/90 hover:bg-red-600 shadow-md"
+                onClick={() => {
+                  if (window.confirm('Are you sure you want to delete this product?')) {
+                    deleteProductMutation.mutate(product.id);
+                  }
+                }}
+                disabled={deleteProductMutation.isPending}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+              
               <Dialog>
                 <DialogTrigger asChild>
                   <Button 
@@ -314,6 +341,65 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
             </Badge>
           )}
         </div>
+
+        {/* Admin Controls - Grid View */}
+        {isAdmin && (
+          <div className="absolute top-4 right-4 space-y-1">
+            <Button 
+              variant="destructive" 
+              size="sm" 
+              className="h-8 w-8 p-0 bg-red-500/90 hover:bg-red-600 shadow-md"
+              onClick={() => {
+                if (window.confirm('Are you sure you want to delete this product?')) {
+                  deleteProductMutation.mutate(product.id);
+                }
+              }}
+              disabled={deleteProductMutation.isPending}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+            
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button 
+                  variant="secondary" 
+                  size="sm" 
+                  className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-md"
+                >
+                  <Edit2 className="h-4 w-4" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Edit Product</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium">Price</label>
+                    <Input
+                      type="text"
+                      value={newPrice}
+                      onChange={(e) => setNewPrice(e.target.value)}
+                      placeholder="Enter new price"
+                    />
+                  </div>
+                  <Button
+                    onClick={() => {
+                      updatePriceMutation.mutate({ 
+                        productId: product.id, 
+                        price: newPrice 
+                      });
+                    }}
+                    disabled={updatePriceMutation.isPending}
+                    className="w-full"
+                  >
+                    {updatePriceMutation.isPending ? 'Updating...' : 'Update Price'}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+        )}
       </div>
       
       {/* Content */}

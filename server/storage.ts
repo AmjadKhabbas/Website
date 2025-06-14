@@ -41,6 +41,7 @@ export interface IStorage {
     search?: string;
   }): Promise<ProductWithCategory[]>;
   createProduct(product: InsertProduct): Promise<Product>;
+  deleteProduct(id: number): Promise<boolean>;
 
   // Cart
   getCartItems(sessionId: string): Promise<CartItemWithProduct[]>;
@@ -202,6 +203,18 @@ export class DatabaseStorage implements IStorage {
       .values(productData)
       .returning();
     return product;
+  }
+
+  async deleteProduct(id: number): Promise<boolean> {
+    try {
+      const result = await db
+        .delete(products)
+        .where(eq(products.id, id));
+      return result.rowCount !== null && result.rowCount > 0;
+    } catch (error) {
+      console.error('Delete product error:', error);
+      return false;
+    }
   }
 
   async getProductsWithCategory(options: {
