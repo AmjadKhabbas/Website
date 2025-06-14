@@ -26,6 +26,7 @@ interface PendingUser {
 }
 
 export default function AdminDashboard() {
+  const { admin, adminLoading, logoutMutation } = useAdmin();
   const [, setLocation] = useLocation();
   const { addToast } = useToast();
   const queryClient = useQueryClient();
@@ -87,8 +88,8 @@ export default function AdminDashboard() {
             variant="outline"
             onClick={() => adminLogout.mutate()}
             disabled={logoutMutation.isPending ? (
-              
-            
+
+
             false
             ): (false)}
             className="flex items-center gap-2"

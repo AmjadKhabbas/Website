@@ -1,4 +1,3 @@
-
 import { createContext, ReactNode, useContext } from "react";
 import {
   useQuery,
@@ -28,7 +27,7 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
-  
+
   // Unified authentication check
   const {
     data: authData,
@@ -61,12 +60,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         },
         body: JSON.stringify(credentials),
       });
-      
+
       if (!response.ok) {
         const error = await response.text();
         throw new Error(error || "Login failed");
       }
-      
+
       return response.json();
     },
     onSuccess: (data: any) => {
@@ -97,7 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await fetch("/api/auth/logout", {
         method: "POST",
       });
-      
+
       if (!response.ok) {
         throw new Error("Logout failed");
       }
