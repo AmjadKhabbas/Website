@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, requireAuth, requireApprovedUser, hashPassword } from "./auth";
+import { setupAuth, requireAuth, requireApprovedUser, hashPassword, comparePasswords } from "./auth";
 import { adminAuthService, requireAdminAuth, checkAdminStatus } from "./adminAuth";
 import { insertCartItemSchema, insertOrderSchema, insertOrderItemSchema, insertReferralSchema } from "@shared/schema";
 import session from "express-session";

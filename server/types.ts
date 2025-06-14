@@ -1,10 +1,12 @@
 declare module 'express-session' {
   interface SessionData {
     adminId?: number;
+    userId?: number;
   }
   
   interface Session {
     adminId?: number;
+    userId?: number;
   }
 }
 

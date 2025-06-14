@@ -59,10 +59,8 @@ export function Header() {
   }, [searchQuery]);
   
   const { getTotalItems, openCart, setItems } = useCartStore();
-  const { user, isLoading, logoutMutation } = useAuth();
-  const { admin, isLoading: adminLoading, logoutMutation: adminLogoutMutation } = useAdmin();
-  const isAuthenticated = !!user;
-  const isAdminAuthenticated = !!admin;
+  const { user, admin, isLoading, isAdmin, logoutMutation } = useAuth();
+  const isAuthenticated = !!user || !!admin;
 
   // Fetch cart data and sync with store
   const { data: cartData } = useQuery<any[]>({
@@ -393,9 +391,9 @@ export function Header() {
               </Button>
 
               {/* User Authentication */}
-              {!isLoading && !adminLoading && (
+              {!isLoading && (
                 <>
-                  {isAdminAuthenticated ? (
+                  {isAdmin ? (
                     <div className="hidden sm:flex items-center space-x-3">
                       {/* Admin Dashboard Link */}
                       <Link href="/admin/dashboard">
@@ -414,7 +412,7 @@ export function Header() {
                         <User className="w-5 h-5 text-purple-600" />
                         <div className="flex flex-col">
                           <span className="text-xs font-medium text-purple-600">Admin</span>
-                          <span className="text-sm font-medium text-slate-700">{admin.email}</span>
+                          <span className="text-sm font-medium text-slate-700">{admin?.email}</span>
                         </div>
                       </div>
                       
@@ -422,11 +420,11 @@ export function Header() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => adminLogoutMutation.mutate()}
-                        disabled={adminLogoutMutation.isPending}
+                        onClick={() => logoutMutation.mutate()}
+                        disabled={logoutMutation.isPending}
                         className="flex items-center space-x-2 p-3 text-slate-600 hover:text-red-600 bg-white hover:bg-red-50 border border-slate-200 hover:border-red-200 rounded-lg transition-all duration-300"
                       >
-                        {adminLogoutMutation.isPending ? (
+                        {logoutMutation.isPending ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
                         ) : (
                           <LogOut className="w-4 h-4" />
@@ -465,7 +463,7 @@ export function Header() {
                         <User className="w-5 h-5 text-blue-600" />
                         <div className="flex flex-col">
                           <span className="text-xs font-medium text-blue-600">Doctor</span>
-                          <span className="text-sm font-medium text-slate-700">{user.email}</span>
+                          <span className="text-sm font-medium text-slate-700">{user?.email}</span>
                         </div>
                       </div>
                       
