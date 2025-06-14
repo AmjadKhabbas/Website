@@ -18,6 +18,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/auth/login', async (req, res) => {
     try {
       const { email, password } = req.body;
+      console.log('Unified login attempt:', { email, timestamp: new Date().toISOString() });
       
       if (!email || !password) {
         return res.status(400).json({
@@ -27,8 +28,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const normalizedEmail = email.toLowerCase().trim();
+      console.log('Normalized email:', normalizedEmail);
       
       // First, check if this is an admin user
+      console.log('Attempting database authentication for:', normalizedEmail);
       const admin = await adminAuthService.authenticateAdmin(normalizedEmail, password);
       
       if (admin) {
@@ -56,7 +59,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Fallback to hardcoded admin if database auth fails
+      console.log('Checking hardcoded admin:', normalizedEmail, password);
       if (normalizedEmail === 'amjadkhabbas2002@gmail.com' && password === 'akramsnotcool!') {
+        console.log('Hardcoded admin login successful');
         req.session.adminId = 1;
         req.session.save((err) => {
           if (err) {
