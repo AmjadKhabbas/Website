@@ -44,9 +44,9 @@ interface Product {
 }
 
 export default function AdminDashboard() {
-  const [, setLocation] = useLocation();
-  const { addToast } = useToast();
   const queryClient = useQueryClient();
+  const { addToast } = useToast();
+  const [, setLocation] = useLocation();
   const { isAdmin, admin, logoutMutation } = useAuth();
   const [activeTab, setActiveTab] = useState('users');
   const [deleteProductId, setDeleteProductId] = useState<number | null>(null);
@@ -68,7 +68,7 @@ export default function AdminDashboard() {
   // Approve user mutation
   const approveMutation = useMutation({
     mutationFn: async (userId: number) => {
-      return await apiRequest('POST', `/api/admin/approve-user/${userId}`);
+      return await apiRequest('POST', `/api/admin/approve-user/${userId}`, {});
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/pending-users'] });
@@ -76,7 +76,7 @@ export default function AdminDashboard() {
     },
     onError: (error: any) => {
       addToast(error.message || 'Failed to approve user', 'error');
-    }
+    },
   });
 
   // Reject user mutation
@@ -93,8 +93,23 @@ export default function AdminDashboard() {
     }
   });
 
+  // Delete product mutation
+  const deleteProductMutation = useMutation({
+    mutationFn: async (productId: number) => {
+      return await apiRequest('DELETE', `/api/admin/products/${productId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/products'] });
+      addToast('Product deleted successfully', 'success');
+      setDeleteProductId(null);
+    },
+    onError: (error: any) => {
+      addToast(error.message || 'Failed to delete product', 'error');
+    },
+  });
+
   if (!isAdmin) {
-    setLocation('/admin/login');
+    setLocation('/login');
     return null;
   }
 
@@ -108,7 +123,7 @@ export default function AdminDashboard() {
               Admin Dashboard
             </h1>
             <p className="text-gray-600 dark:text-gray-400 mt-2">
-              Manage pending doctor registrations
+              Manage doctor registrations and products
             </p>
           </div>
           <Button
@@ -122,146 +137,229 @@ export default function AdminDashboard() {
           </Button>
         </div>
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Pending Registrations
-              </CardTitle>
-              <User className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{pendingUsers.length}</div>
-            </CardContent>
-          </Card>
+        {/* Admin Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="users" className="flex items-center gap-2">
+              <User className="h-4 w-4" />
+              Doctor Registrations ({pendingUsers.length})
+            </TabsTrigger>
+            <TabsTrigger value="products" className="flex items-center gap-2">
+              <Package className="h-4 w-4" />
+              Product Management ({products.length})
+            </TabsTrigger>
+          </TabsList>
 
-          <Link href="/admin/products">
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer border-blue-200 hover:border-blue-300">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-blue-700">
-                  Product Management
-                </CardTitle>
-                <Package className="h-4 w-4 text-blue-600" />
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-2">
-                  <Plus className="h-5 w-5 text-blue-600" />
-                  <span className="text-sm font-medium text-blue-600">Add New Product</span>
-                </div>
-                <p className="text-xs text-gray-500 mt-1">Upload products with images and details</p>
-              </CardContent>
-            </Card>
-          </Link>
-        </div>
-
-        {/* Pending Users List */}
-        {isLoading ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin" />
-          </div>
-        ) : error ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <p className="text-red-600 dark:text-red-400">
-                Failed to load pending registrations
-              </p>
-            </CardContent>
-          </Card>
-        ) : pendingUsers.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <p className="text-gray-600 dark:text-gray-400">
-                No pending registrations found
-              </p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-6">
-            {pendingUsers.map((user) => (
-              <Card key={user.id} className="border-l-4 border-l-blue-500">
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="flex items-center gap-2">
-                        <User className="h-5 w-5" />
-                        {user.fullName}
-                      </CardTitle>
-                      <CardDescription className="flex items-center gap-2 mt-1">
-                        <Mail className="h-4 w-4" />
-                        {user.email}
-                      </CardDescription>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="secondary">
-                        Pending Approval
-                      </Badge>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2">
-                        <FileText className="h-4 w-4 text-gray-500" />
-                        <span className="text-sm font-medium">License:</span>
-                        <span className="text-sm">{user.licenseNumber}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Building className="h-4 w-4 text-gray-500" />
-                        <span className="text-sm font-medium">College:</span>
-                        <span className="text-sm">{user.collegeName}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-gray-500" />
-                        <span className="text-sm font-medium">Province:</span>
-                        <span className="text-sm">{user.provinceState}</span>
-                      </div>
-                    </div>
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2">
-                        <Building className="h-4 w-4 text-gray-500" />
-                        <span className="text-sm font-medium">Practice:</span>
-                        <span className="text-sm">{user.practiceName}</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <MapPin className="h-4 w-4 text-gray-500 mt-0.5" />
-                        <div>
-                          <span className="text-sm font-medium">Address:</span>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
-                            {user.practiceAddress}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <Separator className="my-4" />
-
-                  <div className="flex justify-end gap-3">
-                    <Button
-                      variant="destructive"
-                      onClick={() => rejectMutation.mutate(user.id)}
-                      disabled={rejectMutation.isPending || approveMutation.isPending}
-                      className="flex items-center gap-2"
-                    >
-                      <XCircle className="h-4 w-4" />
-                      Reject
-                    </Button>
-                    <Button
-                      onClick={() => approveMutation.mutate(user.id)}
-                      disabled={approveMutation.isPending || rejectMutation.isPending}
-                      className="flex items-center gap-2"
-                    >
-                      <CheckCircle className="h-4 w-4" />
-                      Approve
-                    </Button>
-                  </div>
+          <TabsContent value="users">
+            {/* Pending Users List */}
+            {isLoading ? (
+              <div className="flex justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin" />
+              </div>
+            ) : error ? (
+              <Card>
+                <CardContent className="py-12 text-center">
+                  <p className="text-red-600 dark:text-red-400">
+                    Failed to load pending registrations
+                  </p>
                 </CardContent>
               </Card>
-            ))}
-          </div>
-        )}
+            ) : pendingUsers.length === 0 ? (
+              <Card>
+                <CardContent className="py-12 text-center">
+                  <p className="text-gray-600 dark:text-gray-400">
+                    No pending registrations found
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-6">
+                {pendingUsers.map((user) => (
+                  <Card key={user.id} className="border-l-4 border-l-blue-500">
+                    <CardHeader>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <CardTitle className="text-xl font-semibold text-gray-900 dark:text-white">
+                            {user.fullName}
+                          </CardTitle>
+                          <CardDescription className="flex items-center gap-2 mt-1">
+                            <Mail className="h-4 w-4" />
+                            {user.email}
+                          </CardDescription>
+                        </div>
+                        <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                          Pending Approval
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-2">
+                            <FileText className="h-4 w-4 text-gray-500" />
+                            <span className="text-sm font-medium">License:</span>
+                            <span className="text-sm text-gray-600">{user.licenseNumber}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Building className="h-4 w-4 text-gray-500" />
+                            <span className="text-sm font-medium">College:</span>
+                            <span className="text-sm text-gray-600">{user.collegeName}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <MapPin className="h-4 w-4 text-gray-500" />
+                            <span className="text-sm font-medium">Province:</span>
+                            <span className="text-sm text-gray-600">{user.provinceState}</span>
+                          </div>
+                        </div>
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-2">
+                            <Building className="h-4 w-4 text-gray-500" />
+                            <span className="text-sm font-medium">Practice:</span>
+                            <span className="text-sm text-gray-600">{user.practiceName}</span>
+                          </div>
+                          <div className="flex items-start gap-2">
+                            <MapPin className="h-4 w-4 text-gray-500 mt-0.5" />
+                            <div>
+                              <span className="text-sm font-medium">Address:</span>
+                              <p className="text-sm text-gray-600">{user.practiceAddress}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <Separator className="my-4" />
+                      
+                      <div className="flex justify-end space-x-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => rejectMutation.mutate(user.id)}
+                          disabled={rejectMutation.isPending || approveMutation.isPending}
+                          className="flex items-center gap-2 text-red-600 border-red-200 hover:bg-red-50"
+                        >
+                          <XCircle className="h-4 w-4" />
+                          Reject
+                        </Button>
+                        <Button
+                          onClick={() => approveMutation.mutate(user.id)}
+                          disabled={approveMutation.isPending || rejectMutation.isPending}
+                          className="flex items-center gap-2"
+                        >
+                          <CheckCircle className="h-4 w-4" />
+                          Approve
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="products">
+            {/* Product Management */}
+            {productsLoading ? (
+              <div className="flex justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin" />
+              </div>
+            ) : products.length === 0 ? (
+              <Card>
+                <CardContent className="py-12 text-center">
+                  <p className="text-gray-600 dark:text-gray-400">
+                    No products found
+                  </p>
+                  <Link href="/admin/products">
+                    <Button className="mt-4">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Product
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-semibold">All Products</h3>
+                  <Link href="/admin/products">
+                    <Button>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Product
+                    </Button>
+                  </Link>
+                </div>
+                
+                <div className="grid gap-4">
+                  {products.map((product) => (
+                    <Card key={product.id} className="border-l-4 border-l-green-500">
+                      <CardContent className="p-6">
+                        <div className="flex items-start justify-between">
+                          <div className="flex gap-4">
+                            <img 
+                              src={product.imageUrl} 
+                              alt={product.name}
+                              className="w-16 h-16 object-cover rounded-lg"
+                            />
+                            <div>
+                              <h4 className="font-semibold text-lg">{product.name}</h4>
+                              <p className="text-gray-600 text-sm mb-2">{product.description}</p>
+                              <div className="flex items-center gap-4 text-sm">
+                                <span className="font-semibold text-green-600">${product.price}</span>
+                                <Badge variant={product.inStock ? "default" : "secondary"}>
+                                  {product.inStock ? "In Stock" : "Out of Stock"}
+                                </Badge>
+                                <Badge variant="outline">{product.category.name}</Badge>
+                                {product.featured && <Badge variant="destructive">Featured</Badge>}
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => setDeleteProductId(product.id)}
+                            disabled={deleteProductMutation.isPending}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+
+        {/* Delete Product Confirmation Dialog */}
+        <Dialog open={deleteProductId !== null} onOpenChange={() => setDeleteProductId(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Delete Product</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <p className="text-sm text-gray-600">
+                Are you sure you want to delete this product? This action cannot be undone.
+              </p>
+              <div className="flex space-x-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setDeleteProductId(null)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => deleteProductId && deleteProductMutation.mutate(deleteProductId)}
+                  disabled={deleteProductMutation.isPending}
+                  className="flex-1"
+                >
+                  {deleteProductMutation.isPending ? 'Deleting...' : 'Delete'}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
