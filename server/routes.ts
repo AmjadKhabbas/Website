@@ -14,7 +14,206 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize admin user on startup
   await adminAuthService.initializeAdminUser();
 
-  // Admin Authentication Routes
+  // Unified Authentication endpoint - automatically detects admin vs regular user
+  app.post('/api/auth/login', async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({
+          message: 'Email and password are required',
+          code: 'MISSING_CREDENTIALS'
+        });
+      }
+
+      const normalizedEmail = email.toLowerCase().trim();
+      
+      // First, check if this is an admin user
+      const admin = await adminAuthService.authenticateAdmin(normalizedEmail, password);
+      
+      if (admin) {
+        // Admin login successful
+        req.session.adminId = admin.id;
+        req.session.save((err) => {
+          if (err) {
+            console.error('Session save error:', err);
+            return res.status(500).json({
+              message: 'Session error',
+              code: 'SESSION_ERROR'
+            });
+          }
+          
+          res.json({
+            admin: {
+              id: admin.id,
+              email: admin.email,
+              name: admin.name,
+              role: admin.role
+            }
+          });
+        });
+        return;
+      }
+      
+      // Fallback to hardcoded admin if database auth fails
+      if (normalizedEmail === 'amjadkhabbas2002@gmail.com' && password === 'akramsnotcool!') {
+        req.session.adminId = 1;
+        req.session.save((err) => {
+          if (err) {
+            console.error('Session save error:', err);
+            return res.status(500).json({
+              message: 'Session error',
+              code: 'SESSION_ERROR'
+            });
+          }
+          
+          res.json({
+            admin: {
+              id: 1,
+              email: 'amjadkhabbas2002@gmail.com',
+              name: 'Amjad Khabbas',
+              role: 'admin'
+            }
+          });
+        });
+        return;
+      }
+
+      // If not admin, try regular user authentication
+      const user = await storage.getUserByEmail(normalizedEmail);
+      
+      if (!user) {
+        return res.status(401).json({
+          message: 'Invalid email or password',
+          code: 'INVALID_CREDENTIALS'
+        });
+      }
+
+      if (!user.isApproved) {
+        return res.status(403).json({
+          message: 'Your account is pending approval. Please wait for admin verification.',
+          code: 'ACCOUNT_PENDING'
+        });
+      }
+
+      const isPasswordValid = await comparePasswords(password, user.password);
+      
+      if (!isPasswordValid) {
+        return res.status(401).json({
+          message: 'Invalid email or password',
+          code: 'INVALID_CREDENTIALS'
+        });
+      }
+
+      // Store user in session
+      req.session.userId = user.id;
+      req.session.save((err) => {
+        if (err) {
+          console.error('Session save error:', err);
+          return res.status(500).json({
+            message: 'Session error',
+            code: 'SESSION_ERROR'
+          });
+        }
+        
+        res.json({
+          user: {
+            id: user.id,
+            email: user.email,
+            fullName: user.fullName,
+            licenseNumber: user.licenseNumber,
+            collegeName: user.collegeName,
+            provinceState: user.provinceState,
+            practiceName: user.practiceName,
+            practiceAddress: user.practiceAddress,
+            isApproved: user.isApproved,
+            isLicenseVerified: user.isLicenseVerified
+          }
+        });
+      });
+
+    } catch (error) {
+      console.error('Login error:', error);
+      res.status(500).json({
+        message: 'Internal server error',
+        code: 'SERVER_ERROR'
+      });
+    }
+  });
+
+  // Get current authenticated user (unified)
+  app.get('/api/auth/user', async (req, res) => {
+    // Check if admin is logged in
+    if (req.session?.adminId) {
+      const admin = await adminAuthService.verifyAdmin(req.session.adminId);
+      if (admin) {
+        return res.json({
+          admin: {
+            id: admin.id,
+            email: admin.email,
+            name: admin.name,
+            role: admin.role
+          }
+        });
+      }
+      
+      // Fallback for hardcoded admin
+      if (req.session.adminId === 1) {
+        return res.json({
+          admin: {
+            id: 1,
+            email: 'amjadkhabbas2002@gmail.com',
+            name: 'Amjad Khabbas',
+            role: 'admin'
+          }
+        });
+      }
+    }
+    
+    // Check if regular user is logged in
+    if (req.session?.userId) {
+      const user = await storage.getUserById(req.session.userId);
+      if (user && user.isApproved) {
+        return res.json({
+          user: {
+            id: user.id,
+            email: user.email,
+            fullName: user.fullName,
+            licenseNumber: user.licenseNumber,
+            collegeName: user.collegeName,
+            provinceState: user.provinceState,
+            practiceName: user.practiceName,
+            practiceAddress: user.practiceAddress,
+            isApproved: user.isApproved,
+            isLicenseVerified: user.isLicenseVerified
+          }
+        });
+      }
+    }
+    
+    return res.status(401).json({
+      message: 'Not authenticated'
+    });
+  });
+
+  // Unified logout endpoint
+  app.post('/api/auth/logout', (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        console.error('Logout error:', err);
+        return res.status(500).json({
+          message: 'Logout failed',
+          code: 'LOGOUT_ERROR'
+        });
+      }
+      
+      res.json({
+        message: 'Logged out successfully'
+      });
+    });
+  });
+
+  // Legacy Admin Authentication Routes (for backward compatibility)
   app.post('/api/admin/login', async (req, res) => {
     try {
       const { email, password } = req.body;

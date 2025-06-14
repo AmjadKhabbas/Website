@@ -4,15 +4,17 @@ import {
   useMutation,
   UseMutationResult,
 } from "@tanstack/react-query";
-import { User } from "@shared/schema";
+import { User, AdminUser } from "@shared/schema";
 import { queryClient } from "../lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 type AuthContextType = {
   user: User | null;
+  admin: AdminUser | null;
   isLoading: boolean;
   error: Error | null;
-  loginMutation: UseMutationResult<User, Error, LoginData>;
+  isAdmin: boolean;
+  loginMutation: UseMutationResult<{user?: User, admin?: AdminUser}, Error, LoginData>;
   logoutMutation: UseMutationResult<void, Error, void>;
 };
 
@@ -27,10 +29,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   
   const {
-    data: user,
+    data: authData,
     error,
     isLoading,
-  } = useQuery<User | null>({
+  } = useQuery<{user?: User, admin?: AdminUser} | null>({
     queryKey: ["/api/auth/user"],
     queryFn: async () => {
       const response = await fetch("/api/auth/user");
@@ -43,6 +45,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return response.json();
     },
   });
+
+  const user = authData?.user || null;
+  const admin = authData?.admin || null;
+  const isAdmin = !!admin;
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginData) => {
@@ -61,11 +67,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       return response.json();
     },
-    onSuccess: (user: User) => {
-      queryClient.setQueryData(["/api/auth/user"], user);
+    onSuccess: (data: {user?: User, admin?: AdminUser}) => {
+      queryClient.setQueryData(["/api/auth/user"], data);
+      const displayName = data.admin?.name || data.user?.fullName || "User";
+      const role = data.admin ? "Admin" : "Doctor";
       toast({
         title: "Login successful",
-        description: `Welcome back, ${user.fullName}!`,
+        description: `Welcome back, ${displayName}! (${role})`,
       });
     },
     onError: (error: Error) => {
@@ -107,9 +115,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return (
     <AuthContext.Provider
       value={{
-        user: user ?? null,
+        user,
+        admin,
         isLoading,
         error,
+        isAdmin,
         loginMutation,
         logoutMutation,
       }}
