@@ -1,10 +1,9 @@
-import { ShoppingCart, Plus, Minus, Edit2, ImageIcon, X, MoreVertical, Trash2 } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Edit2, ImageIcon, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import type { ProductWithCategory } from '@shared/schema';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
@@ -31,27 +30,15 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
 
   const deleteProductMutation = useMutation({
     mutationFn: async (productId: number) => {
-      const response = await fetch(`/api/admin/products/${productId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.text();
-        throw new Error(errorData || 'Failed to delete product');
-      }
-      
-      return response.json();
+      await apiRequest('DELETE', `/api/admin/products/${productId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/products'] });
       success('Product deleted successfully!');
       setShowDeleteConfirm(false);
     },
-    onError: (error: Error) => {
-      error(`Failed to delete product: ${error.message}`);
+    onError: () => {
+      error('Failed to delete product');
     },
   });
 
@@ -173,134 +160,100 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
 
           {/* Admin Controls */}
           {isAdmin && (
-            <div className="absolute top-2 right-2">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
+            <div className="absolute top-2 right-2 space-y-1">
+              <Button 
+                variant="destructive" 
+                size="sm" 
+                className="h-8 w-8 p-0 bg-red-500/90 hover:bg-red-600 shadow-md"
+                onClick={() => {
+                  if (window.confirm('Are you sure you want to delete this product?')) {
+                    deleteProductMutation.mutate(product.id);
+                  }
+                }}
+                disabled={deleteProductMutation.isPending}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+              
+              <Dialog>
+                <DialogTrigger asChild>
                   <Button 
                     variant="secondary" 
                     size="sm" 
-                    className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-md"
                   >
-                    <MoreVertical className="h-4 w-4" />
+                    <Edit2 className="h-4 w-4" />
                   </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                        <Edit2 className="h-4 w-4 mr-2" />
-                        Edit Price
-                      </DropdownMenuItem>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-md">
-                      <DialogHeader>
-                        <DialogTitle>Edit Product Price</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        <div>
-                          <label className="text-sm font-medium">Price</label>
-                          <Input
-                            type="text"
-                            value={newPrice}
-                            onChange={(e) => setNewPrice(e.target.value)}
-                            placeholder="Enter new price"
-                          />
-                        </div>
-                        <Button
-                          onClick={() => {
-                            updatePriceMutation.mutate({ 
-                              productId: product.id, 
-                              price: newPrice 
-                            });
-                          }}
-                          disabled={updatePriceMutation.isPending}
-                          className="w-full"
-                        >
-                          {updatePriceMutation.isPending ? 'Updating...' : 'Update Price'}
-                        </Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Edit Product Price</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium">Price</label>
+                      <Input
+                        type="text"
+                        value={newPrice}
+                        onChange={(e) => setNewPrice(e.target.value)}
+                        placeholder="Enter new price"
+                      />
+                    </div>
+                    <Button
+                      onClick={() => {
+                        updatePriceMutation.mutate({ 
+                          productId: product.id, 
+                          price: newPrice 
+                        });
+                      }}
+                      disabled={updatePriceMutation.isPending}
+                      className="w-full"
+                    >
+                      {updatePriceMutation.isPending ? 'Updating...' : 'Update Price'}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
 
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                        <ImageIcon className="h-4 w-4 mr-2" />
-                        Edit Image
-                      </DropdownMenuItem>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-md">
-                      <DialogHeader>
-                        <DialogTitle>Edit Product Image</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        <div>
-                          <label className="text-sm font-medium">Image URL</label>
-                          <Input
-                            type="url"
-                            value={newImageUrl}
-                            onChange={(e) => setNewImageUrl(e.target.value)}
-                            placeholder="Enter new image URL"
-                          />
-                        </div>
-                        <Button
-                          onClick={() => {
-                            updateImageMutation.mutate({ 
-                              productId: product.id, 
-                              imageUrl: newImageUrl 
-                            });
-                          }}
-                          disabled={updateImageMutation.isPending}
-                          className="w-full"
-                        >
-                          {updateImageMutation.isPending ? 'Updating...' : 'Update Image'}
-                        </Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-
-                  <DropdownMenuSeparator />
-                  
-                  <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-                    <DialogTrigger asChild>
-                      <DropdownMenuItem 
-                        onSelect={(e) => e.preventDefault()}
-                        className="text-red-600 focus:text-red-600"
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete Product
-                      </DropdownMenuItem>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-md">
-                      <DialogHeader>
-                        <DialogTitle>Delete Product</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        <p className="text-sm text-slate-600">
-                          Are you sure you want to delete "{product.name}"? This action cannot be undone.
-                        </p>
-                        <div className="flex space-x-2">
-                          <Button
-                            variant="outline"
-                            onClick={() => setShowDeleteConfirm(false)}
-                            className="flex-1"
-                          >
-                            Cancel
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            onClick={() => deleteProductMutation.mutate(product.id)}
-                            disabled={deleteProductMutation.isPending}
-                            className="flex-1"
-                          >
-                            {deleteProductMutation.isPending ? 'Deleting...' : 'Delete'}
-                          </Button>
-                        </div>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button 
+                    variant="secondary" 
+                    size="sm" 
+                    className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-md"
+                  >
+                    <ImageIcon className="h-4 w-4" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Edit Product Image</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium">Image URL</label>
+                      <Input
+                        type="url"
+                        value={newImageUrl}
+                        onChange={(e) => setNewImageUrl(e.target.value)}
+                        placeholder="Enter new image URL"
+                      />
+                    </div>
+                    <Button
+                      onClick={() => {
+                        updateImageMutation.mutate({ 
+                          productId: product.id, 
+                          imageUrl: newImageUrl 
+                        });
+                      }}
+                      disabled={updateImageMutation.isPending}
+                      className="w-full"
+                    >
+                      {updateImageMutation.isPending ? 'Updating...' : 'Update Image'}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
           )}
         </div>
@@ -419,134 +372,85 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
 
         {/* Admin Controls - Grid View */}
         {isAdmin && (
-          <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+          <div className="absolute top-4 right-4 space-y-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+              <DialogTrigger asChild>
+                <Button 
+                  variant="destructive" 
+                  size="sm" 
+                  className="h-8 w-8 p-0 bg-red-500/90 hover:bg-red-600 shadow-lg transform hover:scale-110 transition-all duration-200"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Delete Product</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <p className="text-sm text-slate-600">
+                    Are you sure you want to delete "{product.name}"? This action cannot be undone.
+                  </p>
+                  <div className="flex space-x-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowDeleteConfirm(false)}
+                      className="flex-1"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={() => deleteProductMutation.mutate(product.id)}
+                      disabled={deleteProductMutation.isPending}
+                      className="flex-1"
+                    >
+                      {deleteProductMutation.isPending ? 'Deleting...' : 'Delete'}
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+            
+            <Dialog>
+              <DialogTrigger asChild>
                 <Button 
                   variant="secondary" 
                   size="sm" 
-                  className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-lg"
+                  className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-md"
                 >
-                  <MoreVertical className="h-4 w-4" />
+                  <Edit2 className="h-4 w-4" />
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                      <Edit2 className="h-4 w-4 mr-2" />
-                      Edit Price
-                    </DropdownMenuItem>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-md">
-                    <DialogHeader>
-                      <DialogTitle>Edit Product Price</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div>
-                        <label className="text-sm font-medium">Price</label>
-                        <Input
-                          type="text"
-                          value={newPrice}
-                          onChange={(e) => setNewPrice(e.target.value)}
-                          placeholder="Enter new price"
-                        />
-                      </div>
-                      <Button
-                        onClick={() => {
-                          updatePriceMutation.mutate({ 
-                            productId: product.id, 
-                            price: newPrice 
-                          });
-                        }}
-                        disabled={updatePriceMutation.isPending}
-                        className="w-full"
-                      >
-                        {updatePriceMutation.isPending ? 'Updating...' : 'Update Price'}
-                      </Button>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                      <ImageIcon className="h-4 w-4 mr-2" />
-                      Edit Image
-                    </DropdownMenuItem>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-md">
-                    <DialogHeader>
-                      <DialogTitle>Edit Product Image</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div>
-                        <label className="text-sm font-medium">Image URL</label>
-                        <Input
-                          type="url"
-                          value={newImageUrl}
-                          onChange={(e) => setNewImageUrl(e.target.value)}
-                          placeholder="Enter new image URL"
-                        />
-                      </div>
-                      <Button
-                        onClick={() => {
-                          updateImageMutation.mutate({ 
-                            productId: product.id, 
-                            imageUrl: newImageUrl 
-                          });
-                        }}
-                        disabled={updateImageMutation.isPending}
-                        className="w-full"
-                      >
-                        {updateImageMutation.isPending ? 'Updating...' : 'Update Image'}
-                      </Button>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-
-                <DropdownMenuSeparator />
-                
-                <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-                  <DialogTrigger asChild>
-                    <DropdownMenuItem 
-                      onSelect={(e) => e.preventDefault()}
-                      className="text-red-600 focus:text-red-600"
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete Product
-                    </DropdownMenuItem>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-md">
-                    <DialogHeader>
-                      <DialogTitle>Delete Product</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <p className="text-sm text-slate-600">
-                        Are you sure you want to delete "{product.name}"? This action cannot be undone.
-                      </p>
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="outline"
-                          onClick={() => setShowDeleteConfirm(false)}
-                          className="flex-1"
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          onClick={() => deleteProductMutation.mutate(product.id)}
-                          disabled={deleteProductMutation.isPending}
-                          className="flex-1"
-                        >
-                          {deleteProductMutation.isPending ? 'Deleting...' : 'Delete'}
-                        </Button>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Edit Product</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium">Price</label>
+                    <Input
+                      type="text"
+                      value={newPrice}
+                      onChange={(e) => setNewPrice(e.target.value)}
+                      placeholder="Enter new price"
+                    />
+                  </div>
+                  <Button
+                    onClick={() => {
+                      updatePriceMutation.mutate({ 
+                        productId: product.id, 
+                        price: newPrice 
+                      });
+                    }}
+                    disabled={updatePriceMutation.isPending}
+                    className="w-full"
+                  >
+                    {updatePriceMutation.isPending ? 'Updating...' : 'Update Price'}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         )}
       </div>

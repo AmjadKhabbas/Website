@@ -14,7 +14,7 @@ type AuthContextType = {
   isLoading: boolean;
   error: Error | null;
   isAdmin: boolean;
-  loginMutation: UseMutationResult<any, Error, LoginData>;
+  loginMutation: UseMutationResult<{user?: User, admin?: AdminUser}, Error, LoginData>;
   logoutMutation: UseMutationResult<void, Error, void>;
 };
 
@@ -27,8 +27,7 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
-
-  // Unified authentication check
+  
   const {
     data: authData,
     error,
@@ -60,27 +59,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         },
         body: JSON.stringify(credentials),
       });
-
+      
       if (!response.ok) {
         const error = await response.text();
         throw new Error(error || "Login failed");
       }
-
+      
       return response.json();
     },
-    onSuccess: (data: any) => {
+    onSuccess: (data: {user?: User, admin?: AdminUser}) => {
       queryClient.setQueryData(["/api/auth/user"], data);
-      if (data.admin) {
-        toast({
-          title: "Admin login successful",
-          description: `Welcome back, ${data.admin.name}!`,
-        });
-      } else if (data.user) {
-        toast({
-          title: "Login successful",
-          description: `Welcome back, ${data.user.fullName}!`,
-        });
-      }
+      const displayName = data.admin?.name || data.user?.fullName || "User";
+      const role = data.admin ? "Admin" : "Doctor";
+      toast({
+        title: "Login successful",
+        description: `Welcome back, ${displayName}! (${role})`,
+      });
     },
     onError: (error: Error) => {
       toast({
@@ -96,16 +90,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await fetch("/api/auth/logout", {
         method: "POST",
       });
-
+      
       if (!response.ok) {
         throw new Error("Logout failed");
       }
     },
     onSuccess: () => {
       queryClient.setQueryData(["/api/auth/user"], null);
+      queryClient.invalidateQueries({ queryKey: ["/api/cart"] });
       toast({
         title: "Logged out",
-        description: "Session ended successfully.",
+        description: "You have been successfully logged out.",
       });
     },
     onError: (error: Error) => {
