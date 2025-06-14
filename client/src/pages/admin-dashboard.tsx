@@ -65,9 +65,17 @@ export default function AdminDashboard() {
     }
   });
 
-  if (!isAdmin) {
-    setLocation('/admin/login');
+  if (isAdmin === false) {
+    setLocation('/login');
     return null;
+  }
+
+  if (isAdmin === null) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
   }
 
   return (

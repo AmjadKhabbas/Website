@@ -461,6 +461,64 @@ export function Header() {
                 </>
               )}
 
+              {isAdmin ? (
+                    <div className="hidden sm:flex items-center space-x-4">
+                      {/* Admin Dashboard Link */}
+                      <Link href="/admin/dashboard">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="flex items-center space-x-2 p-3 text-purple-600 hover:text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 hover:border-purple-300 rounded-lg transition-all duration-300"
+                        >
+                          <User className="w-4 h-4" />
+                          <span className="text-sm font-medium">Dashboard</span>
+                        </Button>
+                      </Link>
+
+                      {/* Admin User Info */}
+                      <div className="flex items-center space-x-3 px-4 py-2 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200">
+                        <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-600 rounded-full flex items-center justify-center">
+                          <User className="w-4 h-4 text-white" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">
+                            {admin?.name || 'Admin'}
+                          </p>
+                          <p className="text-xs text-purple-600 font-medium">Administrator</p>
+                        </div>
+                      </div>
+
+                      {/* Logout Button */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => logoutMutation.mutate()}
+                        disabled={logoutMutation.isPending}
+                        className="flex items-center space-x-2 p-3 text-slate-600 hover:text-red-600 bg-white hover:bg-red-50 border border-slate-200 hover:border-red-200 rounded-lg transition-all duration-300"
+                      >
+                        {logoutMutation.isPending ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <LogOut className="w-4 h-4" />
+                        )}
+                        <span className="text-sm font-medium">Logout</span>
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="hidden sm:flex items-center space-x-2">
+                      <Link href="/login">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="flex items-center space-x-2 p-3 text-slate-600 hover:text-blue-600 bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-200 rounded-lg transition-all duration-300"
+                        >
+                          <LogIn className="w-5 h-5" />
+                          <span className="text-sm font-medium">Doctor Login</span>
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
+
               {/* Mobile Menu Button */}
               <Button
                 variant="ghost"
