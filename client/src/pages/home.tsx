@@ -389,27 +389,27 @@ export default function HomePage() {
             transition={{ duration: 0.8, delay: 0.8 }}
             className="flex flex-wrap justify-center gap-4"
           >
-            <Link href="/products?category=botulinum-toxins">
+            <Link href="/products?categoryId=1">
               <button className="pill-medical">
                 Botulinum Toxins
               </button>
             </Link>
-            <Link href="/products?category=dermal-fillers">
+            <Link href="/products?categoryId=2">
               <button className="pill-medical">
                 Dermal Fillers
               </button>
             </Link>
-            <Link href="/products?category=orthopedic">
+            <Link href="/products?categoryId=3">
               <button className="pill-medical">
                 Orthopedic
               </button>
             </Link>
-            <Link href="/products?category=rheumatology">
+            <Link href="/products?categoryId=4">
               <button className="pill-medical">
                 Rheumatology
               </button>
             </Link>
-            <Link href="/products?category=weightloss-gynecology">
+            <Link href="/products?categoryId=5">
               <button className="pill-medical">
                 Weightloss & Gynecology
               </button>
