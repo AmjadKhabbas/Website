@@ -10,7 +10,7 @@ import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/components/toast';
 import { Link } from 'wouter';
 import { useCartStore } from '@/lib/cart';
-import { useAdmin } from '@/hooks/useAdmin';
+import { useAuth } from '@/hooks/use-auth';
 import { useState } from 'react';
 
 interface ProductCardProps {
@@ -23,9 +23,10 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
   const { success, error } = useToast();
   const queryClient = useQueryClient();
   const { items } = useCartStore();
-  const { isAdmin, updatePriceMutation, updateImageMutation } = useAdmin();
+  const { isAdmin } = useAuth();
   const [newPrice, setNewPrice] = useState(product.price);
   const [newImageUrl, setNewImageUrl] = useState(product.imageUrl || '');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const deleteProductMutation = useMutation({
     mutationFn: async (productId: number) => {
@@ -34,9 +35,36 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/products'] });
       success('Product deleted successfully!');
+      setShowDeleteConfirm(false);
     },
     onError: () => {
       error('Failed to delete product');
+    },
+  });
+
+  const updatePriceMutation = useMutation({
+    mutationFn: async ({ productId, price }: { productId: number; price: string }) => {
+      await apiRequest('PATCH', `/api/admin/products/${productId}/price`, { price });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/products'] });
+      success('Price updated successfully!');
+    },
+    onError: () => {
+      error('Failed to update price');
+    },
+  });
+
+  const updateImageMutation = useMutation({
+    mutationFn: async ({ productId, imageUrl }: { productId: number; imageUrl: string }) => {
+      await apiRequest('PATCH', `/api/admin/products/${productId}/image`, { imageUrl });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/products'] });
+      success('Image updated successfully!');
+    },
+    onError: () => {
+      error('Failed to update image');
     },
   });
 
@@ -344,20 +372,45 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
 
         {/* Admin Controls - Grid View */}
         {isAdmin && (
-          <div className="absolute top-4 right-4 space-y-1">
-            <Button 
-              variant="destructive" 
-              size="sm" 
-              className="h-8 w-8 p-0 bg-red-500/90 hover:bg-red-600 shadow-md"
-              onClick={() => {
-                if (window.confirm('Are you sure you want to delete this product?')) {
-                  deleteProductMutation.mutate(product.id);
-                }
-              }}
-              disabled={deleteProductMutation.isPending}
-            >
-              <X className="h-4 w-4" />
-            </Button>
+          <div className="absolute top-4 right-4 space-y-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+              <DialogTrigger asChild>
+                <Button 
+                  variant="destructive" 
+                  size="sm" 
+                  className="h-8 w-8 p-0 bg-red-500/90 hover:bg-red-600 shadow-lg transform hover:scale-110 transition-all duration-200"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Delete Product</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <p className="text-sm text-slate-600">
+                    Are you sure you want to delete "{product.name}"? This action cannot be undone.
+                  </p>
+                  <div className="flex space-x-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowDeleteConfirm(false)}
+                      className="flex-1"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={() => deleteProductMutation.mutate(product.id)}
+                      disabled={deleteProductMutation.isPending}
+                      className="flex-1"
+                    >
+                      {deleteProductMutation.isPending ? 'Deleting...' : 'Delete'}
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
             
             <Dialog>
               <DialogTrigger asChild>

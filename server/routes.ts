@@ -635,6 +635,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // PATCH endpoint for price updates
+  app.patch('/api/admin/products/:id/price', requireAdminAuth, async (req, res) => {
+    try {
+      const productId = parseInt(req.params.id);
+      const { price } = req.body;
+      
+      if (!price) {
+        return res.status(400).json({
+          message: 'Price is required',
+          code: 'MISSING_PRICE'
+        });
+      }
+      
+      const updatedProduct = await storage.updateProductPrice(productId, price);
+      
+      if (!updatedProduct) {
+        return res.status(404).json({
+          message: 'Product not found',
+          code: 'PRODUCT_NOT_FOUND'
+        });
+      }
+      
+      res.json({
+        message: 'Product price updated successfully',
+        product: updatedProduct
+      });
+    } catch (error) {
+      console.error('Update product price error:', error);
+      res.status(500).json({
+        message: 'Failed to update product price',
+        code: 'UPDATE_FAILED'
+      });
+    }
+  });
+
+  // PATCH endpoint for image updates
+  app.patch('/api/admin/products/:id/image', requireAdminAuth, async (req, res) => {
+    try {
+      const productId = parseInt(req.params.id);
+      const { imageUrl } = req.body;
+      
+      if (!imageUrl) {
+        return res.status(400).json({
+          message: 'Image URL is required',
+          code: 'MISSING_IMAGE_URL'
+        });
+      }
+      
+      const updatedProduct = await storage.updateProductImage(productId, imageUrl);
+      
+      if (!updatedProduct) {
+        return res.status(404).json({
+          message: 'Product not found',
+          code: 'PRODUCT_NOT_FOUND'
+        });
+      }
+      
+      res.json({
+        message: 'Product image updated successfully',
+        product: updatedProduct
+      });
+    } catch (error) {
+      console.error('Update product image error:', error);
+      res.status(500).json({
+        message: 'Failed to update product image',
+        code: 'UPDATE_FAILED'
+      });
+    }
+  });
+
   app.put('/api/admin/products/:id/image', requireAdminAuth, async (req, res) => {
     try {
       const productId = parseInt(req.params.id);
