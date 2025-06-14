@@ -26,7 +26,10 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
   const { isAdmin } = useAuth();
   const [newPrice, setNewPrice] = useState(product.price);
   const [newImageUrl, setNewImageUrl] = useState(product.imageUrl || '');
+  const [newName, setNewName] = useState(product.name);
+  const [newDescription, setNewDescription] = useState(product.description);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
 
   const deleteProductMutation = useMutation({
     mutationFn: async (productId: number) => {
@@ -65,6 +68,20 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
     },
     onError: () => {
       error('Failed to update image');
+    },
+  });
+
+  const updateProductMutation = useMutation({
+    mutationFn: async ({ productId, updates }: { productId: number; updates: any }) => {
+      await apiRequest('PATCH', `/api/admin/products/${productId}`, updates);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/products'] });
+      success('Product updated successfully!');
+      setShowEditDialog(false);
+    },
+    onError: () => {
+      error('Failed to update product');
     },
   });
 
@@ -175,7 +192,7 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
                 <X className="h-4 w-4" />
               </Button>
               
-              <Dialog>
+              <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
                 <DialogTrigger asChild>
                   <Button 
                     variant="secondary" 
@@ -185,72 +202,77 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
                     <Edit2 className="h-4 w-4" />
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-md">
+                <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-y-auto">
                   <DialogHeader>
-                    <DialogTitle>Edit Product Price</DialogTitle>
+                    <DialogTitle>Edit Product</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium">Product Name</label>
+                      <Input
+                        type="text"
+                        value={newName}
+                        onChange={(e) => setNewName(e.target.value)}
+                        placeholder="Enter product name"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="text-sm font-medium">Description</label>
+                      <textarea
+                        value={newDescription}
+                        onChange={(e) => setNewDescription(e.target.value)}
+                        placeholder="Enter product description"
+                        className="w-full min-h-[100px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                      />
+                    </div>
+                    
                     <div>
                       <label className="text-sm font-medium">Price</label>
                       <Input
                         type="text"
                         value={newPrice}
                         onChange={(e) => setNewPrice(e.target.value)}
-                        placeholder="Enter new price"
+                        placeholder="Enter price"
                       />
                     </div>
-                    <Button
-                      onClick={() => {
-                        updatePriceMutation.mutate({ 
-                          productId: product.id, 
-                          price: newPrice 
-                        });
-                      }}
-                      disabled={updatePriceMutation.isPending}
-                      className="w-full"
-                    >
-                      {updatePriceMutation.isPending ? 'Updating...' : 'Update Price'}
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button 
-                    variant="secondary" 
-                    size="sm" 
-                    className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-md"
-                  >
-                    <ImageIcon className="h-4 w-4" />
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>Edit Product Image</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
+                    
                     <div>
                       <label className="text-sm font-medium">Image URL</label>
                       <Input
                         type="url"
                         value={newImageUrl}
                         onChange={(e) => setNewImageUrl(e.target.value)}
-                        placeholder="Enter new image URL"
+                        placeholder="Enter image URL"
                       />
                     </div>
-                    <Button
-                      onClick={() => {
-                        updateImageMutation.mutate({ 
-                          productId: product.id, 
-                          imageUrl: newImageUrl 
-                        });
-                      }}
-                      disabled={updateImageMutation.isPending}
-                      className="w-full"
-                    >
-                      {updateImageMutation.isPending ? 'Updating...' : 'Update Image'}
-                    </Button>
+                    
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => {
+                          updateProductMutation.mutate({ 
+                            productId: product.id, 
+                            updates: {
+                              name: newName,
+                              description: newDescription,
+                              price: newPrice,
+                              imageUrl: newImageUrl
+                            }
+                          });
+                        }}
+                        disabled={updateProductMutation.isPending}
+                        className="flex-1"
+                      >
+                        {updateProductMutation.isPending ? 'Updating...' : 'Update Product'}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowEditDialog(false)}
+                        className="flex-1"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
                   </div>
                 </DialogContent>
               </Dialog>

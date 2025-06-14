@@ -68,6 +68,7 @@ export interface IStorage {
   // Admin product management
   updateProductPrice(productId: number, price: string): Promise<Product | undefined>;
   updateProductImage(productId: number, imageUrl: string): Promise<Product | undefined>;
+  updateProduct(id: number, updates: { name?: string; description?: string; price?: string; imageUrl?: string }): Promise<Product | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -438,12 +439,40 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateProductImage(productId: number, imageUrl: string): Promise<Product | undefined> {
-    const [product] = await db
-      .update(products)
-      .set({ imageUrl })
-      .where(eq(products.id, productId))
-      .returning();
-    return product || undefined;
+    try {
+      const [updatedProduct] = await db
+        .update(products)
+        .set({ imageUrl })
+        .where(eq(products.id, productId))
+        .returning();
+
+      return updatedProduct;
+    } catch (error) {
+      console.error('Error updating product image:', error);
+      return null;
+    }
+  }
+
+  async updateProduct(id: number, updates: { name?: string; description?: string; price?: string; imageUrl?: string }) {
+    try {
+      const updateData: any = {};
+
+      if (updates.name !== undefined) updateData.name = updates.name;
+      if (updates.description !== undefined) updateData.description = updates.description;
+      if (updates.price !== undefined) updateData.price = updates.price;
+      if (updates.imageUrl !== undefined) updateData.imageUrl = updates.imageUrl;
+
+      const [updatedProduct] = await db
+        .update(products)
+        .set(updateData)
+        .where(eq(products.id, id))
+        .returning();
+
+      return updatedProduct;
+    } catch (error) {
+      console.error('Error updating product:', error);
+      return null;
+    }
   }
 
   private async initializeData() {

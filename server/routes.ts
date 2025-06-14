@@ -744,6 +744,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Comprehensive product update endpoint
+  app.patch('/api/admin/products/:id', requireAdminAuth, async (req, res) => {
+    try {
+      const productId = parseInt(req.params.id);
+      const { name, description, price, imageUrl } = req.body;
+      
+      if (!productId || isNaN(productId)) {
+        return res.status(400).json({
+          message: 'Valid product ID is required',
+          code: 'INVALID_PRODUCT_ID'
+        });
+      }
+      
+      const updatedProduct = await storage.updateProduct(productId, {
+        name,
+        description,
+        price,
+        imageUrl
+      });
+      
+      if (!updatedProduct) {
+        return res.status(404).json({
+          message: 'Product not found',
+          code: 'PRODUCT_NOT_FOUND'
+        });
+      }
+      
+      res.json({
+        message: 'Product updated successfully',
+        product: updatedProduct
+      });
+    } catch (error) {
+      console.error('Update product error:', error);
+      res.status(500).json({
+        message: 'Failed to update product',
+        code: 'UPDATE_FAILED'
+      });
+    }
+  });
+
   // Add admin status check to products route
   app.get('/api/products', checkAdminStatus, async (req, res) => {
     try {
