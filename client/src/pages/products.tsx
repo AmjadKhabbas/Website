@@ -28,11 +28,11 @@ export default function ProductsPage() {
     const urlParams = new URLSearchParams(location.split('?')[1] || '');
     const searchParam = urlParams.get('search');
     const categoryParam = urlParams.get('category');
-
+    
     if (searchParam) {
       setSearchQuery(decodeURIComponent(searchParam));
     }
-
+    
     if (categoryParam) {
       setSelectedCategory(categoryParam);
     }
@@ -47,13 +47,13 @@ export default function ProductsPage() {
       const params = new URLSearchParams();
       if (selectedCategory) params.append('categorySlug', selectedCategory);
       if (searchQuery) params.append('search', searchQuery);
-
+      
       const response = await fetch(`/api/products?${params.toString()}`);
       if (!response.ok) throw new Error('Failed to fetch products');
       return response.json();
     }
   });
-
+  
   const products = productsResponse?.products || [];
   const isAdmin = productsResponse?.isAdmin || false;
 
@@ -81,27 +81,17 @@ export default function ProductsPage() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Filter products based on selected filters
-  const filteredProducts = products.filter((product) => {
-    const matchesCategory = selectedCategory === null || 
-      product.categoryId.toString() === selectedCategory ||
-      product.category?.slug === selectedCategory ||
-      product.category?.id.toString() === selectedCategory;
-
-    const matchesSearch = searchQuery === '' || 
+  const filteredProducts = products.filter((product: ProductWithCategory) => {
+    const matchesSearch = !searchQuery || 
       product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (product.tags && product.tags.toLowerCase().includes(searchQuery.toLowerCase()));
-
-    const matchesPrice = parseFloat(product.price) >= priceRange[0] && 
-      parseFloat(product.price) <= priceRange[1];
-
-    const matchesConcentration = selectedConcentration === null ||
-      (product.tags && product.tags.toLowerCase().includes(selectedConcentration.toLowerCase()));
-
+      product.description.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const productPrice = parseFloat(product.price);
+    const matchesPrice = productPrice >= priceRange[0] && productPrice <= priceRange[1];
+    
     const matchesStock = !inStockOnly || product.inStock;
-
-    return matchesCategory && matchesSearch && matchesPrice && matchesConcentration && matchesStock;
+    
+    return matchesSearch && matchesPrice && matchesStock;
   });
 
   return (
@@ -168,7 +158,7 @@ export default function ProductsPage() {
                     isCategoriesOpen ? 'rotate-90' : ''
                   }`} />
                 </button>
-
+                
                 {/* Collapsible Categories List */}
                 {isCategoriesOpen && (
                   <motion.div
@@ -194,10 +184,10 @@ export default function ProductsPage() {
 
                     {categoriesWithCounts.map((category) => (
                       <button
-                        key={category.id}
-                        onClick={() => setSelectedCategory(category.id.toString())}
+                        key={category.slug}
+                        onClick={() => setSelectedCategory(category.slug)}
                         className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-300 flex items-center justify-between group ${
-                          selectedCategory === category.slug || selectedCategory === category.id.toString()
+                          selectedCategory === category.slug
                             ? 'bg-blue-50 text-blue-700 border border-blue-200'
                             : 'text-slate-600 hover:bg-slate-50 hover:text-slate-800'
                         }`}
@@ -208,7 +198,7 @@ export default function ProductsPage() {
                             {category.count}
                           </Badge>
                           <ChevronRight className={`w-4 h-4 transition-transform duration-300 ${
-                            selectedCategory === category.slug || selectedCategory === category.id.toString() ? 'rotate-90 text-blue-600' : 'group-hover:translate-x-1'
+                            selectedCategory === category.slug ? 'rotate-90 text-blue-600' : 'group-hover:translate-x-1'
                           }`} />
                         </div>
                       </button>
@@ -219,7 +209,7 @@ export default function ProductsPage() {
                 {/* Filter Options */}
                 <div className="mt-8 pt-6 border-t border-slate-200 space-y-6">
                   <h4 className="text-sm font-semibold text-slate-800 mb-4">Filter Options</h4>
-
+                  
                   {/* Price Range */}
                   <div className="space-y-3">
                     <label className="text-sm font-medium text-slate-700">Price Range</label>
@@ -343,7 +333,7 @@ export default function ProductsPage() {
                       Active Search
                     </Badge>
                   )}
-
+                  
                   {/* Inline Search Bar */}
                   <div className="relative ml-4">
                     <Input
