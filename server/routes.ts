@@ -772,60 +772,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // User authentication endpoints
-  app.get('/api/auth/user', (req, res) => {
-    if (!req.user) {
-      return res.status(401).json({ message: 'Not authenticated' });
-    }
-    res.json(req.user);
-  });
+  // Legacy user authentication endpoint (removed - now using unified auth)
 
-  app.post('/api/auth/login', async (req, res, next) => {
-    const { email, password } = req.body;
-    
-    if (!email || !password) {
-      return res.status(400).json({ message: 'Email and password are required' });
-    }
-
-    try {
-      const user = await storage.getUserByEmail(email);
-      if (!user) {
-        return res.status(401).json({ message: 'Invalid email or password' });
-      }
-
-      if (!user.isApproved) {
-        return res.status(401).json({ message: 'Your account is pending approval' });
-      }
-
-      const { comparePasswords } = await import('./auth');
-      const isValidPassword = await comparePasswords(password, user.password);
-      
-      if (!isValidPassword) {
-        return res.status(401).json({ message: 'Invalid email or password' });
-      }
-
-      req.login(user, (err) => {
-        if (err) {
-          console.error('Login error:', err);
-          return res.status(500).json({ message: 'Login failed' });
-        }
-        res.json(user);
-      });
-    } catch (error) {
-      console.error('Login error:', error);
-      res.status(500).json({ message: 'Login failed' });
-    }
-  });
-
-  app.post('/api/auth/logout', (req, res) => {
-    req.logout((err) => {
-      if (err) {
-        console.error('Logout error:', err);
-        return res.status(500).json({ message: 'Logout failed' });
-      }
-      res.json({ message: 'Logout successful' });
-    });
-  });
+  // Legacy logout endpoint removed - using unified logout above
 
   // Doctor registration endpoint with email notification
   app.post("/api/auth/register", async (req, res) => {
