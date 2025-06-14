@@ -86,7 +86,11 @@ export default function AdminDashboard() {
           <Button
             variant="outline"
             onClick={() => adminLogout.mutate()}
-            disabled={adminLogout.isPending}
+            disabled={logoutMutation.isPending ? (
+              
+            
+            false
+            ): (false)}
             className="flex items-center gap-2"
           >
             <LogOut className="h-4 w-4" />

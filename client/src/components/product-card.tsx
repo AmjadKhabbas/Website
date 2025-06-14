@@ -31,15 +31,27 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
 
   const deleteProductMutation = useMutation({
     mutationFn: async (productId: number) => {
-      await apiRequest('DELETE', `/api/admin/products/${productId}`);
+      const response = await fetch(`/api/admin/products/${productId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.text();
+        throw new Error(errorData || 'Failed to delete product');
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/products'] });
       success('Product deleted successfully!');
       setShowDeleteConfirm(false);
     },
-    onError: () => {
-      error('Failed to delete product');
+    onError: (error: Error) => {
+      error(`Failed to delete product: ${error.message}`);
     },
   });
 

@@ -1,3 +1,4 @@
+
 import { createContext, ReactNode, useContext } from "react";
 import {
   useQuery,
@@ -14,7 +15,7 @@ type AuthContextType = {
   isLoading: boolean;
   error: Error | null;
   isAdmin: boolean;
-  loginMutation: UseMutationResult<{user?: User, admin?: AdminUser}, Error, LoginData>;
+  loginMutation: UseMutationResult<any, Error, LoginData>;
   logoutMutation: UseMutationResult<void, Error, void>;
 };
 
@@ -28,6 +29,7 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   
+  // Unified authentication check
   const {
     data: authData,
     error,
@@ -67,14 +69,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       return response.json();
     },
-    onSuccess: (data: {user?: User, admin?: AdminUser}) => {
+    onSuccess: (data: any) => {
       queryClient.setQueryData(["/api/auth/user"], data);
-      const displayName = data.admin?.name || data.user?.fullName || "User";
-      const role = data.admin ? "Admin" : "Doctor";
-      toast({
-        title: "Login successful",
-        description: `Welcome back, ${displayName}! (${role})`,
-      });
+      if (data.admin) {
+        toast({
+          title: "Admin login successful",
+          description: `Welcome back, ${data.admin.name}!`,
+        });
+      } else if (data.user) {
+        toast({
+          title: "Login successful",
+          description: `Welcome back, ${data.user.fullName}!`,
+        });
+      }
     },
     onError: (error: Error) => {
       toast({
@@ -97,10 +104,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     onSuccess: () => {
       queryClient.setQueryData(["/api/auth/user"], null);
-      queryClient.invalidateQueries({ queryKey: ["/api/cart"] });
       toast({
         title: "Logged out",
-        description: "You have been successfully logged out.",
+        description: "Session ended successfully.",
       });
     },
     onError: (error: Error) => {

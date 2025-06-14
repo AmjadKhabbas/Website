@@ -21,7 +21,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const [, setLocation] = useLocation();
-  const { loginMutation } = useAuth();
+  const { loginMutation, user, admin } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
 
@@ -35,8 +35,12 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      await loginMutation.mutateAsync(data);
-      setLocation("/");
+      const result = await loginMutation.mutateAsync(data);
+      if (result.admin) {
+        setLocation("/admin/dashboard");
+      } else {
+        setLocation("/products");
+      }
     } catch (error) {
       console.error("Login failed:", error);
     }
@@ -77,7 +81,7 @@ export default function LoginPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-      
+
       if (response.ok) {
         alert("Registration successful! Your account is pending approval.");
         setIsRegistering(false);
@@ -105,7 +109,7 @@ export default function LoginPage() {
               Register your medical practice to access premium products
             </CardDescription>
           </CardHeader>
-          
+
           <CardContent className="space-y-6">
             <Button
               variant="ghost"
@@ -132,7 +136,7 @@ export default function LoginPage() {
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={registerForm.control}
                     name="email"
@@ -162,7 +166,7 @@ export default function LoginPage() {
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={registerForm.control}
                     name="confirmPassword"
@@ -192,7 +196,7 @@ export default function LoginPage() {
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={registerForm.control}
                     name="collegeName"
@@ -378,7 +382,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          
+
         </CardContent>
       </Card>
     </div>
