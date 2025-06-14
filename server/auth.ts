@@ -189,31 +189,8 @@ export function setupAuth(app: Express) {
     }
   });
 
-  // Login endpoint - handles both admin and doctor authentication
-  app.post("/api/auth/login", async (req, res, next) => {
-    const { email, password } = req.body;
-    
-    // First check if it's an admin login
-    const adminEmail = 'amjadkhabbas2002@gmail.com';
-    const adminPassword = 'akramsnotcool!';
-    
-    if (email.toLowerCase() === adminEmail.toLowerCase() && password === adminPassword) {
-      // Admin login successful
-      req.session.adminId = 1;
-      req.session.isAdmin = true;
-      
-      return res.json({
-        message: "Admin login successful",
-        admin: {
-          id: 1,
-          email: adminEmail,
-          name: "Admin",
-          isAdmin: true
-        }
-      });
-    }
-    
-    // If not admin, try doctor authentication
+  // Login endpoint
+  app.post("/api/auth/login", (req, res, next) => {
     passport.authenticate("local", (err: any, user: User | false, info: any) => {
       if (err) {
         return res.status(500).json({ message: "Login failed. Please try again." });
@@ -242,15 +219,8 @@ export function setupAuth(app: Express) {
     })(req, res, next);
   });
 
-  // Logout endpoint - handles both admin and doctor
+  // Logout endpoint
   app.post("/api/auth/logout", (req, res, next) => {
-    // Clear admin session if exists
-    if (req.session.isAdmin) {
-      req.session.adminId = undefined;
-      req.session.isAdmin = undefined;
-    }
-    
-    // Logout doctor if authenticated
     req.logout((err) => {
       if (err) {
         return res.status(500).json({ message: "Logout failed" });
@@ -259,33 +229,18 @@ export function setupAuth(app: Express) {
     });
   });
 
-  // Get current user endpoint - handles both admin and doctor
+  // Get current user endpoint
   app.get("/api/auth/user", (req, res) => {
-    // Check if admin is logged in
-    if (req.session.isAdmin && req.session.adminId) {
-      return res.json({
-        admin: {
-          id: req.session.adminId,
-          email: 'amjadkhabbas2002@gmail.com',
-          name: "Admin",
-          isAdmin: true
-        }
-      });
-    }
-    
-    // Check if doctor is logged in
     if (!req.isAuthenticated() || !req.user) {
       return res.status(401).json({ message: "Not authenticated" });
     }
 
     res.json({
-      user: {
-        id: req.user.id,
-        email: req.user.email,
-        fullName: req.user.fullName,
-        isApproved: req.user.isApproved,
-        isLicenseVerified: req.user.isLicenseVerified
-      }
+      id: req.user.id,
+      email: req.user.email,
+      fullName: req.user.fullName,
+      isApproved: req.user.isApproved,
+      isLicenseVerified: req.user.isLicenseVerified
     });
   });
 

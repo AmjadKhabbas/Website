@@ -77,7 +77,7 @@ export default function LoginPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-
+      
       if (response.ok) {
         alert("Registration successful! Your account is pending approval.");
         setIsRegistering(false);
@@ -105,7 +105,7 @@ export default function LoginPage() {
               Register your medical practice to access premium products
             </CardDescription>
           </CardHeader>
-
+          
           <CardContent className="space-y-6">
             <Button
               variant="ghost"
@@ -132,7 +132,7 @@ export default function LoginPage() {
                       </FormItem>
                     )}
                   />
-
+                  
                   <FormField
                     control={registerForm.control}
                     name="email"
@@ -140,7 +140,7 @@ export default function LoginPage() {
                       <FormItem>
                         <FormLabel className="text-gray-700 font-medium">Email Address</FormLabel>
                         <FormControl>
-                          <Input type="email" placeholder="your@email.com" {...field} className="h-12" />
+                          <Input type="email" placeholder="doctor@medical.com" {...field} className="h-12" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -162,7 +162,7 @@ export default function LoginPage() {
                       </FormItem>
                     )}
                   />
-
+                  
                   <FormField
                     control={registerForm.control}
                     name="confirmPassword"
@@ -192,7 +192,7 @@ export default function LoginPage() {
                       </FormItem>
                     )}
                   />
-
+                  
                   <FormField
                     control={registerForm.control}
                     name="collegeName"
@@ -299,7 +299,7 @@ export default function LoginPage() {
                     <FormControl>
                       <Input
                         type="email"
-                        placeholder="your@email.com"
+                        placeholder="doctor@medical.com"
                         {...field}
                         className="h-12 bg-white border-gray-200 focus:border-blue-500 focus:ring-blue-500"
                       />
@@ -378,7 +378,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-
+          
         </CardContent>
       </Card>
     </div>
