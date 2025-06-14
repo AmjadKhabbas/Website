@@ -57,7 +57,7 @@ export function Header() {
       setShowSuggestions(false);
     }
   }, [searchQuery]);
-
+  
   const { getTotalItems, openCart, setItems } = useCartStore();
   const { user, admin, isLoading, isAdmin, logoutMutation } = useAuth();
   const isAuthenticated = !!user || !!admin;
@@ -89,7 +89,7 @@ export function Header() {
         (product.category?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
       ).slice(0, 6) // Limit to 6 suggestions
     : [];
-
+  
   const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ['/api/categories'],
   });
@@ -97,10 +97,10 @@ export function Header() {
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-
+      
       // Update scrolled state for background changes
       setIsScrolled(currentScrollY > 50);
-
+      
       // Handle fade effect based on scroll direction
       if (currentScrollY < 100) {
         // Always show header at top of page
@@ -112,7 +112,7 @@ export function Header() {
         // Scrolling up - show header
         setIsVisible(true);
       }
-
+      
       setLastScrollY(currentScrollY);
     };
 
@@ -187,7 +187,7 @@ export function Header() {
                   </div>
                 </motion.div>
               </Link>
-
+              
               {/* Desktop Navigation */}
               <nav className="hidden lg:flex space-x-1">
                 <Link href="/">
@@ -199,7 +199,7 @@ export function Header() {
                     Home
                   </span>
                 </Link>
-
+                
                 <Link href="/products">
                   <span className={`px-4 py-2 text-sm font-medium transition-all duration-300 rounded-lg cursor-pointer ${
                     location === '/products' 
@@ -393,7 +393,46 @@ export function Header() {
               {/* User Authentication */}
               {!isLoading && (
                 <>
-                  {user ? (
+                  {isAdmin ? (
+                    <div className="hidden sm:flex items-center space-x-3">
+                      {/* Admin Dashboard Link */}
+                      <Link href="/admin/dashboard">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="flex items-center space-x-2 p-3 text-slate-600 hover:text-purple-600 bg-white hover:bg-purple-50 border border-slate-200 hover:border-purple-200 rounded-lg transition-all duration-300"
+                        >
+                          <Package className="w-4 h-4" />
+                          <span className="text-sm font-medium">Dashboard</span>
+                        </Button>
+                      </Link>
+                      
+                      {/* Admin Profile with Email */}
+                      <div className="flex items-center space-x-2 p-3 text-slate-600 bg-purple-50 border border-purple-200 rounded-lg">
+                        <User className="w-5 h-5 text-purple-600" />
+                        <div className="flex flex-col">
+                          <span className="text-xs font-medium text-purple-600">Admin</span>
+                          <span className="text-sm font-medium text-slate-700">{admin?.email}</span>
+                        </div>
+                      </div>
+                      
+                      {/* Admin Logout Button */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => logoutMutation.mutate()}
+                        disabled={logoutMutation.isPending}
+                        className="flex items-center space-x-2 p-3 text-slate-600 hover:text-red-600 bg-white hover:bg-red-50 border border-slate-200 hover:border-red-200 rounded-lg transition-all duration-300"
+                      >
+                        {logoutMutation.isPending ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <LogOut className="w-4 h-4" />
+                        )}
+                        <span className="text-sm font-medium">Logout</span>
+                      </Button>
+                    </div>
+                  ) : isAuthenticated ? (
                     <div className="hidden sm:flex items-center space-x-3">
                       {/* Orders Link */}
                       <Link href="/orders">
@@ -406,7 +445,7 @@ export function Header() {
                           <span className="text-sm font-medium">Orders</span>
                         </Button>
                       </Link>
-
+                      
                       {/* Referrals Link */}
                       <Link href="/referrals">
                         <Button
@@ -418,7 +457,7 @@ export function Header() {
                           <span className="text-sm font-medium">Referrals</span>
                         </Button>
                       </Link>
-
+                      
                       {/* User Profile with Email */}
                       <div className="flex items-center space-x-2 p-3 text-slate-600 bg-blue-50 border border-blue-200 rounded-lg">
                         <User className="w-5 h-5 text-blue-600" />
@@ -427,7 +466,7 @@ export function Header() {
                           <span className="text-sm font-medium text-slate-700">{user?.email}</span>
                         </div>
                       </div>
-
+                      
                       {/* Logout Button */}
                       <Button
                         variant="ghost"
@@ -454,70 +493,22 @@ export function Header() {
                         >
                           <LogIn className="w-5 h-5" />
                           <span className="text-sm font-medium">Doctor Login</span>
+                        </Button>
+                      </Link>
+                      <Link href="/admin/login">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="flex items-center space-x-2 p-3 text-slate-600 hover:text-purple-600 bg-white hover:bg-purple-50 border border-slate-200 hover:border-purple-200 rounded-lg transition-all duration-300"
+                        >
+                          <User className="w-5 h-5" />
+                          <span className="text-sm font-medium">Admin</span>
                         </Button>
                       </Link>
                     </div>
                   )}
                 </>
               )}
-
-              {isAdmin ? (
-                    <div className="hidden sm:flex items-center space-x-4">
-                      {/* Admin Dashboard Link */}
-                      <Link href="/admin/dashboard">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="flex items-center space-x-2 p-3 text-purple-600 hover:text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 hover:border-purple-300 rounded-lg transition-all duration-300"
-                        >
-                          <User className="w-4 h-4" />
-                          <span className="text-sm font-medium">Dashboard</span>
-                        </Button>
-                      </Link>
-
-                      {/* Admin User Info */}
-                      <div className="flex items-center space-x-3 px-4 py-2 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200">
-                        <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-600 rounded-full flex items-center justify-center">
-                          <User className="w-4 h-4 text-white" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">
-                            {admin?.name || 'Admin'}
-                          </p>
-                          <p className="text-xs text-purple-600 font-medium">Administrator</p>
-                        </div>
-                      </div>
-
-                      {/* Logout Button */}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => logoutMutation.mutate()}
-                        disabled={logoutMutation.isPending}
-                        className="flex items-center space-x-2 p-3 text-slate-600 hover:text-red-600 bg-white hover:bg-red-50 border border-slate-200 hover:border-red-200 rounded-lg transition-all duration-300"
-                      >
-                        {logoutMutation.isPending ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <LogOut className="w-4 h-4" />
-                        )}
-                        <span className="text-sm font-medium">Logout</span>
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="hidden sm:flex items-center space-x-2">
-                      <Link href="/login">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="flex items-center space-x-2 p-3 text-slate-600 hover:text-blue-600 bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-200 rounded-lg transition-all duration-300"
-                        >
-                          <LogIn className="w-5 h-5" />
-                          <span className="text-sm font-medium">Doctor Login</span>
-                        </Button>
-                      </Link>
-                    </div>
-                  )}
 
               {/* Mobile Menu Button */}
               <Button

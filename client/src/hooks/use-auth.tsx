@@ -27,7 +27,7 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
-
+  
   const {
     data: authData,
     error,
@@ -59,12 +59,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         },
         body: JSON.stringify(credentials),
       });
-
+      
       if (!response.ok) {
         const error = await response.text();
         throw new Error(error || "Login failed");
       }
-
+      
       return response.json();
     },
     onSuccess: (data: {user?: User, admin?: AdminUser}) => {
@@ -75,12 +75,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Login successful",
         description: `Welcome back, ${displayName}! (${role})`,
       });
-      if (data.admin) {
-        // Redirect admin to dashboard
-        setTimeout(() => {
-          window.location.href = '/admin/dashboard';
-        }, 100);
-      }
     },
     onError: (error: Error) => {
       toast({
@@ -96,7 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await fetch("/api/auth/logout", {
         method: "POST",
       });
-
+      
       if (!response.ok) {
         throw new Error("Logout failed");
       }
