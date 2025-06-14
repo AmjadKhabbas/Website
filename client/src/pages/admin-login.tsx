@@ -140,13 +140,7 @@ export default function AdminLoginPage() {
             </Link>
           </div>
 
-          <div className="mt-6 p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200">
-            <h4 className="font-medium text-purple-900 mb-2">Admin Credentials</h4>
-            <div className="text-sm text-purple-700 space-y-1">
-              <div>Email: amjadkhabbas2002@gmail.com</div>
-              <div>Password: akramsnotcool!</div>
-            </div>
-          </div>
+          
         </CardContent>
       </Card>
     </div>

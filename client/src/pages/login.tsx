@@ -378,15 +378,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <h4 className="font-medium text-blue-900 mb-2">Test Accounts</h4>
-            <div className="text-sm text-blue-700 space-y-1">
-              <div>dr.johnson@medical.com</div>
-              <div>dr.patel@clinic.com</div>
-              <div>dr.martinez@hospital.com</div>
-              <div className="font-medium">Password: TestPass123!</div>
-            </div>
-          </div>
+          
         </CardContent>
       </Card>
     </div>
