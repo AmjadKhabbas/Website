@@ -179,11 +179,10 @@ export function Header() {
                   <img 
                     src={medsGoLogo} 
                     alt="Meds-Go" 
-                    className="h-10 w-auto object-contain brightness-125 contrast-110"
+                    className="h-7 w-auto object-contain brightness-125 contrast-110"
                   />
                   <div>
-                    <h1 className="text-2xl font-bold text-slate-800">Meds-Go</h1>
-                    <p className="text-xs text-slate-600 -mt-1">Professional Healthcare Products</p>
+                    <h1 className="text-lg font-bold text-slate-800">Meds-Go</h1>
                   </div>
                 </motion.div>
               </Link>

@@ -68,8 +68,7 @@ export interface IStorage {
   // Admin product management
   updateProductPrice(productId: number, price: string): Promise<Product | undefined>;
   updateProductImage(productId: number, imageUrl: string): Promise<Product | undefined>;
-  updateProduct(productId: number, data: Partial<InsertProduct>): Promise<Product | undefined>;
-  updateProduct(id: number, updates: { name?: string; description?: string; price?: string; imageUrl?: string }): Promise<Product | undefined>;
+  updateProduct(productId: number, data: { name?: string; description?: string; price?: string; imageUrl?: string; categoryId?: number; inStock?: boolean; featured?: boolean }): Promise<Product | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -459,16 +458,18 @@ export class DatabaseStorage implements IStorage {
     description?: string; 
     price?: string; 
     imageUrl?: string; 
+    categoryId?: number;
     inStock?: boolean; 
     featured?: boolean; 
     tags?: string;
-  }) {
+  }): Promise<Product | undefined> {
     try {
       const updateData: any = {};
 
       if (updates.name !== undefined) updateData.name = updates.name;
       if (updates.description !== undefined) updateData.description = updates.description;
       if (updates.price !== undefined) updateData.price = updates.price;
+      if (updates.categoryId !== undefined) updateData.categoryId = updates.categoryId;
       if (updates.imageUrl !== undefined) updateData.imageUrl = updates.imageUrl;
       if (updates.inStock !== undefined) updateData.inStock = updates.inStock;
       if (updates.featured !== undefined) updateData.featured = updates.featured;
@@ -480,10 +481,10 @@ export class DatabaseStorage implements IStorage {
         .where(eq(products.id, id))
         .returning();
 
-      return updatedProduct;
+      return updatedProduct || undefined;
     } catch (error) {
       console.error('Error updating product:', error);
-      return null;
+      return undefined;
     }
   }
 

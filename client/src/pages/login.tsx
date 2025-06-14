@@ -376,11 +376,7 @@ export default function LoginPage() {
               Create New Account
             </Button>
 
-            <div className="text-center">
-              <Link href="/admin/login" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
-                Admin Login
-              </Link>
-            </div>
+
           </div>
 
           
