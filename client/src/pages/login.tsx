@@ -35,8 +35,13 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      await loginMutation.mutateAsync(data);
-      setLocation("/");
+      const result = await loginMutation.mutateAsync(data);
+      // Redirect based on user type
+      if (result.admin) {
+        setLocation("/admin/dashboard");
+      } else {
+        setLocation("/");
+      }
     } catch (error) {
       console.error("Login failed:", error);
     }
