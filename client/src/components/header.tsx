@@ -60,30 +60,32 @@ export function Header() {
   
   const { getTotalItems, openCart, setItems } = useCartStore();
   const { user, isLoading, logoutMutation } = useAuth();
+  const { admin, isLoading: adminLoading, logoutMutation: adminLogoutMutation } = useAdmin();
   const isAuthenticated = !!user;
+  const isAdminAuthenticated = !!admin;
 
   // Fetch cart data and sync with store
-  const { data: cartData } = useQuery({
+  const { data: cartData } = useQuery<any[]>({
     queryKey: ['/api/cart'],
     enabled: true, // Always fetch cart data
   });
 
   // Sync cart data with store when it changes
   useEffect(() => {
-    if (cartData) {
+    if (cartData && Array.isArray(cartData)) {
       setItems(cartData);
     }
   }, [cartData, setItems]);
 
   // Fetch products for search suggestions
-  const { data: productsResponse } = useQuery({
+  const { data: productsResponse } = useQuery<{products: ProductWithCategory[]}>({
     queryKey: ['/api/products'],
   });
   const products = productsResponse?.products || [];
 
   // Filter products based on search query for suggestions
   const searchSuggestions = searchQuery.trim() 
-    ? products.filter(product => 
+    ? products.filter((product: ProductWithCategory) => 
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (product.category?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
@@ -391,9 +393,48 @@ export function Header() {
               </Button>
 
               {/* User Authentication */}
-              {!isLoading && (
+              {!isLoading && !adminLoading && (
                 <>
-                  {isAuthenticated ? (
+                  {isAdminAuthenticated ? (
+                    <div className="hidden sm:flex items-center space-x-3">
+                      {/* Admin Dashboard Link */}
+                      <Link href="/admin/dashboard">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="flex items-center space-x-2 p-3 text-slate-600 hover:text-purple-600 bg-white hover:bg-purple-50 border border-slate-200 hover:border-purple-200 rounded-lg transition-all duration-300"
+                        >
+                          <Package className="w-4 h-4" />
+                          <span className="text-sm font-medium">Dashboard</span>
+                        </Button>
+                      </Link>
+                      
+                      {/* Admin Profile with Email */}
+                      <div className="flex items-center space-x-2 p-3 text-slate-600 bg-purple-50 border border-purple-200 rounded-lg">
+                        <User className="w-5 h-5 text-purple-600" />
+                        <div className="flex flex-col">
+                          <span className="text-xs font-medium text-purple-600">Admin</span>
+                          <span className="text-sm font-medium text-slate-700">{admin.email}</span>
+                        </div>
+                      </div>
+                      
+                      {/* Admin Logout Button */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => adminLogoutMutation.mutate()}
+                        disabled={adminLogoutMutation.isPending}
+                        className="flex items-center space-x-2 p-3 text-slate-600 hover:text-red-600 bg-white hover:bg-red-50 border border-slate-200 hover:border-red-200 rounded-lg transition-all duration-300"
+                      >
+                        {adminLogoutMutation.isPending ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <LogOut className="w-4 h-4" />
+                        )}
+                        <span className="text-sm font-medium">Logout</span>
+                      </Button>
+                    </div>
+                  ) : isAuthenticated ? (
                     <div className="hidden sm:flex items-center space-x-3">
                       {/* Orders Link */}
                       <Link href="/orders">
@@ -419,22 +460,13 @@ export function Header() {
                         </Button>
                       </Link>
                       
-                      {/* FAQ Link */}
-                      <Link href="/faq">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="flex items-center space-x-2 p-3 text-slate-600 hover:text-purple-600 bg-white hover:bg-purple-50 border border-slate-200 hover:border-purple-200 rounded-lg transition-all duration-300"
-                        >
-                          <HelpCircle className="w-4 h-4" />
-                          <span className="text-sm font-medium">FAQ</span>
-                        </Button>
-                      </Link>
-                      
-                      {/* User Profile */}
-                      <div className="flex items-center space-x-2 p-3 text-slate-600 bg-white border border-slate-200 rounded-lg">
-                        <User className="w-5 h-5" />
-                        <span className="text-sm font-medium">Account</span>
+                      {/* User Profile with Email */}
+                      <div className="flex items-center space-x-2 p-3 text-slate-600 bg-blue-50 border border-blue-200 rounded-lg">
+                        <User className="w-5 h-5 text-blue-600" />
+                        <div className="flex flex-col">
+                          <span className="text-xs font-medium text-blue-600">Doctor</span>
+                          <span className="text-sm font-medium text-slate-700">{user.email}</span>
+                        </div>
                       </div>
                       
                       {/* Logout Button */}
@@ -454,16 +486,28 @@ export function Header() {
                       </Button>
                     </div>
                   ) : (
-                    <Link href="/login">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="hidden sm:flex items-center space-x-2 p-3 text-slate-600 hover:text-blue-600 bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-200 rounded-lg transition-all duration-300"
-                      >
-                        <LogIn className="w-5 h-5" />
-                        <span className="text-sm font-medium">Sign In</span>
-                      </Button>
-                    </Link>
+                    <div className="hidden sm:flex items-center space-x-2">
+                      <Link href="/login">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="flex items-center space-x-2 p-3 text-slate-600 hover:text-blue-600 bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-200 rounded-lg transition-all duration-300"
+                        >
+                          <LogIn className="w-5 h-5" />
+                          <span className="text-sm font-medium">Doctor Login</span>
+                        </Button>
+                      </Link>
+                      <Link href="/admin/login">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="flex items-center space-x-2 p-3 text-slate-600 hover:text-purple-600 bg-white hover:bg-purple-50 border border-slate-200 hover:border-purple-200 rounded-lg transition-all duration-300"
+                        >
+                          <User className="w-5 h-5" />
+                          <span className="text-sm font-medium">Admin</span>
+                        </Button>
+                      </Link>
+                    </div>
                   )}
                 </>
               )}

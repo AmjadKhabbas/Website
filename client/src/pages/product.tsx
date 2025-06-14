@@ -214,9 +214,9 @@ export default function ProductPage() {
                 {/* Tags */}
                 {product.tags && product.tags.length > 0 && (
                   <div className="flex flex-wrap gap-2 mb-6">
-                    {product.tags.map((tag) => (
-                      <Badge key={tag} variant="outline" className="text-sm text-gray-300 border-gray-600">
-                        {tag}
+                    {product.tags.split(',').map((tag, index) => (
+                      <Badge key={index} variant="outline" className="text-sm text-gray-300 border-gray-600">
+                        {tag.trim()}
                       </Badge>
                     ))}
                   </div>

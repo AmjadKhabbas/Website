@@ -404,6 +404,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete('/api/admin/products/:id', requireAdminAuth, async (req, res) => {
+    try {
+      const productId = parseInt(req.params.id);
+      
+      if (!productId || isNaN(productId)) {
+        return res.status(400).json({
+          message: 'Valid product ID is required',
+          code: 'INVALID_PRODUCT_ID'
+        });
+      }
+      
+      const success = await storage.deleteProduct(productId);
+      
+      if (!success) {
+        return res.status(404).json({
+          message: 'Product not found',
+          code: 'PRODUCT_NOT_FOUND'
+        });
+      }
+      
+      res.json({
+        message: 'Product deleted successfully'
+      });
+    } catch (error) {
+      console.error('Delete product error:', error);
+      res.status(500).json({
+        message: 'Failed to delete product',
+        code: 'DELETE_FAILED'
+      });
+    }
+  });
+
   app.put('/api/admin/products/:id/image', requireAdminAuth, async (req, res) => {
     try {
       const productId = parseInt(req.params.id);
