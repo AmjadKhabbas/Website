@@ -453,7 +453,15 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async updateProduct(id: number, updates: { name?: string; description?: string; price?: string; imageUrl?: string }) {
+  async updateProduct(id: number, updates: { 
+    name?: string; 
+    description?: string; 
+    price?: string; 
+    imageUrl?: string; 
+    inStock?: boolean; 
+    featured?: boolean; 
+    tags?: string;
+  }) {
     try {
       const updateData: any = {};
 
@@ -461,6 +469,9 @@ export class DatabaseStorage implements IStorage {
       if (updates.description !== undefined) updateData.description = updates.description;
       if (updates.price !== undefined) updateData.price = updates.price;
       if (updates.imageUrl !== undefined) updateData.imageUrl = updates.imageUrl;
+      if (updates.inStock !== undefined) updateData.inStock = updates.inStock;
+      if (updates.featured !== undefined) updateData.featured = updates.featured;
+      if (updates.tags !== undefined) updateData.tags = updates.tags;
 
       const [updatedProduct] = await db
         .update(products)

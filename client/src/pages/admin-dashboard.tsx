@@ -12,6 +12,10 @@ import { Link } from 'wouter';
 import { useToast } from '@/components/toast';
 import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
 
 interface PendingUser {
   id: number;
@@ -41,6 +45,148 @@ interface Product {
     name: string;
     slug: string;
   };
+}
+
+// Edit Product Dialog Component
+function EditProductDialog({ product, onUpdate }: { product: Product; onUpdate: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    name: product.name,
+    description: product.description,
+    price: product.price,
+    imageUrl: product.imageUrl,
+    inStock: product.inStock,
+    featured: product.featured,
+    tags: '' // We'll need to handle tags if they exist
+  });
+  const { addToast } = useToast();
+
+  const updateProductMutation = useMutation({
+    mutationFn: async (updates: any) => {
+      return await apiRequest('PATCH', `/api/admin/products/${product.id}`, updates);
+    },
+    onSuccess: () => {
+      addToast('Product updated successfully', 'success');
+      setOpen(false);
+      onUpdate();
+    },
+    onError: (error: any) => {
+      addToast(error.message || 'Failed to update product', 'error');
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateProductMutation.mutate(formData);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm">
+          <Edit className="h-4 w-4" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Edit Product</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="name">Product Name</Label>
+            <Input
+              id="name"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder="Enter product name"
+              required
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              placeholder="Enter product description"
+              rows={3}
+              required
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="price">Price</Label>
+            <Input
+              id="price"
+              type="text"
+              value={formData.price}
+              onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+              placeholder="Enter price (e.g., 29.99)"
+              required
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="imageUrl">Image URL</Label>
+            <Input
+              id="imageUrl"
+              type="url"
+              value={formData.imageUrl}
+              onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+              placeholder="Enter image URL"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="tags">Tags (comma-separated)</Label>
+            <Input
+              id="tags"
+              value={formData.tags}
+              onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+              placeholder="e.g., FDA Approved, Fast Acting, Premium"
+            />
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="inStock"
+              checked={formData.inStock}
+              onCheckedChange={(checked) => setFormData({ ...formData, inStock: checked })}
+            />
+            <Label htmlFor="inStock">In Stock</Label>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="featured"
+              checked={formData.featured}
+              onCheckedChange={(checked) => setFormData({ ...formData, featured: checked })}
+            />
+            <Label htmlFor="featured">Featured Product</Label>
+          </div>
+          
+          <div className="flex gap-2 pt-4">
+            <Button
+              type="submit"
+              disabled={updateProductMutation.isPending}
+              className="flex-1"
+            >
+              {updateProductMutation.isPending ? 'Updating...' : 'Update Product'}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+              className="flex-1"
+            >
+              Cancel
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 export default function AdminDashboard() {
@@ -312,14 +458,20 @@ export default function AdminDashboard() {
                             </div>
                           </div>
                           
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => setDeleteProductId(product.id)}
-                            disabled={deleteProductMutation.isPending}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          <div className="flex gap-2">
+                            <EditProductDialog 
+                              product={product} 
+                              onUpdate={() => queryClient.invalidateQueries({ queryKey: ['/api/products'] })}
+                            />
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => setDeleteProductId(product.id)}
+                              disabled={deleteProductMutation.isPending}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
