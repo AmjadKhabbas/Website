@@ -10,6 +10,7 @@ import { useCartStore } from '@/lib/cart';
 import { MobileMenu } from '@/components/mobile-menu';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/use-auth';
+import { useAdmin } from '@/hooks/use-admin';
 import type { Category, ProductWithCategory } from '@shared/schema';
 
 export function Header() {
@@ -56,11 +57,12 @@ export function Header() {
       setShowSuggestions(false);
     }
   }, [searchQuery]);
-
+  
   const { getTotalItems, openCart, setItems } = useCartStore();
-  const { user, admin, isAdmin, isLoading, logoutMutation } = useAuth();
-
+  const { user, isLoading, logoutMutation } = useAuth();
+  const { admin, isLoading: adminLoading, logoutMutation: adminLogoutMutation } = useAdmin();
   const isAuthenticated = !!user;
+  const isAdminAuthenticated = !!admin;
 
   // Fetch cart data and sync with store
   const { data: cartData } = useQuery<any[]>({
@@ -89,7 +91,7 @@ export function Header() {
         (product.category?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
       ).slice(0, 6) // Limit to 6 suggestions
     : [];
-
+  
   const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ['/api/categories'],
   });
@@ -97,10 +99,10 @@ export function Header() {
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-
+      
       // Update scrolled state for background changes
       setIsScrolled(currentScrollY > 50);
-
+      
       // Handle fade effect based on scroll direction
       if (currentScrollY < 100) {
         // Always show header at top of page
@@ -112,7 +114,7 @@ export function Header() {
         // Scrolling up - show header
         setIsVisible(true);
       }
-
+      
       setLastScrollY(currentScrollY);
     };
 
@@ -187,7 +189,7 @@ export function Header() {
                   </div>
                 </motion.div>
               </Link>
-
+              
               {/* Desktop Navigation */}
               <nav className="hidden lg:flex space-x-1">
                 <Link href="/">
@@ -199,7 +201,7 @@ export function Header() {
                     Home
                   </span>
                 </Link>
-
+                
                 <Link href="/products">
                   <span className={`px-4 py-2 text-sm font-medium transition-all duration-300 rounded-lg cursor-pointer ${
                     location === '/products' 
@@ -391,9 +393,9 @@ export function Header() {
               </Button>
 
               {/* User Authentication */}
-              {!isLoading && (
+              {!isLoading && !adminLoading && (
                 <>
-                  {isAdmin ? (
+                  {isAdminAuthenticated ? (
                     <div className="hidden sm:flex items-center space-x-3">
                       {/* Admin Dashboard Link */}
                       <Link href="/admin/dashboard">
@@ -406,25 +408,25 @@ export function Header() {
                           <span className="text-sm font-medium">Dashboard</span>
                         </Button>
                       </Link>
-
+                      
                       {/* Admin Profile with Email */}
                       <div className="flex items-center space-x-2 p-3 text-slate-600 bg-purple-50 border border-purple-200 rounded-lg">
                         <User className="w-5 h-5 text-purple-600" />
                         <div className="flex flex-col">
                           <span className="text-xs font-medium text-purple-600">Admin</span>
-                          <span className="text-sm font-medium text-slate-700">{admin?.email}</span>
+                          <span className="text-sm font-medium text-slate-700">{admin.email}</span>
                         </div>
                       </div>
-
+                      
                       {/* Admin Logout Button */}
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => logoutMutation.mutate()}
-                        disabled={logoutMutation.isPending}
+                        onClick={() => adminLogoutMutation.mutate()}
+                        disabled={adminLogoutMutation.isPending}
                         className="flex items-center space-x-2 p-3 text-slate-600 hover:text-red-600 bg-white hover:bg-red-50 border border-slate-200 hover:border-red-200 rounded-lg transition-all duration-300"
                       >
-                        {logoutMutation.isPending ? (
+                        {adminLogoutMutation.isPending ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
                         ) : (
                           <LogOut className="w-4 h-4" />
@@ -445,7 +447,7 @@ export function Header() {
                           <span className="text-sm font-medium">Orders</span>
                         </Button>
                       </Link>
-
+                      
                       {/* Referrals Link */}
                       <Link href="/referrals">
                         <Button
@@ -457,16 +459,16 @@ export function Header() {
                           <span className="text-sm font-medium">Referrals</span>
                         </Button>
                       </Link>
-
+                      
                       {/* User Profile with Email */}
                       <div className="flex items-center space-x-2 p-3 text-slate-600 bg-blue-50 border border-blue-200 rounded-lg">
                         <User className="w-5 h-5 text-blue-600" />
                         <div className="flex flex-col">
                           <span className="text-xs font-medium text-blue-600">Doctor</span>
-                          <span className="text-sm font-medium text-slate-700">{user?.email}</span>
+                          <span className="text-sm font-medium text-slate-700">{user.email}</span>
                         </div>
                       </div>
-
+                      
                       {/* Logout Button */}
                       <Button
                         variant="ghost"
@@ -495,7 +497,7 @@ export function Header() {
                           <span className="text-sm font-medium">Doctor Login</span>
                         </Button>
                       </Link>
-                      <Link href="/login">
+                      <Link href="/admin/login">
                         <Button
                           variant="ghost"
                           size="sm"

@@ -26,7 +26,6 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
   const { isAdmin, updatePriceMutation, updateImageMutation } = useAdmin();
   const [newPrice, setNewPrice] = useState(product.price);
   const [newImageUrl, setNewImageUrl] = useState(product.imageUrl || '');
-  const [isHovered, setIsHovered] = useState(false);
 
   const deleteProductMutation = useMutation({
     mutationFn: async (productId: number) => {
@@ -79,7 +78,7 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
 
   const handleQuantityChange = (newQuantity: number) => {
     if (newQuantity < 0) return;
-
+    
     if (cartItem) {
       // Item exists in cart, update it
       updateQuantityMutation.mutate({ cartItemId: cartItem.id, quantity: newQuantity });
@@ -108,8 +107,6 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: index * 0.1 }}
         className="group bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-lg transition-all duration-300 flex items-center p-6 gap-6"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
       >
         {/* Image Container - List View */}
         <div className="relative w-32 h-32 bg-gradient-to-br from-blue-50 to-slate-50 overflow-hidden rounded-lg flex-shrink-0">
@@ -120,10 +117,10 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
             />
           </Link>
-
+          
           {/* Medical overlay */}
           <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/10 via-transparent to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-
+          
           {/* Badges */}
           <div className="absolute top-2 left-2 space-y-1">
             {hasDiscount && (
@@ -133,16 +130,14 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
             )}
           </div>
 
-          {/* Admin Controls - List View (Show on hover only) */}
-          {isAdmin && isHovered && (
-            <div className="absolute top-2 right-2 space-y-1 z-10">
-              <Button
-                variant="destructive"
-                size="sm"
-                className="h-8 w-8 p-0 bg-red-500/90 hover:bg-red-600 shadow-md transition-opacity duration-200"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
+          {/* Admin Controls */}
+          {isAdmin && (
+            <div className="absolute top-2 right-2 space-y-1">
+              <Button 
+                variant="destructive" 
+                size="sm" 
+                className="h-8 w-8 p-0 bg-red-500/90 hover:bg-red-600 shadow-md"
+                onClick={() => {
                   if (window.confirm('Are you sure you want to delete this product?')) {
                     deleteProductMutation.mutate(product.id);
                   }
@@ -151,12 +146,12 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
               >
                 <X className="h-4 w-4" />
               </Button>
-
+              
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button
-                    variant="secondary"
-                    size="sm"
+                  <Button 
+                    variant="secondary" 
+                    size="sm" 
                     className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-md"
                   >
                     <Edit2 className="h-4 w-4" />
@@ -178,9 +173,9 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
                     </div>
                     <Button
                       onClick={() => {
-                        updatePriceMutation.mutate({
-                          productId: product.id,
-                          price: newPrice
+                        updatePriceMutation.mutate({ 
+                          productId: product.id, 
+                          price: newPrice 
                         });
                       }}
                       disabled={updatePriceMutation.isPending}
@@ -194,9 +189,9 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
 
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button
-                    variant="secondary"
-                    size="sm"
+                  <Button 
+                    variant="secondary" 
+                    size="sm" 
                     className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-md"
                   >
                     <ImageIcon className="h-4 w-4" />
@@ -218,9 +213,9 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
                     </div>
                     <Button
                       onClick={() => {
-                        updateImageMutation.mutate({
-                          productId: product.id,
-                          imageUrl: newImageUrl
+                        updateImageMutation.mutate({ 
+                          productId: product.id, 
+                          imageUrl: newImageUrl 
                         });
                       }}
                       disabled={updateImageMutation.isPending}
@@ -234,7 +229,7 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
             </div>
           )}
         </div>
-
+        
         {/* Content - List View */}
         <div className="flex-1 flex flex-col justify-between min-h-[8rem]">
           <div>
@@ -243,11 +238,11 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
                 {product.name}
               </h3>
             </Link>
-
+            
             <p className="text-sm text-slate-600 mb-3 line-clamp-2">
               {product.description}
             </p>
-
+            
             {/* Price */}
             <div className="flex items-center space-x-3 mb-4">
               <span className="text-xl font-bold text-blue-600">
@@ -261,7 +256,7 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
             </div>
           </div>
         </div>
-
+        
         {/* Quantity Controls - List View */}
         <div className="flex-shrink-0 w-48">
           {!product.inStock ? (
@@ -297,11 +292,11 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
               >
                 <Minus className="w-4 h-4" />
               </Button>
-
+              
               <span className="flex-1 text-center font-semibold text-blue-700 text-lg">
                 {currentQuantity}
               </span>
-
+              
               <Button
                 onClick={() => handleQuantityChange(currentQuantity + 1)}
                 disabled={updateQuantityMutation.isPending}
@@ -324,8 +319,6 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: index * 0.1 }}
       className="group bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col h-full"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
       {/* Image Container */}
       <div className="relative aspect-square bg-gradient-to-br from-blue-50 to-slate-50 overflow-hidden">
@@ -336,10 +329,10 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
           />
         </Link>
-
+        
         {/* Medical overlay */}
         <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/10 via-transparent to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-
+        
         {/* Badges */}
         <div className="absolute top-4 left-4 space-y-2">
           {hasDiscount && (
@@ -349,16 +342,14 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
           )}
         </div>
 
-        {/* Admin Controls - Grid View (Show on hover only) */}
-        {isAdmin && isHovered && (
-          <div className="absolute top-4 right-4 space-y-1 z-10">
-            <Button
-              variant="destructive"
-              size="sm"
-              className="h-8 w-8 p-0 bg-red-500/90 hover:bg-red-600 shadow-md transition-opacity duration-200"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
+        {/* Admin Controls - Grid View */}
+        {isAdmin && (
+          <div className="absolute top-4 right-4 space-y-1">
+            <Button 
+              variant="destructive" 
+              size="sm" 
+              className="h-8 w-8 p-0 bg-red-500/90 hover:bg-red-600 shadow-md"
+              onClick={() => {
                 if (window.confirm('Are you sure you want to delete this product?')) {
                   deleteProductMutation.mutate(product.id);
                 }
@@ -367,12 +358,12 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
             >
               <X className="h-4 w-4" />
             </Button>
-
+            
             <Dialog>
               <DialogTrigger asChild>
-                <Button
-                  variant="secondary"
-                  size="sm"
+                <Button 
+                  variant="secondary" 
+                  size="sm" 
                   className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-md"
                 >
                   <Edit2 className="h-4 w-4" />
@@ -394,9 +385,9 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
                   </div>
                   <Button
                     onClick={() => {
-                      updatePriceMutation.mutate({
-                        productId: product.id,
-                        price: newPrice
+                      updatePriceMutation.mutate({ 
+                        productId: product.id, 
+                        price: newPrice 
                       });
                     }}
                     disabled={updatePriceMutation.isPending}
@@ -410,7 +401,7 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
           </div>
         )}
       </div>
-
+      
       {/* Content */}
       <div className="p-6 flex flex-col h-full">
         <Link href={`/product/${product.id}`}>
@@ -418,11 +409,11 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
             {product.name}
           </h3>
         </Link>
-
+        
         <p className="text-sm text-slate-600 mb-3 line-clamp-2 flex-grow">
           {product.description}
         </p>
-
+        
         {/* Price */}
         <div className="mb-4">
           <div className="flex items-center space-x-3">
@@ -436,7 +427,7 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
             )}
           </div>
         </div>
-
+        
         {/* Quantity Controls - Always at bottom */}
         <div className="mt-auto">
           {!product.inStock ? (
@@ -472,11 +463,11 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
               >
                 <Minus className="w-4 h-4" />
               </Button>
-
+              
               <span className="flex-1 text-center font-semibold text-blue-700 text-lg">
                 {currentQuantity}
               </span>
-
+              
               <Button
                 onClick={() => handleQuantityChange(currentQuantity + 1)}
                 disabled={updateQuantityMutation.isPending}
