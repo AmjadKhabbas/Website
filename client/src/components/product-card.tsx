@@ -23,7 +23,8 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
   const { success, error } = useToast();
   const queryClient = useQueryClient();
   const { items } = useCartStore();
-  const { isAdmin } = useAuth();
+  const { user, admin, isLoading, isAdmin, logoutMutation } = useAuth();
+  const isAuthenticated = !!user || !!admin;
   const [newPrice, setNewPrice] = useState(product.price);
   const [newImageUrl, setNewImageUrl] = useState(product.imageUrl || '');
   const [newName, setNewName] = useState(product.name);
@@ -123,7 +124,7 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
 
   const handleQuantityChange = (newQuantity: number) => {
     if (newQuantity < 0) return;
-    
+
     if (cartItem) {
       // Item exists in cart, update it
       updateQuantityMutation.mutate({ cartItemId: cartItem.id, quantity: newQuantity });
@@ -162,10 +163,10 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
             />
           </Link>
-          
+
           {/* Medical overlay */}
           <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/10 via-transparent to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          
+
           {/* Badges */}
           <div className="absolute top-2 left-2 space-y-1">
             {hasDiscount && (
@@ -191,7 +192,7 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
               >
                 <X className="h-4 w-4" />
               </Button>
-              
+
               <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
                 <DialogTrigger asChild>
                   <Button 
@@ -216,7 +217,7 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
                         placeholder="Enter product name"
                       />
                     </div>
-                    
+
                     <div>
                       <label className="text-sm font-medium">Description</label>
                       <textarea
@@ -226,7 +227,7 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
                         className="w-full min-h-[100px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                       />
                     </div>
-                    
+
                     <div>
                       <label className="text-sm font-medium">Price</label>
                       <Input
@@ -236,7 +237,7 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
                         placeholder="Enter price"
                       />
                     </div>
-                    
+
                     <div>
                       <label className="text-sm font-medium">Image URL</label>
                       <Input
@@ -246,7 +247,7 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
                         placeholder="Enter image URL"
                       />
                     </div>
-                    
+
                     <div className="flex gap-2">
                       <Button
                         onClick={() => {
@@ -279,7 +280,7 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
             </div>
           )}
         </div>
-        
+
         {/* Content - List View */}
         <div className="flex-1 flex flex-col justify-between min-h-[8rem]">
           <div>
@@ -288,11 +289,11 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
                 {product.name}
               </h3>
             </Link>
-            
+
             <p className="text-sm text-slate-600 mb-3 line-clamp-2">
               {product.description}
             </p>
-            
+
             {/* Price */}
             <div className="flex items-center space-x-3 mb-4">
               <span className="text-xl font-bold text-blue-600">
@@ -306,7 +307,7 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
             </div>
           </div>
         </div>
-        
+
         {/* Quantity Controls - List View */}
         <div className="flex-shrink-0 w-48">
           {!product.inStock ? (
@@ -342,11 +343,11 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
               >
                 <Minus className="w-4 h-4" />
               </Button>
-              
+
               <span className="flex-1 text-center font-semibold text-blue-700 text-lg">
                 {currentQuantity}
               </span>
-              
+
               <Button
                 onClick={() => handleQuantityChange(currentQuantity + 1)}
                 disabled={updateQuantityMutation.isPending}
@@ -379,10 +380,10 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
           />
         </Link>
-        
+
         {/* Medical overlay */}
         <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/10 via-transparent to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-        
+
         {/* Badges */}
         <div className="absolute top-4 left-4 space-y-2">
           {hasDiscount && (
@@ -433,7 +434,7 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
                 </div>
               </DialogContent>
             </Dialog>
-            
+
             <Dialog>
               <DialogTrigger asChild>
                 <Button 
@@ -476,7 +477,7 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
           </div>
         )}
       </div>
-      
+
       {/* Content */}
       <div className="p-6 flex flex-col h-full">
         <Link href={`/product/${product.id}`}>
@@ -484,11 +485,11 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
             {product.name}
           </h3>
         </Link>
-        
+
         <p className="text-sm text-slate-600 mb-3 line-clamp-2 flex-grow">
           {product.description}
         </p>
-        
+
         {/* Price */}
         <div className="mb-4">
           <div className="flex items-center space-x-3">
@@ -502,7 +503,7 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
             )}
           </div>
         </div>
-        
+
         {/* Quantity Controls - Always at bottom */}
         <div className="mt-auto">
           {!product.inStock ? (
@@ -538,11 +539,11 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
               >
                 <Minus className="w-4 h-4" />
               </Button>
-              
+
               <span className="flex-1 text-center font-semibold text-blue-700 text-lg">
                 {currentQuantity}
               </span>
-              
+
               <Button
                 onClick={() => handleQuantityChange(currentQuantity + 1)}
                 disabled={updateQuantityMutation.isPending}
