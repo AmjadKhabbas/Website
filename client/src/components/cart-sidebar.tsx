@@ -15,6 +15,14 @@ export function CartSidebar() {
   const { items, isOpen, closeCart, getTotalPrice, getTotalItems } = useCartStore();
   const { success, error } = useToast();
   const queryClient = useQueryClient();
+  const { user, admin, isLoading } = useAuth();
+  const isAuthenticated = !!user || !!admin;
+
+  // Check checkout eligibility
+  const { data: eligibility } = useQuery({
+    queryKey: ['/api/checkout/eligibility'],
+    enabled: items.length > 0,
+  });
 
   const updateQuantityMutation = useMutation({
     mutationFn: async ({ id, quantity }: { id: number; quantity: number }) => {
@@ -175,14 +183,81 @@ export function CartSidebar() {
                   </span>
                 </div>
                 
-                <Button
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl text-lg font-semibold transition-colors duration-200"
-                  onClick={() => {
-                    success('Checkout functionality coming soon!');
-                  }}
-                >
-                  Proceed to Checkout
-                </Button>
+                {/* Checkout Status and Actions */}
+                {!isAuthenticated ? (
+                  <div className="space-y-3">
+                    <Alert>
+                      <LogIn className="h-4 w-4" />
+                      <AlertDescription>
+                        You can add items to cart as a guest, but need to log in to complete your purchase.
+                      </AlertDescription>
+                    </Alert>
+                    <Link href="/auth">
+                      <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl text-lg font-semibold">
+                        <LogIn className="w-5 h-5 mr-2" />
+                        Login to Checkout
+                      </Button>
+                    </Link>
+                  </div>
+                ) : admin ? (
+                  <Button
+                    className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl text-lg font-semibold"
+                    onClick={() => {
+                      success('Admin checkout functionality coming soon!');
+                    }}
+                  >
+                    Proceed to Checkout (Admin)
+                  </Button>
+                ) : eligibility?.eligible ? (
+                  <Button
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl text-lg font-semibold"
+                    onClick={() => {
+                      success('Checkout functionality coming soon!');
+                    }}
+                  >
+                    Proceed to Checkout
+                  </Button>
+                ) : eligibility?.reason === 'APPROVAL_PENDING' ? (
+                  <div className="space-y-3">
+                    <Alert className="border-orange-200 bg-orange-50">
+                      <AlertCircle className="h-4 w-4 text-orange-600" />
+                      <AlertDescription className="text-orange-800">
+                        Your account is pending admin approval. You can add items to cart but cannot complete purchases until approved.
+                      </AlertDescription>
+                    </Alert>
+                    <Button
+                      disabled
+                      className="w-full bg-gray-400 text-white py-3 rounded-xl text-lg font-semibold cursor-not-allowed"
+                    >
+                      <Lock className="w-5 h-5 mr-2" />
+                      Checkout Locked - Approval Pending
+                    </Button>
+                    {user && (
+                      <div className="text-sm text-gray-600 text-center">
+                        <p>Account: {user.email}</p>
+                        <Badge variant="outline" className="text-orange-600 border-orange-600">
+                          Approval Pending
+                        </Badge>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <Alert className="border-red-200 bg-red-50">
+                      <AlertCircle className="h-4 w-4 text-red-600" />
+                      <AlertDescription className="text-red-800">
+                        {eligibility?.message || 'Unable to proceed with checkout at this time.'}
+                      </AlertDescription>
+                    </Alert>
+                    <Button
+                      disabled
+                      className="w-full bg-gray-400 text-white py-3 rounded-xl text-lg font-semibold cursor-not-allowed"
+                    >
+                      <Lock className="w-5 h-5 mr-2" />
+                      Checkout Unavailable
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </motion.div>
