@@ -1,11 +1,15 @@
 import { useState } from 'react';
-import { X, Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
+import { X, Minus, Plus, Trash2, ShoppingBag, AlertCircle, Lock, LogIn } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { useCartStore } from '@/lib/cart';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/components/toast';
+import { useAuth } from '@/hooks/use-auth';
+import { Link } from 'wouter';
 
 export function CartSidebar() {
   const { items, isOpen, closeCart, getTotalPrice, getTotalItems } = useCartStore();

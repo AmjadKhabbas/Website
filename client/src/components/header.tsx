@@ -166,7 +166,7 @@ export function Header() {
           isScrolled ? 'shadow-lg' : ''
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
             <div className="flex items-center space-x-6">
@@ -242,7 +242,7 @@ export function Header() {
             </div>
 
             {/* Search Bar with Live Filtering */}
-            <div className="hidden md:flex flex-1 max-w-2xl mx-8" ref={searchRef}>
+            <div className="hidden md:flex flex-1 max-w-4xl mx-8" ref={searchRef}>
               <div className="relative w-full">
                 <form onSubmit={handleSearch} className="relative w-full">
                   <Input

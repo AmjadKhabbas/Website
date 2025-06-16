@@ -1114,6 +1114,105 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Checkout endpoint - requires approved user authentication
+  app.post("/api/checkout", requireApprovedUser, async (req, res) => {
+    try {
+      const userId = req.user!.id;
+      const sessionId = req.session.id;
+      
+      // Get cart items for this session
+      const cartItems = await storage.getCartItems(sessionId);
+      
+      if (cartItems.length === 0) {
+        return res.status(400).json({ 
+          message: "Cart is empty",
+          code: "EMPTY_CART"
+        });
+      }
+      
+      // Calculate total
+      const total = cartItems.reduce((sum, item) => {
+        return sum + (parseFloat(item.product.price) * item.quantity);
+      }, 0);
+      
+      // Create order
+      const orderData = insertOrderSchema.parse({
+        userId: userId.toString(),
+        total: total.toString(),
+        status: "pending",
+        orderNumber: `ORD-${Date.now()}`
+      });
+      
+      const orderItems = cartItems.map(item => 
+        insertOrderItemSchema.parse({
+          productId: item.productId,
+          quantity: item.quantity,
+          price: item.product.price
+        })
+      );
+      
+      const order = await storage.createOrder(orderData, orderItems);
+      
+      // Clear cart after successful order
+      await storage.clearCart(sessionId);
+      
+      res.json({
+        message: "Order placed successfully",
+        order,
+        orderNumber: orderData.orderNumber
+      });
+    } catch (error) {
+      console.error("Checkout error:", error);
+      res.status(500).json({ 
+        message: "Failed to process checkout",
+        code: "CHECKOUT_FAILED"
+      });
+    }
+  });
+
+  // Check user approval status for checkout eligibility
+  app.get("/api/checkout/eligibility", async (req, res) => {
+    try {
+      if (!req.session?.userId) {
+        return res.json({
+          eligible: false,
+          reason: "LOGIN_REQUIRED",
+          message: "Please log in to proceed with checkout"
+        });
+      }
+      
+      const user = await storage.getUserById(req.session.userId);
+      
+      if (!user) {
+        return res.json({
+          eligible: false,
+          reason: "USER_NOT_FOUND",
+          message: "User account not found"
+        });
+      }
+      
+      if (!user.isApproved) {
+        return res.json({
+          eligible: false,
+          reason: "APPROVAL_PENDING",
+          message: "Your account is pending admin approval. You can add items to cart but cannot complete purchases until approved."
+        });
+      }
+      
+      res.json({
+        eligible: true,
+        message: "You can proceed with checkout"
+      });
+    } catch (error) {
+      console.error("Eligibility check error:", error);
+      res.status(500).json({
+        eligible: false,
+        reason: "SERVER_ERROR",
+        message: "Unable to check eligibility"
+      });
+    }
+  });
+
   // Orders (Protected routes for logged-in users)
   app.post("/api/orders", requireAuth, async (req: any, res) => {
     try {
