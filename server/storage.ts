@@ -1,7 +1,8 @@
 import { 
-  ehriAccounts, categories, brands, products, cartItems, users, orders, orderItems, referrals, adminUsers,
+  ehriAccounts, categories, brands, products, cartItems, users, orders, orderItems, referrals, adminUsers, carouselItems,
   type EhriAccount, type InsertEhriAccount, type Category, type Brand, type InsertBrand, type Product, type CartItem, type User, type Order, type OrderItem, type Referral, type AdminUser, type InsertAdminUser,
   type InsertCategory, type InsertProduct, type InsertCartItem, type InsertUser, type InsertOrder, type InsertOrderItem, type InsertReferral,
+  type CarouselItem, type InsertCarouselItem,
   type ProductWithCategory, type CartItemWithProduct, type OrderWithItems
 } from "@shared/schema";
 import { db } from "./db";

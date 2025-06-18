@@ -16,58 +16,83 @@ import type { Category, ProductWithCategory, Brand } from '@shared/schema';
 const HeroSlideshow = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   
-  const bestSellers = [
+  // Fetch carousel items from the database
+  const { data: carouselItems = [], isLoading } = useQuery({
+    queryKey: ['/api/carousel'],
+    queryFn: async () => {
+      const response = await fetch('/api/carousel');
+      if (!response.ok) throw new Error('Failed to fetch carousel items');
+      return response.json();
+    },
+  });
+
+  // Fallback to default items if database is empty
+  const defaultItems = [
     {
       id: 1,
-      name: "Premium Botox Treatment",
+      title: "Premium Botox Treatment",
       description: "Professional grade botulinum toxin for cosmetic procedures",
       price: "699.99",
       originalPrice: "899.99",
       discount: "22%",
-      image: "/api/placeholder/400/300"
+      imageUrl: "/api/placeholder/400/300",
+      ctaText: "Shop Now",
+      ctaLink: null,
+      isActive: true,
+      sortOrder: 0
     },
     {
       id: 2,
-      name: "Dermal Filler Kit",
+      title: "Dermal Filler Kit",
       description: "Complete hyaluronic acid filler collection",
       price: "549.99",
       originalPrice: "749.99",
       discount: "27%",
-      image: "/api/placeholder/400/300"
+      imageUrl: "/api/placeholder/400/300",
+      ctaText: "Shop Now",
+      ctaLink: null,
+      isActive: true,
+      sortOrder: 1
     },
     {
       id: 3,
-      name: "Medical Equipment Set",
+      title: "Medical Equipment Set",
       description: "Professional injection and treatment tools",
       price: "899.99",
       originalPrice: "1199.99",
       discount: "25%",
-      image: "/api/placeholder/400/300"
+      imageUrl: "/api/placeholder/400/300",
+      ctaText: "Shop Now",
+      ctaLink: null,
+      isActive: true,
+      sortOrder: 2
     }
   ];
 
+  const displayItems = carouselItems.length > 0 ? carouselItems : defaultItems;
+
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % bestSellers.length);
+      setCurrentSlide((prev) => (prev + 1) % displayItems.length);
     }, 5000);
     return () => clearInterval(timer);
-  }, [bestSellers.length]);
+  }, [displayItems.length]);
 
   const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % bestSellers.length);
+    setCurrentSlide((prev) => (prev + 1) % displayItems.length);
   };
 
   const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + bestSellers.length) % bestSellers.length);
+    setCurrentSlide((prev) => (prev - 1 + displayItems.length) % displayItems.length);
   };
 
   return (
     <div className="relative w-full h-full">
       <AnimatePresence mode="wait">
-        {bestSellers.map((product, index) => (
+        {displayItems.map((item, index) => (
           index === currentSlide && (
             <motion.div
-              key={product.id}
+              key={item.id}
               initial={{ opacity: 0, x: 300 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -300 }}
@@ -82,17 +107,19 @@ const HeroSlideshow = () => {
                     transition={{ delay: 0.2 }}
                   >
                     <Badge className="bg-green-100 text-green-800 mb-4">
-                      Save {product.discount}
+                      Save {item.discount}
                     </Badge>
                     <h1 className="text-5xl lg:text-6xl font-bold text-slate-800 leading-tight mb-6">
-                      {product.name}
+                      {item.title}
                     </h1>
                     <p className="text-xl text-slate-600 mb-8 leading-relaxed">
-                      {product.description}
+                      {item.description}
                     </p>
                     <div className="flex items-center gap-4 mb-8">
-                      <span className="text-4xl font-bold text-teal-600">${product.price}</span>
-                      <span className="text-2xl text-slate-400 line-through">${product.originalPrice}</span>
+                      <span className="text-4xl font-bold text-teal-600">${item.price}</span>
+                      {item.originalPrice && (
+                        <span className="text-2xl text-slate-400 line-through">${item.originalPrice}</span>
+                      )}
                     </div>
                     <Button className="btn-fox text-lg px-8 py-4">
                       Shop Now
@@ -107,8 +134,16 @@ const HeroSlideshow = () => {
                   transition={{ delay: 0.4 }}
                   className="relative"
                 >
-                  <div className="aspect-square bg-gradient-to-br from-teal-100 to-cyan-100 rounded-3xl p-12 flex items-center justify-center">
-                    <Heart className="w-32 h-32 text-teal-600" />
+                  <div className="aspect-square bg-gradient-to-br from-teal-100 to-cyan-100 rounded-3xl p-4 flex items-center justify-center overflow-hidden">
+                    {item.imageUrl && item.imageUrl !== "/api/placeholder/400/300" ? (
+                      <img 
+                        src={item.imageUrl} 
+                        alt={item.title}
+                        className="w-full h-full object-cover rounded-2xl"
+                      />
+                    ) : (
+                      <Heart className="w-32 h-32 text-teal-600" />
+                    )}
                   </div>
                 </motion.div>
               </div>
