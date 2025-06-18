@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Star, Heart, ShoppingCart, Minus, Plus, ArrowLeft, Share2, Trash2, X } from 'lucide-react';
+import { ShoppingCart, Minus, Plus, ArrowLeft, Trash2, X } from 'lucide-react';
 import { Link, useParams, useLocation } from 'wouter';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -27,7 +27,7 @@ import type { Product, ProductWithCategory } from '@shared/schema';
 export default function ProductPage() {
   const { id } = useParams<{ id: string }>();
   const [, setLocation] = useLocation();
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const { success, error } = useToast();
   const queryClient = useQueryClient();
@@ -276,23 +276,7 @@ export default function ProductPage() {
                   )}
                 </div>
                 
-                {/* Rating */}
-                <div className="flex items-center space-x-2 mb-4">
-                  <div className="flex items-center">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`w-5 h-5 ${
-                          i < Math.floor(parseFloat(product.rating))
-                            ? 'text-amber-400 fill-amber-400'
-                            : 'text-gray-600'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <span className="text-lg font-semibold text-white">{product.rating}</span>
-                  <span className="text-gray-400">({product.reviewCount} reviews)</span>
-                </div>
+                
 
                 {/* Price */}
                 <div className="flex items-center space-x-4 mb-6">
@@ -384,26 +368,7 @@ export default function ProductPage() {
                   )}
                 </div>
 
-                {/* Action Buttons */}
-                <div className="flex space-x-4">
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    onClick={() => setIsWishlisted(!isWishlisted)}
-                    className="flex-1 border-gray-600 text-gray-300 hover:text-white hover:bg-gray-800"
-                  >
-                    <Heart
-                      className={`w-5 h-5 mr-2 ${
-                        isWishlisted ? 'text-red-500 fill-red-500' : 'text-gray-300'
-                      }`}
-                    />
-                    {isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'}
-                  </Button>
-
-                  <Button variant="outline" size="lg" className="px-6 border-gray-600 text-gray-300 hover:text-white hover:bg-gray-800">
-                    <Share2 className="w-5 h-5" />
-                  </Button>
-                </div>
+                
 
                 {/* Stock Status */}
                 <div className="flex items-center space-x-2">
