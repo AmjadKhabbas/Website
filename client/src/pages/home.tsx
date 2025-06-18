@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/components/toast';
-import type { Category, ProductWithCategory } from '@shared/schema';
+import type { Category, ProductWithCategory, Brand } from '@shared/schema';
 
 // Hero Slideshow Component - Full Section Slideshow
 const HeroSlideshow = () => {
@@ -250,13 +250,17 @@ export default function HomePage() {
     queryKey: ['/api/categories'],
   });
 
-  const { data: featuredProductsResponse } = useQuery({
+  const { data: brandsData = [] } = useQuery<Brand[]>({
+    queryKey: ['/api/brands'],
+  });
+
+  const { data: featuredProductsResponse } = useQuery<{ products: ProductWithCategory[] }>({
     queryKey: ['/api/products', { featured: true }],
   });
   const featuredProducts = featuredProductsResponse?.products || [];
 
   // Fetch all products for search suggestions
-  const { data: productsResponse } = useQuery({
+  const { data: productsResponse } = useQuery<{ products: ProductWithCategory[] }>({
     queryKey: ['/api/products'],
   });
   const products = productsResponse?.products || [];
