@@ -382,10 +382,17 @@ export default function AdminDashboard() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/pending-users'] });
-      addToast('User approved successfully', 'success');
+      toast({
+        title: 'User approved successfully',
+        variant: "default"
+      });
     },
     onError: (error: any) => {
-      addToast(error.message || 'Failed to approve user', 'error');
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to approve user',
+        variant: "destructive"
+      });
     },
   });
 
@@ -396,10 +403,17 @@ export default function AdminDashboard() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/pending-users'] });
-      addToast('User rejected successfully', 'success');
+      toast({
+        title: 'User rejected successfully',
+        variant: "default"
+      });
     },
     onError: (error: any) => {
-      addToast(error.message || 'Failed to reject user', 'error');
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to reject user',
+        variant: "destructive"
+      });
     }
   });
 
@@ -410,11 +424,40 @@ export default function AdminDashboard() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/products'] });
-      addToast('Product deleted successfully', 'success');
+      toast({
+        title: 'Product deleted successfully',
+        variant: "default"
+      });
       setDeleteProductId(null);
     },
     onError: (error: any) => {
-      addToast(error.message || 'Failed to delete product', 'error');
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to delete product',
+        variant: "destructive"
+      });
+    },
+  });
+
+  // Delete category mutation
+  const deleteCategoryMutation = useMutation({
+    mutationFn: async (categoryId: number) => {
+      return await apiRequest('DELETE', `/api/admin/categories/${categoryId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/categories'] });
+      toast({
+        title: 'Category deleted successfully',
+        variant: "default"
+      });
+      setCategoryToDelete(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to delete category',
+        variant: "destructive"
+      });
     },
   });
 
