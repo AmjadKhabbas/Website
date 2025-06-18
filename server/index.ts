@@ -52,11 +52,13 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 async function main() {
-  // Initialize admin user before starting the server
-  await adminAuthService.initializeAdminUser();
-  
   const server = await registerRoutes(app);
   const port = 5000;
+
+  // Initialize admin user after server setup but don't block startup
+  adminAuthService.initializeAdminUser().catch(err => {
+    console.error('Failed to initialize admin user:', err);
+  });
 
   if (process.env.NODE_ENV !== "production") {
     await setupVite(app, server);

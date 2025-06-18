@@ -5,11 +5,10 @@ import session from "express-session";
 import bcrypt from "bcryptjs";
 import { storage } from "./storage";
 import { User } from "@shared/schema";
-import connectPg from "connect-pg-simple";
-import { pool } from "./db";
+import MemoryStore from "memorystore";
 
-// Create PostgreSQL session store
-const PostgresStore = connectPg(session);
+// Use memory store for sessions since we switched to HTTP database connection
+const MemoryStoreSession = MemoryStore(session);
 
 declare global {
   namespace Express {
@@ -34,15 +33,13 @@ export async function comparePasswords(plainPassword: string, hashedPassword: st
 }
 
 export function setupAuth(app: Express) {
-  // Session configuration with PostgreSQL store
+  // Session configuration with Memory store
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET || 'medical-marketplace-secret-key-change-in-production',
     resave: false,
     saveUninitialized: false,
-    store: new PostgresStore({ 
-      pool, 
-      createTableIfMissing: true,
-      tableName: 'sessions'
+    store: new MemoryStoreSession({
+      checkPeriod: 86400000 // prune expired entries every 24h
     }),
     cookie: {
       secure: false, // Set to false for Replit development
