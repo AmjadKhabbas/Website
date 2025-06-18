@@ -27,6 +27,7 @@ import {
   Check
 } from "lucide-react";
 import type { Category } from "@shared/schema";
+import { BulkDiscountManager, type BulkDiscountTier } from "@/components/bulk-discount-manager";
 
 const productUploadSchema = z.object({
   name: z.string().min(1, "Product name is required").max(100, "Name must be less than 100 characters"),
@@ -44,6 +45,7 @@ export default function AdminProductsPage() {
   const { toast } = useToast();
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [imageUploadLoading, setImageUploadLoading] = useState(false);
+  const [bulkDiscounts, setBulkDiscounts] = useState<BulkDiscountTier[]>([]);
 
   const form = useForm<ProductUploadFormData>({
     resolver: zodResolver(productUploadSchema),
@@ -168,12 +170,19 @@ export default function AdminProductsPage() {
         price: data.price,
         categoryId: parseInt(data.categoryId),
         imageUrl: uploadedImages[0] || "/api/placeholder/300/300",
+        imageUrls: uploadedImages.slice(1),
         featured: data.featured,
         inStock: data.inStock,
         tags: data.tags ? data.tags.split(',').map(tag => tag.trim()) : [],
+        bulkDiscounts: bulkDiscounts,
       };
 
       await createProductMutation.mutateAsync(productData);
+      
+      // Reset form and state after successful creation
+      form.reset();
+      setUploadedImages([]);
+      setBulkDiscounts([]);
     } catch (error) {
       console.error("Product creation failed:", error);
     }
@@ -415,6 +424,21 @@ export default function AdminProductsPage() {
                       </FormItem>
                     )}
                   />
+                </div>
+
+                {/* Bulk Discount Pricing */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="h-5 w-5 text-blue-600" />
+                    <h3 className="text-lg font-semibold text-gray-900">Bulk Discount Pricing</h3>
+                  </div>
+                  <div className="border border-gray-200 rounded-lg p-6 bg-gray-50">
+                    <BulkDiscountManager
+                      basePrice={parseFloat(form.watch("price") || "0")}
+                      discounts={bulkDiscounts}
+                      onChange={setBulkDiscounts}
+                    />
+                  </div>
                 </div>
 
                 {/* Submit Button */}

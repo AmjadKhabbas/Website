@@ -496,6 +496,24 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  async updateProductImages(productId: number, imageUrl: string, imageUrls: string[]): Promise<Product | undefined> {
+    try {
+      const [updatedProduct] = await db
+        .update(products)
+        .set({ 
+          imageUrl,
+          imageUrls: imageUrls.length > 0 ? imageUrls : []
+        })
+        .where(eq(products.id, productId))
+        .returning();
+
+      return updatedProduct;
+    } catch (error) {
+      console.error('Error updating product images:', error);
+      return undefined;
+    }
+  }
+
   async updateProduct(id: number, updates: { 
     name?: string; 
     description?: string; 
