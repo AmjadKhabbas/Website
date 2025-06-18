@@ -69,14 +69,22 @@ const HeroSlideshow = () => {
     }
   ];
 
-  const displayItems = carouselItems.length > 0 ? carouselItems : defaultItems;
+  const displayItems = carouselItems;
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % displayItems.length);
-    }, 5000);
-    return () => clearInterval(timer);
+    if (displayItems.length > 1) {
+      const timer = setInterval(() => {
+        setCurrentSlide((prev) => (prev + 1) % displayItems.length);
+      }, 5000);
+      return () => clearInterval(timer);
+    }
   }, [displayItems.length]);
+
+  useEffect(() => {
+    if (currentSlide >= displayItems.length && displayItems.length > 0) {
+      setCurrentSlide(0);
+    }
+  }, [displayItems.length, currentSlide]);
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % displayItems.length);
@@ -86,10 +94,27 @@ const HeroSlideshow = () => {
     setCurrentSlide((prev) => (prev - 1 + displayItems.length) % displayItems.length);
   };
 
+  // Show empty state if no carousel items
+  if (displayItems.length === 0) {
+    return (
+      <div className="relative w-full h-full">
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center space-y-4">
+            <h2 className="text-3xl font-semibold text-slate-700">Welcome to Meds-Go</h2>
+            <p className="text-slate-600">Browse our professional medical products</p>
+            <Button asChild className="bg-teal-600 hover:bg-teal-700">
+              <Link to="/products">View Products</Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="relative w-full h-full">
       <AnimatePresence mode="wait">
-        {displayItems.map((item, index) => (
+        {displayItems.map((item: any, index: number) => (
           index === currentSlide && (
             <motion.div
               key={item.id}
@@ -121,9 +146,11 @@ const HeroSlideshow = () => {
                         <span className="text-2xl text-slate-400 line-through">${item.originalPrice}</span>
                       )}
                     </div>
-                    <Button className="btn-fox text-lg px-8 py-4">
-                      Shop Now
-                      <ArrowRight className="w-5 h-5 ml-2" />
+                    <Button asChild className="btn-fox text-lg px-8 py-4">
+                      <Link to={item.ctaLink || "/products"}>
+                        {item.ctaText || "Shop Now"}
+                        <ArrowRight className="w-5 h-5 ml-2" />
+                      </Link>
                     </Button>
                   </motion.div>
                 </div>
