@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ProductCard } from '@/components/product-card';
+import { ProductImageGallery } from '@/components/product-image-gallery';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/components/toast';
 import { useCartStore } from '@/lib/cart';
@@ -170,62 +171,57 @@ export default function ProductPage() {
       <section className="py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {/* Product Image */}
+            {/* Product Image Gallery */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
-              className="relative group"
+              className="relative"
             >
-              <div className="aspect-square bg-gray-800 rounded-2xl overflow-hidden border border-gray-700">
-                <img
-                  src={product.imageUrl}
-                  alt={product.name}
-                  className="w-full h-full object-cover"
-                />
-                {hasDiscount && (
-                  <div className="absolute top-6 left-6">
-                    <Badge className="bg-red-500 hover:bg-red-600 text-white text-lg px-3 py-1">
-                      -{discountPercentage}%
-                    </Badge>
-                  </div>
-                )}
-                
-                {/* Admin Delete Button */}
-                {isAdmin && (
-                  <div className="absolute top-6 right-6">
-                    <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 h-10 w-10"
+              <ProductImageGallery
+                images={[
+                  product.imageUrl,
+                  ...(product.imageUrls || [])
+                ].filter(Boolean)}
+                productName={product.name}
+                hasDiscount={hasDiscount}
+                discountPercentage={hasDiscount ? discountPercentage : undefined}
+              />
+              
+              {/* Admin Delete Button - Overlay on Gallery */}
+              {isAdmin && (
+                <div className="absolute top-6 right-6 z-10">
+                  <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        className="bg-red-500/90 hover:bg-red-600 text-white rounded-full p-2 h-10 w-10 backdrop-blur-sm"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Product</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete "{product.name}"? This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => deleteProductMutation.mutate(product.id)}
+                          disabled={deleteProductMutation.isPending}
+                          className="bg-red-600 hover:bg-red-700"
                         >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Product</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to delete "{product.name}"? This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => deleteProductMutation.mutate(product.id)}
-                            disabled={deleteProductMutation.isPending}
-                            className="bg-red-600 hover:bg-red-700"
-                          >
-                            {deleteProductMutation.isPending ? 'Deleting...' : 'Delete'}
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
-                )}
-              </div>
+                          {deleteProductMutation.isPending ? 'Deleting...' : 'Delete'}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              )}
             </motion.div>
 
             {/* Product Info */}

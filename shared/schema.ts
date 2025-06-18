@@ -29,6 +29,7 @@ export const products = pgTable("products", {
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
   originalPrice: decimal("original_price", { precision: 10, scale: 2 }),
   imageUrl: text("image_url").notNull(),
+  imageUrls: text("image_urls").array().default([]), // Array of additional product images
   categoryId: integer("category_id").notNull(),
   rating: decimal("rating", { precision: 2, scale: 1 }).notNull().default("0.0"),
   reviewCount: integer("review_count").notNull().default(0),
