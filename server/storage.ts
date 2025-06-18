@@ -1,6 +1,6 @@
 import { 
-  ehriAccounts, categories, products, cartItems, users, orders, orderItems, referrals, adminUsers,
-  type EhriAccount, type InsertEhriAccount, type Category, type Product, type CartItem, type User, type Order, type OrderItem, type Referral, type AdminUser, type InsertAdminUser,
+  ehriAccounts, categories, brands, products, cartItems, users, orders, orderItems, referrals, adminUsers,
+  type EhriAccount, type InsertEhriAccount, type Category, type Brand, type InsertBrand, type Product, type CartItem, type User, type Order, type OrderItem, type Referral, type AdminUser, type InsertAdminUser,
   type InsertCategory, type InsertProduct, type InsertCartItem, type InsertUser, type InsertOrder, type InsertOrderItem, type InsertReferral,
   type ProductWithCategory, type CartItemWithProduct, type OrderWithItems
 } from "@shared/schema";
@@ -25,6 +25,11 @@ export interface IStorage {
   // Categories
   getCategories(): Promise<Category[]>;
   getCategoryBySlug(slug: string): Promise<Category | undefined>;
+
+  // Brands
+  getBrands(): Promise<Brand[]>;
+  getBrandById(id: number): Promise<Brand | undefined>;
+  updateBrandImage(id: number, imageUrl: string): Promise<Brand | undefined>;
 
   // Products
   getProducts(options?: {
@@ -159,6 +164,24 @@ export class DatabaseStorage implements IStorage {
   async getCategoryBySlug(slug: string): Promise<Category | undefined> {
     const [category] = await db.select().from(categories).where(eq(categories.slug, slug));
     return category || undefined;
+  }
+
+  async getBrands(): Promise<Brand[]> {
+    return await db.select().from(brands).where(eq(brands.isActive, true));
+  }
+
+  async getBrandById(id: number): Promise<Brand | undefined> {
+    const [brand] = await db.select().from(brands).where(eq(brands.id, id));
+    return brand || undefined;
+  }
+
+  async updateBrandImage(id: number, imageUrl: string): Promise<Brand | undefined> {
+    const [brand] = await db
+      .update(brands)
+      .set({ imageUrl })
+      .where(eq(brands.id, id))
+      .returning();
+    return brand || undefined;
   }
 
   async getProducts(options: {

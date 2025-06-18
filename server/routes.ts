@@ -1030,6 +1030,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Brands
+  app.get("/api/brands", async (req, res) => {
+    try {
+      const brands = await storage.getBrands();
+      res.json(brands);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch brands" });
+    }
+  });
+
+  app.get("/api/brands/:id", async (req, res) => {
+    try {
+      const brandId = parseInt(req.params.id);
+      const brand = await storage.getBrandById(brandId);
+      
+      if (!brand) {
+        return res.status(404).json({ message: "Brand not found" });
+      }
+      
+      res.json(brand);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch brand" });
+    }
+  });
+
+  app.patch("/api/brands/:id", requireAdminAuth, async (req, res) => {
+    try {
+      const brandId = parseInt(req.params.id);
+      const { imageUrl } = req.body;
+      
+      if (!imageUrl) {
+        return res.status(400).json({ message: "Image URL is required" });
+      }
+      
+      const updatedBrand = await storage.updateBrandImage(brandId, imageUrl);
+      
+      if (!updatedBrand) {
+        return res.status(404).json({ message: "Brand not found" });
+      }
+      
+      res.json({
+        message: "Brand image updated successfully",
+        brand: updatedBrand
+      });
+    } catch (error) {
+      console.error("Brand update error:", error);
+      res.status(500).json({ message: "Failed to update brand" });
+    }
+  });
+
 
 
   app.get("/api/products/:id", async (req, res) => {
