@@ -746,6 +746,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update product images (main + additional images)
+  app.put('/api/admin/products/:id/images', requireAdminAuth, async (req, res) => {
+    try {
+      const productId = parseInt(req.params.id);
+      const { imageUrl, imageUrls } = req.body;
+      
+      if (!imageUrl) {
+        return res.status(400).json({
+          message: 'Main image URL is required',
+          code: 'MISSING_MAIN_IMAGE'
+        });
+      }
+      
+      const updatedProduct = await storage.updateProductImages(productId, imageUrl, imageUrls || []);
+      
+      if (!updatedProduct) {
+        return res.status(404).json({
+          message: 'Product not found',
+          code: 'PRODUCT_NOT_FOUND'
+        });
+      }
+      
+      res.json({
+        message: 'Product images updated successfully',
+        product: updatedProduct
+      });
+    } catch (error) {
+      console.error('Update product images error:', error);
+      res.status(500).json({
+        message: 'Failed to update product images',
+        code: 'UPDATE_FAILED'
+      });
+    }
+  });
+
   app.put('/api/admin/products/:id/image', requireAdminAuth, async (req, res) => {
     try {
       const productId = parseInt(req.params.id);

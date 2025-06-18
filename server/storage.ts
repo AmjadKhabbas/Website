@@ -75,6 +75,7 @@ export interface IStorage {
   // Admin product management
   updateProductPrice(productId: number, price: string): Promise<Product | undefined>;
   updateProductImage(productId: number, imageUrl: string): Promise<Product | undefined>;
+  updateProductImages(productId: number, imageUrl: string, imageUrls: string[]): Promise<Product | undefined>;
   updateProduct(productId: number, data: { name?: string; description?: string; price?: string; imageUrl?: string; categoryId?: number; inStock?: boolean; featured?: boolean }): Promise<Product | undefined>;
 
   // Carousel management
@@ -492,6 +493,24 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Error updating product image:', error);
       return null;
+    }
+  }
+
+  async updateProductImages(productId: number, imageUrl: string, imageUrls: string[]): Promise<Product | undefined> {
+    try {
+      const [updatedProduct] = await db
+        .update(products)
+        .set({ 
+          imageUrl,
+          imageUrls: imageUrls.length > 0 ? imageUrls : null
+        })
+        .where(eq(products.id, productId))
+        .returning();
+
+      return updatedProduct;
+    } catch (error) {
+      console.error('Error updating product images:', error);
+      return undefined;
     }
   }
 
