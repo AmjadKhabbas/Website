@@ -75,6 +75,14 @@ export interface IStorage {
   updateProductPrice(productId: number, price: string): Promise<Product | undefined>;
   updateProductImage(productId: number, imageUrl: string): Promise<Product | undefined>;
   updateProduct(productId: number, data: { name?: string; description?: string; price?: string; imageUrl?: string; categoryId?: number; inStock?: boolean; featured?: boolean }): Promise<Product | undefined>;
+
+  // Carousel management
+  getCarouselItems(): Promise<CarouselItem[]>;
+  getCarouselItem(id: number): Promise<CarouselItem | undefined>;
+  createCarouselItem(item: InsertCarouselItem): Promise<CarouselItem>;
+  updateCarouselItem(id: number, updates: Partial<InsertCarouselItem>): Promise<CarouselItem | undefined>;
+  deleteCarouselItem(id: number): Promise<boolean>;
+  reorderCarouselItems(itemIds: number[]): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -657,6 +665,57 @@ export class DatabaseStorage implements IStorage {
     ];
 
     await db.insert(products).values(productsData);
+  }
+
+  // Carousel management methods
+  async getCarouselItems(): Promise<CarouselItem[]> {
+    const items = await db
+      .select()
+      .from(carouselItems)
+      .where(eq(carouselItems.isActive, true))
+      .orderBy(carouselItems.sortOrder, carouselItems.id);
+    return items;
+  }
+
+  async getCarouselItem(id: number): Promise<CarouselItem | undefined> {
+    const [item] = await db
+      .select()
+      .from(carouselItems)
+      .where(eq(carouselItems.id, id));
+    return item || undefined;
+  }
+
+  async createCarouselItem(itemData: InsertCarouselItem): Promise<CarouselItem> {
+    const [newItem] = await db
+      .insert(carouselItems)
+      .values(itemData)
+      .returning();
+    return newItem;
+  }
+
+  async updateCarouselItem(id: number, updates: Partial<InsertCarouselItem>): Promise<CarouselItem | undefined> {
+    const [updatedItem] = await db
+      .update(carouselItems)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(carouselItems.id, id))
+      .returning();
+    return updatedItem || undefined;
+  }
+
+  async deleteCarouselItem(id: number): Promise<boolean> {
+    const result = await db
+      .delete(carouselItems)
+      .where(eq(carouselItems.id, id));
+    return result.rowCount > 0;
+  }
+
+  async reorderCarouselItems(itemIds: number[]): Promise<void> {
+    for (let i = 0; i < itemIds.length; i++) {
+      await db
+        .update(carouselItems)
+        .set({ sortOrder: i, updatedAt: new Date() })
+        .where(eq(carouselItems.id, itemIds[i]));
+    }
   }
 }
 

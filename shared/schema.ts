@@ -161,6 +161,23 @@ export const adminUsers = pgTable("admin_users", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Carousel items table for managing hero slideshow
+export const carouselItems = pgTable("carousel_items", {
+  id: serial("id").primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description").notNull(),
+  price: varchar("price", { length: 50 }).notNull(),
+  originalPrice: varchar("original_price", { length: 50 }),
+  discount: varchar("discount", { length: 20 }),
+  imageUrl: text("image_url").notNull(),
+  ctaText: varchar("cta_text", { length: 100 }).default("Shop Now").notNull(),
+  ctaLink: varchar("cta_link", { length: 500 }),
+  isActive: boolean("is_active").default(true).notNull(),
+  sortOrder: integer("sort_order").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const insertCategorySchema = createInsertSchema(categories).omit({
   id: true,
 });
@@ -285,6 +302,15 @@ export type Referral = typeof referrals.$inferSelect;
 
 export type InsertAdminUser = z.infer<typeof insertAdminUserSchema>;
 export type AdminUser = typeof adminUsers.$inferSelect;
+
+export const insertCarouselItemSchema = createInsertSchema(carouselItems).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertCarouselItem = z.infer<typeof insertCarouselItemSchema>;
+export type CarouselItem = typeof carouselItems.$inferSelect;
 
 export type ProductWithCategory = Product & { category: Category };
 export type CartItemWithProduct = CartItem & { product: Product };
