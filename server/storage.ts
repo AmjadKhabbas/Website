@@ -1,6 +1,6 @@
 import { 
-  ehriAccounts, categories, products, cartItems, users, orders, orderItems, referrals, adminUsers,
-  type EhriAccount, type InsertEhriAccount, type Category, type Product, type CartItem, type User, type Order, type OrderItem, type Referral, type AdminUser, type InsertAdminUser,
+  ehriAccounts, categories, brands, products, cartItems, users, orders, orderItems, referrals, adminUsers,
+  type EhriAccount, type InsertEhriAccount, type Category, type Brand, type InsertBrand, type Product, type CartItem, type User, type Order, type OrderItem, type Referral, type AdminUser, type InsertAdminUser,
   type InsertCategory, type InsertProduct, type InsertCartItem, type InsertUser, type InsertOrder, type InsertOrderItem, type InsertReferral,
   type ProductWithCategory, type CartItemWithProduct, type OrderWithItems
 } from "@shared/schema";
@@ -26,6 +26,11 @@ export interface IStorage {
   getCategories(): Promise<Category[]>;
   getCategoryBySlug(slug: string): Promise<Category | undefined>;
 
+  // Brands
+  getBrands(): Promise<Brand[]>;
+  getBrandById(id: number): Promise<Brand | undefined>;
+  updateBrandImage(id: number, imageUrl: string): Promise<Brand | undefined>;
+
   // Products
   getProducts(options?: {
     categoryId?: number;
@@ -41,6 +46,7 @@ export interface IStorage {
     search?: string;
   }): Promise<ProductWithCategory[]>;
   createProduct(product: InsertProduct): Promise<Product>;
+  deleteProduct(id: number): Promise<boolean>;
 
   // Cart
   getCartItems(sessionId: string): Promise<CartItemWithProduct[]>;
@@ -67,6 +73,7 @@ export interface IStorage {
   // Admin product management
   updateProductPrice(productId: number, price: string): Promise<Product | undefined>;
   updateProductImage(productId: number, imageUrl: string): Promise<Product | undefined>;
+  updateProduct(productId: number, data: { name?: string; description?: string; price?: string; imageUrl?: string; categoryId?: number; inStock?: boolean; featured?: boolean }): Promise<Product | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -159,6 +166,24 @@ export class DatabaseStorage implements IStorage {
     return category || undefined;
   }
 
+  async getBrands(): Promise<Brand[]> {
+    return await db.select().from(brands).where(eq(brands.isActive, true));
+  }
+
+  async getBrandById(id: number): Promise<Brand | undefined> {
+    const [brand] = await db.select().from(brands).where(eq(brands.id, id));
+    return brand || undefined;
+  }
+
+  async updateBrandImage(id: number, imageUrl: string): Promise<Brand | undefined> {
+    const [brand] = await db
+      .update(brands)
+      .set({ imageUrl })
+      .where(eq(brands.id, id))
+      .returning();
+    return brand || undefined;
+  }
+
   async getProducts(options: {
     categoryId?: number;
     featured?: boolean;
@@ -202,6 +227,18 @@ export class DatabaseStorage implements IStorage {
       .values(productData)
       .returning();
     return product;
+  }
+
+  async deleteProduct(id: number): Promise<boolean> {
+    try {
+      const result = await db
+        .delete(products)
+        .where(eq(products.id, id));
+      return result.rowCount !== null && result.rowCount > 0;
+    } catch (error) {
+      console.error('Delete product error:', error);
+      return false;
+    }
   }
 
   async getProductsWithCategory(options: {
@@ -425,12 +462,53 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateProductImage(productId: number, imageUrl: string): Promise<Product | undefined> {
-    const [product] = await db
-      .update(products)
-      .set({ imageUrl })
-      .where(eq(products.id, productId))
-      .returning();
-    return product || undefined;
+    try {
+      const [updatedProduct] = await db
+        .update(products)
+        .set({ imageUrl })
+        .where(eq(products.id, productId))
+        .returning();
+
+      return updatedProduct;
+    } catch (error) {
+      console.error('Error updating product image:', error);
+      return null;
+    }
+  }
+
+  async updateProduct(id: number, updates: { 
+    name?: string; 
+    description?: string; 
+    price?: string; 
+    imageUrl?: string; 
+    categoryId?: number;
+    inStock?: boolean; 
+    featured?: boolean; 
+    tags?: string;
+  }): Promise<Product | undefined> {
+    try {
+      const updateData: any = {};
+
+      if (updates.name !== undefined) updateData.name = updates.name;
+      if (updates.description !== undefined) updateData.description = updates.description;
+      if (updates.price !== undefined) updateData.price = updates.price;
+      if (updates.categoryId !== undefined) updateData.categoryId = updates.categoryId;
+      if (updates.imageUrl !== undefined) updateData.imageUrl = updates.imageUrl;
+      if (updates.inStock !== undefined) updateData.inStock = updates.inStock;
+      if (updates.featured !== undefined) updateData.featured = updates.featured;
+      if (updates.tags !== undefined) updateData.tags = updates.tags;
+
+      const [updatedProduct] = await db
+        .update(products)
+        .set(updateData)
+        .where(eq(products.id, id))
+        .returning();
+
+      return updatedProduct || undefined;
+    } catch (error) {
+      console.error('Error updating product:', error);
+      return undefined;
+    }
   }
 
   private async initializeData() {

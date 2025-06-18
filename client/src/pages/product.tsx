@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Star, Heart, ShoppingCart, Minus, Plus, ArrowLeft, Share2 } from 'lucide-react';
-import { Link, useParams } from 'wouter';
+import { Star, Heart, ShoppingCart, Minus, Plus, ArrowLeft, Share2, Trash2, X } from 'lucide-react';
+import { Link, useParams, useLocation } from 'wouter';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,14 +10,29 @@ import { ProductCard } from '@/components/product-card';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/components/toast';
 import { useCartStore } from '@/lib/cart';
+import { useAuth } from '@/hooks/use-auth';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import type { Product, ProductWithCategory } from '@shared/schema';
 
 export default function ProductPage() {
   const { id } = useParams<{ id: string }>();
+  const [, setLocation] = useLocation();
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const { success, error } = useToast();
   const queryClient = useQueryClient();
   const { items } = useCartStore();
+  const { isAdmin } = useAuth();
 
   const { data: product, isLoading } = useQuery<Product>({
     queryKey: ['/api/products', id],
@@ -72,6 +87,22 @@ export default function ProductPage() {
     },
     onError: () => {
       error('Failed to update quantity');
+    },
+  });
+
+  const deleteProductMutation = useMutation({
+    mutationFn: async (productId: number) => {
+      await apiRequest('DELETE', `/api/admin/products/${productId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/products'] });
+      success('Product deleted successfully!');
+      setShowDeleteConfirm(false);
+      // Redirect to products page after deletion
+      setLocation('/products');
+    },
+    onError: () => {
+      error('Failed to delete product');
     },
   });
 
@@ -144,7 +175,7 @@ export default function ProductPage() {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
-              className="relative"
+              className="relative group"
             >
               <div className="aspect-square bg-gray-800 rounded-2xl overflow-hidden border border-gray-700">
                 <img
@@ -159,6 +190,41 @@ export default function ProductPage() {
                     </Badge>
                   </div>
                 )}
+                
+                {/* Admin Delete Button */}
+                {isAdmin && (
+                  <div className="absolute top-6 right-6">
+                    <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 h-10 w-10"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Product</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete "{product.name}"? This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => deleteProductMutation.mutate(product.id)}
+                            disabled={deleteProductMutation.isPending}
+                            className="bg-red-600 hover:bg-red-700"
+                          >
+                            {deleteProductMutation.isPending ? 'Deleting...' : 'Delete'}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                )}
               </div>
             </motion.div>
 
@@ -170,7 +236,45 @@ export default function ProductPage() {
               className="space-y-6"
             >
               <div>
-                <h1 className="text-3xl font-bold text-white mb-4">{product.name}</h1>
+                <div className="flex items-center justify-between mb-4">
+                  <h1 className="text-3xl font-bold text-white">{product.name}</h1>
+                  
+                  {/* Admin Controls */}
+                  {isAdmin && (
+                    <div className="flex gap-2">
+                      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            className="bg-red-500 hover:bg-red-600 text-white"
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Delete
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Product</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete "{product.name}"? This action cannot be undone and will redirect you back to the products page.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => deleteProductMutation.mutate(product.id)}
+                              disabled={deleteProductMutation.isPending}
+                              className="bg-red-600 hover:bg-red-700"
+                            >
+                              {deleteProductMutation.isPending ? 'Deleting...' : 'Delete Product'}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  )}
+                </div>
                 
                 {/* Rating */}
                 <div className="flex items-center space-x-2 mb-4">
@@ -214,9 +318,9 @@ export default function ProductPage() {
                 {/* Tags */}
                 {product.tags && product.tags.length > 0 && (
                   <div className="flex flex-wrap gap-2 mb-6">
-                    {product.tags.map((tag) => (
-                      <Badge key={tag} variant="outline" className="text-sm text-gray-300 border-gray-600">
-                        {tag}
+                    {product.tags.split(',').map((tag, index) => (
+                      <Badge key={index} variant="outline" className="text-sm text-gray-300 border-gray-600">
+                        {tag.trim()}
                       </Badge>
                     ))}
                   </div>

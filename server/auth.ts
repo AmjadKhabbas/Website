@@ -45,13 +45,14 @@ export function setupAuth(app: Express) {
       tableName: 'sessions'
     }),
     cookie: {
-      secure: process.env.NODE_ENV === 'production',
+      secure: false, // Set to false for Replit development
       httpOnly: true,
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+      sameSite: 'lax' // Add sameSite for better compatibility
     }
   };
 
-  app.set("trust proxy", 1);
+  app.set("trust proxy", true);
   app.use(session(sessionSettings));
   app.use(passport.initialize());
   app.use(passport.session());
@@ -188,60 +189,7 @@ export function setupAuth(app: Express) {
     }
   });
 
-  // Login endpoint
-  app.post("/api/auth/login", (req, res, next) => {
-    passport.authenticate("local", (err: any, user: User | false, info: any) => {
-      if (err) {
-        return res.status(500).json({ message: "Login failed. Please try again." });
-      }
-      
-      if (!user) {
-        return res.status(401).json({ message: info?.message || "Invalid credentials" });
-      }
-
-      req.logIn(user, (err) => {
-        if (err) {
-          return res.status(500).json({ message: "Login failed. Please try again." });
-        }
-        
-        res.json({
-          message: "Login successful",
-          user: {
-            id: user.id,
-            email: user.email,
-            fullName: user.fullName,
-            isApproved: user.isApproved,
-            isLicenseVerified: user.isLicenseVerified
-          }
-        });
-      });
-    })(req, res, next);
-  });
-
-  // Logout endpoint
-  app.post("/api/auth/logout", (req, res, next) => {
-    req.logout((err) => {
-      if (err) {
-        return res.status(500).json({ message: "Logout failed" });
-      }
-      res.json({ message: "Logout successful" });
-    });
-  });
-
-  // Get current user endpoint
-  app.get("/api/auth/user", (req, res) => {
-    if (!req.isAuthenticated() || !req.user) {
-      return res.status(401).json({ message: "Not authenticated" });
-    }
-
-    res.json({
-      id: req.user.id,
-      email: req.user.email,
-      fullName: req.user.fullName,
-      isApproved: req.user.isApproved,
-      isLicenseVerified: req.user.isLicenseVerified
-    });
-  });
+  // Auth routes moved to unified system in routes.ts
 
   // Admin routes for user approval (TODO: Add admin authentication middleware)
   app.post("/api/admin/approve-user/:userId", async (req, res) => {

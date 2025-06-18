@@ -1,13 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ArrowRight, Laptop, Shirt, Home, Dumbbell, Book, Heart, Star, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { Search, ArrowRight, Laptop, Shirt, Home, Dumbbell, Book, Heart, Star, ChevronLeft, ChevronRight, Loader2, Edit3, Upload, Save, X } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ProductCard } from '@/components/product-card';
 import { Badge } from '@/components/ui/badge';
-import type { Category, ProductWithCategory } from '@shared/schema';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useAuth } from '@/hooks/use-auth';
+import { useToast } from '@/components/toast';
+import type { Category, ProductWithCategory, Brand } from '@shared/schema';
 
 // Hero Slideshow Component - Full Section Slideshow
 const HeroSlideshow = () => {
@@ -144,6 +147,94 @@ export default function HomePage() {
   const [featuredIndex, setFeaturedIndex] = useState(0);
   const [showAllFeatured, setShowAllFeatured] = useState(false);
   const [scrollY, setScrollY] = useState(0);
+  const [editingBrand, setEditingBrand] = useState<{ id: number; name: string; imageUrl: string } | null>(null);
+  const [brandImageUrl, setBrandImageUrl] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>('');
+  
+  const { user, isAdmin } = useAuth();
+  const { success, error } = useToast();
+  const queryClient = useQueryClient();
+
+  // Brand editing mutation
+  const updateBrandMutation = useMutation({
+    mutationFn: async (brandData: { id: number; imageUrl: string }) => {
+      const response = await fetch(`/api/brands/${brandData.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ imageUrl: brandData.imageUrl }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update brand');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      success('Brand image updated successfully');
+      setEditingBrand(null);
+      setBrandImageUrl('');
+      queryClient.invalidateQueries({ queryKey: ['/api/brands'] });
+    },
+    onError: (err: Error) => {
+      error(`Failed to update brand: ${err.message}`);
+    },
+  });
+
+  const handleBrandEdit = (brand: { id: number; name: string; imageUrl: string }) => {
+    setEditingBrand(brand);
+    setBrandImageUrl(brand.imageUrl);
+  };
+
+  const handleSaveBrand = async () => {
+    if (!editingBrand) return;
+
+    let finalImageUrl = brandImageUrl.trim();
+
+    // If a file is selected, convert it to base64 for storage
+    if (imageFile) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64String = reader.result as string;
+        updateBrandMutation.mutate({
+          id: editingBrand.id,
+          imageUrl: base64String,
+        });
+      };
+      reader.readAsDataURL(imageFile);
+    } else if (finalImageUrl) {
+      // Use the URL provided
+      updateBrandMutation.mutate({
+        id: editingBrand.id,
+        imageUrl: finalImageUrl,
+      });
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setPreviewUrl(event.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+      // Clear URL input when file is selected
+      setBrandImageUrl('');
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingBrand(null);
+    setBrandImageUrl('');
+    setImageFile(null);
+    setPreviewUrl('');
+  };
 
   // Handle click outside search to close suggestions
   useEffect(() => {
@@ -194,13 +285,17 @@ export default function HomePage() {
     queryKey: ['/api/categories'],
   });
 
-  const { data: featuredProductsResponse } = useQuery({
+  const { data: brandsData = [] } = useQuery<Brand[]>({
+    queryKey: ['/api/brands'],
+  });
+
+  const { data: featuredProductsResponse } = useQuery<{ products: ProductWithCategory[] }>({
     queryKey: ['/api/products', { featured: true }],
   });
   const featuredProducts = featuredProductsResponse?.products || [];
 
   // Fetch all products for search suggestions
-  const { data: productsResponse } = useQuery({
+  const { data: productsResponse } = useQuery<{ products: ProductWithCategory[] }>({
     queryKey: ['/api/products'],
   });
   const products = productsResponse?.products || [];
@@ -428,34 +523,61 @@ export default function HomePage() {
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 mb-12">
             {[
-              'Botulinum Toxins',
-              'Dermal Fillers', 
-              'Anti-Aging Serums',
-              'Medical Equipment',
-              'Skincare Products'
-            ].map((brandName, index) => (
-              <Link key={index} href="/products">
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.1 }}
-                  className="group cursor-pointer scroll-reveal scale-on-scroll"
-                >
-                  <div className="bg-blue-50 rounded-2xl p-8 aspect-square flex items-center justify-center group-hover:bg-blue-100 transition-all duration-300 border-2 border-dashed border-blue-300 group-hover:border-blue-500">
-                    <div className="text-center">
-                      <div className="w-16 h-16 bg-blue-100 rounded-lg mx-auto mb-4 flex items-center justify-center group-hover:bg-blue-200 transition-colors duration-300">
-                        <Heart className="w-8 h-8 text-blue-500 group-hover:text-blue-700" />
-                      </div>
-                      <p className="text-sm text-blue-600 group-hover:text-blue-800 font-medium">Upload Image</p>
+              { id: 1, name: 'Botulinum Toxins', imageUrl: '' },
+              { id: 2, name: 'Dermal Fillers', imageUrl: '' }, 
+              { id: 3, name: 'Anti-Aging Serums', imageUrl: '' },
+              { id: 4, name: 'Medical Equipment', imageUrl: '' },
+              { id: 5, name: 'Skincare Products', imageUrl: '' }
+            ].map((brand, index) => (
+              <div key={brand.id} className="relative">
+                <Link href="/products">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                    className="group cursor-pointer scroll-reveal scale-on-scroll"
+                  >
+                    <div className="bg-blue-50 rounded-2xl p-8 aspect-square flex items-center justify-center group-hover:bg-blue-100 transition-all duration-300 border-2 border-dashed border-blue-300 group-hover:border-blue-500 relative">
+                      {brand.imageUrl ? (
+                        <img 
+                          src={brand.imageUrl} 
+                          alt={brand.name}
+                          className="w-full h-full object-cover rounded-lg"
+                        />
+                      ) : (
+                        <div className="text-center">
+                          <div className="w-16 h-16 bg-blue-100 rounded-lg mx-auto mb-4 flex items-center justify-center group-hover:bg-blue-200 transition-colors duration-300">
+                            <Heart className="w-8 h-8 text-blue-500 group-hover:text-blue-700" />
+                          </div>
+                          <p className="text-sm text-blue-600 group-hover:text-blue-800 font-medium">
+                            {isAdmin ? 'Click to Upload Image' : 'Upload Image'}
+                          </p>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                  <div className="mt-4 text-center">
-                    <h3 className="font-semibold text-slate-800 text-sm group-hover:text-blue-700 transition-colors duration-300">
-                      {brandName}
-                    </h3>
-                  </div>
-                </motion.div>
-              </Link>
+                    <div className="mt-4 text-center">
+                      <h3 className="font-semibold text-slate-800 text-sm group-hover:text-blue-700 transition-colors duration-300">
+                        {brand.name}
+                      </h3>
+                    </div>
+                  </motion.div>
+                </Link>
+                
+                {/* Admin Edit Button */}
+                {isAdmin && (
+                  <Button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleBrandEdit(brand);
+                    }}
+                    size="sm"
+                    variant="outline"
+                    className="absolute top-2 right-2 bg-white/90 hover:bg-white border-blue-300 text-blue-600 hover:text-blue-700 p-2"
+                  >
+                    <Edit3 className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
             ))}
           </div>
 
@@ -469,90 +591,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Featured Products Section */}
-      <section className="py-20 bg-white scroll-reveal relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center mb-16 scroll-reveal">
-            <div>
-              <h2 className="text-4xl font-bold text-slate-800 mb-4">Featured Products</h2>
-              <p className="text-xl text-slate-600">Premium Medical Solutions</p>
-            </div>
-            <div className="flex items-center gap-4">
-              <Button 
-                onClick={() => setShowAllFeatured(!showAllFeatured)}
-                className="btn-medical-secondary"
-              >
-                {showAllFeatured ? 'Show Less' : 'View All'}
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </div>
-          </div>
 
-          {/* Navigation arrows positioned at screen edges */}
-          {!showAllFeatured && (
-            <>
-              <button 
-                onClick={() => setFeaturedIndex(Math.max(0, featuredIndex - 1))}
-                disabled={featuredIndex === 0}
-                className={`fixed left-4 top-1/2 transform -translate-y-1/2 z-10 p-3 rounded-full shadow-lg transition-all duration-300 ${
-                  featuredIndex === 0 
-                    ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed'
-                    : 'bg-white border-blue-300 text-blue-600 hover:bg-blue-50 hover:border-blue-400 hover:text-blue-700 hover:scale-110'
-                }`}
-              >
-                <ChevronLeft className="w-6 h-6" />
-              </button>
-              <button 
-                onClick={() => setFeaturedIndex(Math.min(featuredProducts.length - 4, featuredIndex + 1))}
-                disabled={featuredIndex >= featuredProducts.length - 4}
-                className={`fixed right-4 top-1/2 transform -translate-y-1/2 z-10 p-3 rounded-full shadow-lg transition-all duration-300 ${
-                  featuredIndex >= featuredProducts.length - 4
-                    ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed'
-                    : 'bg-white border-blue-300 text-blue-600 hover:bg-blue-50 hover:border-blue-400 hover:text-blue-700 hover:scale-110'
-                }`}
-              >
-                <ChevronRight className="w-6 h-6" />
-              </button>
-            </>
-          )}
-
-          <div className={`grid gap-6 transition-all duration-500 ${
-            showAllFeatured ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'
-          }`}>
-            {(showAllFeatured ? featuredProducts : featuredProducts.slice(featuredIndex, featuredIndex + 4)).map((product, index) => (
-              <motion.div
-                key={product.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
-                className="card-fox p-6 group cursor-pointer scroll-reveal scale-on-scroll"
-              >
-                <div className="aspect-square bg-gradient-to-br from-teal-100 to-cyan-100 rounded-lg mb-4 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-                  <Heart className="w-12 h-12 text-teal-600" />
-                </div>
-                
-                <div className="space-y-3">
-                  <div>
-                    <h3 className="font-semibold text-slate-800 text-lg group-hover:text-teal-600 transition-colors duration-300">
-                      {product.name}
-                    </h3>
-                    <p className="text-slate-600 text-sm">{product.description}</p>
-                  </div>
-                  
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl font-bold text-teal-600">${product.price}</span>
-                    <span className="text-lg text-slate-400 line-through">$299.99</span>
-                  </div>
-                  
-                  <Badge className="bg-teal-100 text-teal-700 hover:bg-teal-200">
-                    {product.category?.name || 'Medical'}
-                  </Badge>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Newsletter Section */}
       <section className="py-20 bg-white border-t border-slate-200 scroll-reveal">
@@ -577,6 +616,108 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Brand Edit Dialog */}
+      <Dialog open={!!editingBrand} onOpenChange={() => handleCancelEdit()}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Brand Image</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium text-slate-700 mb-2 block">
+                Brand Name
+              </label>
+              <Input
+                value={editingBrand?.name || ''}
+                disabled
+                className="bg-slate-50"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-slate-700 mb-2 block">
+                Brand Image
+              </label>
+              
+              {/* File Upload Section */}
+              <div className="space-y-3">
+                <div className="flex items-center space-x-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => document.getElementById('brand-file-input')?.click()}
+                    className="flex items-center space-x-2"
+                  >
+                    <Upload className="w-4 h-4" />
+                    <span>Upload Image</span>
+                  </Button>
+                  <span className="text-sm text-slate-500">or enter URL below</span>
+                </div>
+                
+                <input
+                  id="brand-file-input"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+                
+                <Input
+                  placeholder="Or enter image URL..."
+                  value={brandImageUrl}
+                  onChange={(e) => setBrandImageUrl(e.target.value)}
+                  className="mb-2"
+                />
+              </div>
+            </div>
+            {(previewUrl || brandImageUrl) && (
+              <div>
+                <label className="text-sm font-medium text-slate-700 mb-2 block">
+                  Preview
+                </label>
+                <div className="w-32 h-32 bg-slate-100 rounded-lg overflow-hidden">
+                  <img
+                    src={previewUrl || brandImageUrl}
+                    alt="Preview"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+            <div className="flex gap-3 pt-4">
+              <Button
+                onClick={handleSaveBrand}
+                disabled={(!brandImageUrl.trim() && !imageFile) || updateBrandMutation.isPending}
+                className="flex-1"
+              >
+                {updateBrandMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4 mr-2" />
+                    Save Image
+                  </>
+                )}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleCancelEdit}
+                disabled={updateBrandMutation.isPending}
+              >
+                <X className="w-4 h-4 mr-2" />
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <style>{`
         .bg-grid-pattern {
