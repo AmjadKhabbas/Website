@@ -9,8 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { useCartStore } from '@/lib/cart';
 import { MobileMenu } from '@/components/mobile-menu';
 import { useQuery } from '@tanstack/react-query';
-import { useAuth } from '@/hooks/use-auth';
-import { useAdmin } from '@/hooks/use-admin';
+import { useAuth } from '@/hooks/useAuth';
+import { useAdmin } from '@/hooks/useAdmin';
 import type { Category, ProductWithCategory } from '@shared/schema';
 
 export function Header() {
@@ -57,39 +57,38 @@ export function Header() {
       setShowSuggestions(false);
     }
   }, [searchQuery]);
-
+  
   const { getTotalItems, openCart, setItems } = useCartStore();
-  const { user, admin, isLoading, isAdmin, logoutMutation } = useAuth();
-  const isAuthenticated = !!user || !!admin;
+  const { user, isLoading, isAuthenticated } = useAuth();
 
   // Fetch cart data and sync with store
-  const { data: cartData } = useQuery<any[]>({
+  const { data: cartData } = useQuery({
     queryKey: ['/api/cart'],
     enabled: true, // Always fetch cart data
   });
 
   // Sync cart data with store when it changes
   useEffect(() => {
-    if (cartData && Array.isArray(cartData)) {
+    if (cartData) {
       setItems(cartData);
     }
   }, [cartData, setItems]);
 
   // Fetch products for search suggestions
-  const { data: productsResponse } = useQuery<{products: ProductWithCategory[]}>({
+  const { data: productsResponse } = useQuery({
     queryKey: ['/api/products'],
   });
   const products = productsResponse?.products || [];
 
   // Filter products based on search query for suggestions
   const searchSuggestions = searchQuery.trim() 
-    ? products.filter((product: ProductWithCategory) => 
+    ? products.filter(product => 
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (product.category?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
       ).slice(0, 6) // Limit to 6 suggestions
     : [];
-
+  
   const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ['/api/categories'],
   });
@@ -97,10 +96,10 @@ export function Header() {
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-
+      
       // Update scrolled state for background changes
       setIsScrolled(currentScrollY > 50);
-
+      
       // Handle fade effect based on scroll direction
       if (currentScrollY < 100) {
         // Always show header at top of page
@@ -112,7 +111,7 @@ export function Header() {
         // Scrolling up - show header
         setIsVisible(true);
       }
-
+      
       setLastScrollY(currentScrollY);
     };
 
@@ -166,7 +165,7 @@ export function Header() {
           isScrolled ? 'shadow-lg' : ''
         }`}
       >
-        <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
             <div className="flex items-center space-x-6">
@@ -179,14 +178,15 @@ export function Header() {
                   <img 
                     src={medsGoLogo} 
                     alt="Meds-Go" 
-                    className="h-7 w-auto object-contain brightness-125 contrast-110"
+                    className="h-10 w-auto object-contain brightness-125 contrast-110"
                   />
                   <div>
-                    <h1 className="text-lg font-bold text-slate-800">Meds-Go</h1>
+                    <h1 className="text-2xl font-bold text-slate-800">Meds-Go</h1>
+                    <p className="text-xs text-slate-600 -mt-1">Professional Healthcare Products</p>
                   </div>
                 </motion.div>
               </Link>
-
+              
               {/* Desktop Navigation */}
               <nav className="hidden lg:flex space-x-1">
                 <Link href="/">
@@ -198,7 +198,7 @@ export function Header() {
                     Home
                   </span>
                 </Link>
-
+                
                 <Link href="/products">
                   <span className={`px-4 py-2 text-sm font-medium transition-all duration-300 rounded-lg cursor-pointer ${
                     location === '/products' 
@@ -242,7 +242,7 @@ export function Header() {
             </div>
 
             {/* Search Bar with Live Filtering */}
-            <div className="hidden md:flex flex-1 max-w-4xl mx-8" ref={searchRef}>
+            <div className="hidden md:flex flex-1 max-w-2xl mx-8" ref={searchRef}>
               <div className="relative w-full">
                 <form onSubmit={handleSearch} className="relative w-full">
                   <Input
@@ -392,46 +392,7 @@ export function Header() {
               {/* User Authentication */}
               {!isLoading && (
                 <>
-                  {isAdmin ? (
-                    <div className="hidden sm:flex items-center space-x-3">
-                      {/* Admin Dashboard Link */}
-                      <Link href="/admin/dashboard">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="flex items-center space-x-2 p-3 text-slate-600 hover:text-purple-600 bg-white hover:bg-purple-50 border border-slate-200 hover:border-purple-200 rounded-lg transition-all duration-300"
-                        >
-                          <Package className="w-4 h-4" />
-                          <span className="text-sm font-medium">Dashboard</span>
-                        </Button>
-                      </Link>
-
-                      {/* Admin Profile with Email */}
-                      <div className="flex items-center space-x-2 p-3 text-slate-600 bg-purple-50 border border-purple-200 rounded-lg">
-                        <User className="w-5 h-5 text-purple-600" />
-                        <div className="flex flex-col">
-                          <span className="text-xs font-medium text-purple-600">Admin</span>
-                          <span className="text-sm font-medium text-slate-700">{admin?.email}</span>
-                        </div>
-                      </div>
-
-                      {/* Admin Logout Button */}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => logoutMutation.mutate()}
-                        disabled={logoutMutation.isPending}
-                        className="flex items-center space-x-2 p-3 text-slate-600 hover:text-red-600 bg-white hover:bg-red-50 border border-slate-200 hover:border-red-200 rounded-lg transition-all duration-300"
-                      >
-                        {logoutMutation.isPending ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <LogOut className="w-4 h-4" />
-                        )}
-                        <span className="text-sm font-medium">Logout</span>
-                      </Button>
-                    </div>
-                  ) : isAuthenticated ? (
+                  {isAuthenticated ? (
                     <div className="hidden sm:flex items-center space-x-3">
                       {/* Orders Link */}
                       <Link href="/orders">
@@ -444,7 +405,7 @@ export function Header() {
                           <span className="text-sm font-medium">Orders</span>
                         </Button>
                       </Link>
-
+                      
                       {/* Referrals Link */}
                       <Link href="/referrals">
                         <Button
@@ -456,46 +417,47 @@ export function Header() {
                           <span className="text-sm font-medium">Referrals</span>
                         </Button>
                       </Link>
-
-                      {/* User Profile with Email */}
-                      <div className="flex items-center space-x-2 p-3 text-slate-600 bg-blue-50 border border-blue-200 rounded-lg">
-                        <User className="w-5 h-5 text-blue-600" />
-                        <div className="flex flex-col">
-                          <span className="text-xs font-medium text-blue-600">Doctor</span>
-                          <span className="text-sm font-medium text-slate-700">{user?.email}</span>
-                        </div>
+                      
+                      {/* FAQ Link */}
+                      <Link href="/faq">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="flex items-center space-x-2 p-3 text-slate-600 hover:text-purple-600 bg-white hover:bg-purple-50 border border-slate-200 hover:border-purple-200 rounded-lg transition-all duration-300"
+                        >
+                          <HelpCircle className="w-4 h-4" />
+                          <span className="text-sm font-medium">FAQ</span>
+                        </Button>
+                      </Link>
+                      
+                      {/* User Profile */}
+                      <div className="flex items-center space-x-2 p-3 text-slate-600 bg-white border border-slate-200 rounded-lg">
+                        <User className="w-5 h-5" />
+                        <span className="text-sm font-medium">Account</span>
                       </div>
-
+                      
                       {/* Logout Button */}
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => logoutMutation.mutate()}
-                        disabled={logoutMutation.isPending}
+                        onClick={() => window.location.href = '/api/logout'}
                         className="flex items-center space-x-2 p-3 text-slate-600 hover:text-red-600 bg-white hover:bg-red-50 border border-slate-200 hover:border-red-200 rounded-lg transition-all duration-300"
                       >
-                        {logoutMutation.isPending ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <LogOut className="w-4 h-4" />
-                        )}
+                        <LogOut className="w-4 h-4" />
                         <span className="text-sm font-medium">Logout</span>
                       </Button>
                     </div>
                   ) : (
-                    <div className="hidden sm:flex items-center space-x-2">
-                      <Link href="/login">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="flex items-center space-x-2 p-3 text-slate-600 hover:text-blue-600 bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-200 rounded-lg transition-all duration-300"
-                        >
-                          <LogIn className="w-5 h-5" />
-                          <span className="text-sm font-medium">Doctor Login</span>
-                        </Button>
-                      </Link>
-                      {/* Remove admin sections from header */}
-                    </div>
+                    <Link href="/auth">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="hidden sm:flex items-center space-x-2 p-3 text-slate-600 hover:text-blue-600 bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-200 rounded-lg transition-all duration-300"
+                      >
+                        <LogIn className="w-5 h-5" />
+                        <span className="text-sm font-medium">Sign In</span>
+                      </Button>
+                    </Link>
                   )}
                 </>
               )}

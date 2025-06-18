@@ -97,13 +97,13 @@ export default function ProductsPage() {
   return (
     <div className="min-h-screen bg-slate-50 pt-20">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-blue-50 via-white to-slate-50 py-2 scroll-reveal">
+      <section className="bg-gradient-to-br from-blue-50 via-white to-slate-50 py-4 scroll-reveal">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-2">
+          <div className="text-center mb-3">
             <motion.h1 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-3xl font-bold text-slate-800 mb-2"
+              className="text-4xl font-bold text-slate-800 mb-4"
             >
               Medical Products
             </motion.h1>
@@ -111,7 +111,7 @@ export default function ProductsPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-base text-slate-600 max-w-2xl mx-auto"
+              className="text-lg text-slate-600 max-w-2xl mx-auto"
             >
               Professional medical solutions for healthcare practitioners
             </motion.p>
@@ -129,25 +129,25 @@ export default function ProductsPage() {
               placeholder="Search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-white border border-slate-300 rounded-xl text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 text-base"
+              className="w-full pl-12 pr-4 py-4 bg-white border border-slate-300 rounded-xl text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 text-lg"
             />
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 w-6 h-6" />
           </motion.div>
         </div>
       </section>
 
       {/* Main Content */}
       <section className="pb-4">
-        <div className="max-w-full mx-auto px-2 sm:px-4 lg:px-6">
-          <div className="flex gap-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex gap-8">
             {/* Sidebar - Medical Categories */}
             <motion.aside 
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 }}
-              className="w-64 flex-shrink-0"
+              className="w-80 flex-shrink-0"
             >
-              <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto">
+              <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto">
                 {/* Categories Tab Header */}
                 <button
                   onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
@@ -207,8 +207,8 @@ export default function ProductsPage() {
                 )}
 
                 {/* Filter Options */}
-                <div className="mt-4 pt-4 border-t border-slate-200 space-y-4">
-                  <h4 className="text-sm font-semibold text-slate-800 mb-3">Filter Options</h4>
+                <div className="mt-8 pt-6 border-t border-slate-200 space-y-6">
+                  <h4 className="text-sm font-semibold text-slate-800 mb-4">Filter Options</h4>
                   
                   {/* Price Range */}
                   <div className="space-y-3">
@@ -315,7 +315,7 @@ export default function ProductsPage() {
               className="flex-1"
             >
               {/* Toolbar */}
-              <div className="flex items-center justify-between mb-4 bg-white rounded-xl p-3 shadow-sm border border-slate-200">
+              <div className="flex items-center justify-between mb-8 bg-white rounded-xl p-4 shadow-sm border border-slate-200">
                 <div className="flex items-center gap-4">
                   <h2 className="text-lg font-semibold text-slate-800">
                     {searchQuery 
@@ -377,10 +377,10 @@ export default function ProductsPage() {
 
               {/* Products Display */}
               {isLoading ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                  {[...Array(10)].map((_, i) => (
-                    <div key={i} className="bg-white rounded-xl p-4 animate-pulse">
-                      <div className="aspect-square bg-slate-200 rounded-lg mb-3"></div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="bg-white rounded-xl p-6 animate-pulse">
+                      <div className="aspect-square bg-slate-200 rounded-lg mb-4"></div>
                       <div className="h-4 bg-slate-200 rounded mb-2"></div>
                       <div className="h-3 bg-slate-200 rounded w-2/3"></div>
                     </div>
@@ -401,8 +401,8 @@ export default function ProductsPage() {
                 </div>
               ) : (
                 <div className={viewMode === 'grid' 
-                  ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4'
-                  : 'space-y-3'
+                  ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'
+                  : 'space-y-4'
                 }>
                   {filteredProducts.map((product: ProductWithCategory, index: number) => (
                     <motion.div

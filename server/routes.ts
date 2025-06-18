@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, requireAuth, requireApprovedUser, hashPassword, comparePasswords } from "./auth";
+import { setupAuth, requireAuth, requireApprovedUser, hashPassword } from "./auth";
 import { adminAuthService, requireAdminAuth, checkAdminStatus } from "./adminAuth";
 import { insertCartItemSchema, insertOrderSchema, insertOrderItemSchema, insertReferralSchema } from "@shared/schema";
 import session from "express-session";
@@ -14,211 +14,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize admin user on startup
   await adminAuthService.initializeAdminUser();
 
-  // Unified Authentication endpoint - automatically detects admin vs regular user
-  app.post('/api/auth/login', async (req, res) => {
-    try {
-      const { email, password } = req.body;
-      console.log('Unified login attempt:', { email, timestamp: new Date().toISOString() });
-      
-      if (!email || !password) {
-        return res.status(400).json({
-          message: 'Email and password are required',
-          code: 'MISSING_CREDENTIALS'
-        });
-      }
-
-      const normalizedEmail = email.toLowerCase().trim();
-      console.log('Normalized email:', normalizedEmail);
-      
-      // First, check if this is an admin user
-      console.log('Attempting database authentication for:', normalizedEmail);
-      const admin = await adminAuthService.authenticateAdmin(normalizedEmail, password);
-      
-      if (admin) {
-        // Admin login successful
-        req.session.adminId = admin.id;
-        req.session.save((err) => {
-          if (err) {
-            console.error('Session save error:', err);
-            return res.status(500).json({
-              message: 'Session error',
-              code: 'SESSION_ERROR'
-            });
-          }
-          
-          res.json({
-            admin: {
-              id: admin.id,
-              email: admin.email,
-              name: admin.name,
-              role: admin.role
-            }
-          });
-        });
-        return;
-      }
-      
-      // Fallback to hardcoded admin if database auth fails
-      console.log('Checking hardcoded admin:', normalizedEmail, password);
-      if (normalizedEmail === 'amjadkhabbas2002@gmail.com' && password === 'akramsnotcool!') {
-        console.log('Hardcoded admin login successful');
-        req.session.adminId = 1;
-        req.session.save((err) => {
-          if (err) {
-            console.error('Session save error:', err);
-            return res.status(500).json({
-              message: 'Session error',
-              code: 'SESSION_ERROR'
-            });
-          }
-          
-          res.json({
-            admin: {
-              id: 1,
-              email: 'amjadkhabbas2002@gmail.com',
-              name: 'Amjad Khabbas',
-              role: 'admin'
-            }
-          });
-        });
-        return;
-      }
-
-      // If not admin, try regular user authentication
-      const user = await storage.getUserByEmail(normalizedEmail);
-      
-      if (!user) {
-        return res.status(401).json({
-          message: 'Invalid email or password',
-          code: 'INVALID_CREDENTIALS'
-        });
-      }
-
-      if (!user.isApproved) {
-        return res.status(403).json({
-          message: 'Your account is pending approval. Please wait for admin verification.',
-          code: 'ACCOUNT_PENDING'
-        });
-      }
-
-      const isPasswordValid = await comparePasswords(password, user.password);
-      
-      if (!isPasswordValid) {
-        return res.status(401).json({
-          message: 'Invalid email or password',
-          code: 'INVALID_CREDENTIALS'
-        });
-      }
-
-      // Store user in session
-      req.session.userId = user.id;
-      req.session.save((err) => {
-        if (err) {
-          console.error('Session save error:', err);
-          return res.status(500).json({
-            message: 'Session error',
-            code: 'SESSION_ERROR'
-          });
-        }
-        
-        res.json({
-          user: {
-            id: user.id,
-            email: user.email,
-            fullName: user.fullName,
-            licenseNumber: user.licenseNumber,
-            collegeName: user.collegeName,
-            provinceState: user.provinceState,
-            practiceName: user.practiceName,
-            practiceAddress: user.practiceAddress,
-            isApproved: user.isApproved,
-            isLicenseVerified: user.isLicenseVerified
-          }
-        });
-      });
-
-    } catch (error) {
-      console.error('Login error:', error);
-      res.status(500).json({
-        message: 'Internal server error',
-        code: 'SERVER_ERROR'
-      });
-    }
-  });
-
-  // Get current authenticated user (unified)
-  app.get('/api/auth/user', async (req, res) => {
-    // Check if admin is logged in
-    if (req.session?.adminId) {
-      const admin = await adminAuthService.verifyAdmin(req.session.adminId);
-      if (admin) {
-        return res.json({
-          admin: {
-            id: admin.id,
-            email: admin.email,
-            name: admin.name,
-            role: admin.role
-          }
-        });
-      }
-      
-      // Fallback for hardcoded admin
-      if (req.session.adminId === 1) {
-        return res.json({
-          admin: {
-            id: 1,
-            email: 'amjadkhabbas2002@gmail.com',
-            name: 'Amjad Khabbas',
-            role: 'admin'
-          }
-        });
-      }
-    }
-    
-    // Check if regular user is logged in
-    if (req.session?.userId) {
-      const user = await storage.getUserById(req.session.userId);
-      if (user && user.isApproved) {
-        return res.json({
-          user: {
-            id: user.id,
-            email: user.email,
-            fullName: user.fullName,
-            licenseNumber: user.licenseNumber,
-            collegeName: user.collegeName,
-            provinceState: user.provinceState,
-            practiceName: user.practiceName,
-            practiceAddress: user.practiceAddress,
-            isApproved: user.isApproved,
-            isLicenseVerified: user.isLicenseVerified
-          }
-        });
-      }
-    }
-    
-    return res.status(401).json({
-      message: 'Not authenticated'
-    });
-  });
-
-  // Unified logout endpoint
-  app.post('/api/auth/logout', (req, res) => {
-    req.session.destroy((err) => {
-      if (err) {
-        console.error('Logout error:', err);
-        return res.status(500).json({
-          message: 'Logout failed',
-          code: 'LOGOUT_ERROR'
-        });
-      }
-      
-      res.json({
-        message: 'Logged out successfully'
-      });
-    });
-  });
-
-  // Legacy Admin Authentication Routes (for backward compatibility)
+  // Admin Authentication Routes
   app.post('/api/admin/login', async (req, res) => {
     try {
       const { email, password } = req.body;
@@ -231,6 +27,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
           code: 'MISSING_CREDENTIALS'
         });
       }
+
+      // Authenticate admin
+      const admin = await adminAuthService.authenticateAdmin(email, password);
+      
+      if (admin) {
+        console.log('✅ Admin authentication successful');
+        
+        // Set admin session
+        req.session.adminId = admin.id;
+        
+        return res.json({
+          message: 'Admin login successful',
+          admin: {
+            id: admin.id,
+            email: admin.email,
+            name: admin.name,
+            role: admin.role
+          }
+        });
+      }
+      
+      console.log('❌ Admin authentication failed');
+      return res.status(401).json({
+        message: 'Invalid email or password',
+        code: 'INVALID_CREDENTIALS'
+      });
+      
+    } catch (error) {
+      console.error('Admin login error:', error);
+      res.status(500).json({
+        message: 'Internal server error',
+        code: 'SERVER_ERROR'
+      });
+    }
+  });
 
       const normalizedEmail = email.toLowerCase().trim();
       console.log('Normalized email:', normalizedEmail);
@@ -252,7 +83,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             });
           }
           
-          console.log('Admin session saved successfully for:', admin.email);
           res.json({
             message: 'Admin login successful',
             admin: {
@@ -281,7 +111,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             });
           }
           
-          console.log('Fallback admin session saved successfully');
           res.json({
             message: 'Admin login successful',
             admin: {
@@ -307,43 +136,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: 'Internal server error',
         code: 'SERVER_ERROR'
       });
-    }
-  });
-
-  app.get('/api/admin/user', async (req, res) => {
-    const adminId = req.session?.adminId;
-    
-    if (!adminId) {
-      return res.status(401).json({ message: 'Not authenticated' });
-    }
-    
-    // Handle primary admin session
-    if (adminId === 1) {
-      return res.json({
-        id: 1,
-        email: 'amjadkhabbas2002@gmail.com',
-        name: 'Amjad Khabbas',
-        role: 'admin'
-      });
-    }
-    
-    try {
-      const admin = await adminAuthService.verifyAdmin(adminId);
-      
-      if (!admin) {
-        delete req.session.adminId;
-        return res.status(401).json({ message: 'Not authenticated' });
-      }
-      
-      res.json({
-        id: admin.id,
-        email: admin.email,
-        name: admin.name,
-        role: admin.role
-      });
-    } catch (error) {
-      console.error('Admin user check error:', error);
-      res.status(401).json({ message: 'Not authenticated' });
     }
   });
 
@@ -504,31 +296,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Image upload endpoint for product images
-  app.post('/api/admin/upload-image', requireAdminAuth, async (req, res) => {
-    try {
-      // For demonstration, we'll use a placeholder image service
-      // In production, you would integrate with cloud storage like AWS S3, Cloudinary, etc.
-      const imageUrl = `/api/placeholder/300/300?random=${Date.now()}`;
-      
-      res.json({
-        success: true,
-        imageUrl: imageUrl,
-        message: 'Image uploaded successfully'
-      });
-    } catch (error) {
-      console.error('Image upload error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to upload image'
-      });
-    }
-  });
-
   // Admin Product Management Routes
   app.post('/api/admin/products', requireAdminAuth, async (req, res) => {
     try {
-      const { name, description, price, categoryId, imageUrl, featured = false, inStock = true, tags = [] } = req.body;
+      const { name, description, price, categoryId, imageUrl, featured = false } = req.body;
       
       if (!name || !description || !price || !categoryId) {
         return res.status(400).json({
@@ -536,27 +307,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           code: 'MISSING_REQUIRED_FIELDS'
         });
       }
-
-      // Validate price format
-      if (!/^\d+(\.\d{1,2})?$/.test(price)) {
-        return res.status(400).json({
-          message: 'Price must be a valid number with up to 2 decimal places',
-          code: 'INVALID_PRICE_FORMAT'
-        });
-      }
-
-      // Validate category exists
-      const category = await storage.getCategoryBySlug(''); // We'll get by ID instead
       
       const productData = {
-        name: name.trim(),
-        description: description.trim(),
-        price: parseFloat(price).toFixed(2),
+        name,
+        description,
+        price: price.toString(),
         categoryId: parseInt(categoryId),
         imageUrl: imageUrl || '/api/placeholder/300/300',
-        featured: Boolean(featured),
-        inStock: Boolean(inStock),
-        tags: Array.isArray(tags) ? tags.join(', ') : (tags || null)
+        featured: Boolean(featured)
       };
       
       const newProduct = await storage.createProduct(productData);
@@ -608,144 +366,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/admin/products/:id', requireAdminAuth, async (req, res) => {
-    try {
-      const productId = parseInt(req.params.id);
-      
-      if (!productId || isNaN(productId)) {
-        return res.status(400).json({
-          message: 'Valid product ID is required',
-          code: 'INVALID_PRODUCT_ID'
-        });
-      }
-      
-      const success = await storage.deleteProduct(productId);
-      
-      if (!success) {
-        return res.status(404).json({
-          message: 'Product not found',
-          code: 'PRODUCT_NOT_FOUND'
-        });
-      }
-      
-      res.json({
-        message: 'Product deleted successfully'
-      });
-    } catch (error) {
-      console.error('Delete product error:', error);
-      res.status(500).json({
-        message: 'Failed to delete product',
-        code: 'DELETE_FAILED'
-      });
-    }
-  });
-
-  // Admin product update (comprehensive)
-  app.put('/api/admin/products/:id', requireAdminAuth, async (req, res) => {
-    try {
-      const productId = parseInt(req.params.id);
-      const { name, description, price, imageUrl, categoryId, inStock, featured } = req.body;
-      
-      const updatedProduct = await storage.updateProduct(productId, {
-        name,
-        description,
-        price,
-        imageUrl,
-        categoryId,
-        inStock,
-        featured
-      });
-      
-      if (!updatedProduct) {
-        return res.status(404).json({
-          message: 'Product not found',
-          code: 'PRODUCT_NOT_FOUND'
-        });
-      }
-      
-      res.json({
-        message: 'Product updated successfully',
-        product: updatedProduct
-      });
-    } catch (error) {
-      console.error('Update product error:', error);
-      res.status(500).json({
-        message: 'Failed to update product',
-        code: 'UPDATE_FAILED'
-      });
-    }
-  });
-
-  // PATCH endpoint for price updates
-  app.patch('/api/admin/products/:id/price', requireAdminAuth, async (req, res) => {
-    try {
-      const productId = parseInt(req.params.id);
-      const { price } = req.body;
-      
-      if (!price) {
-        return res.status(400).json({
-          message: 'Price is required',
-          code: 'MISSING_PRICE'
-        });
-      }
-      
-      const updatedProduct = await storage.updateProductPrice(productId, price);
-      
-      if (!updatedProduct) {
-        return res.status(404).json({
-          message: 'Product not found',
-          code: 'PRODUCT_NOT_FOUND'
-        });
-      }
-      
-      res.json({
-        message: 'Product price updated successfully',
-        product: updatedProduct
-      });
-    } catch (error) {
-      console.error('Update product price error:', error);
-      res.status(500).json({
-        message: 'Failed to update product price',
-        code: 'UPDATE_FAILED'
-      });
-    }
-  });
-
-  // PATCH endpoint for image updates
-  app.patch('/api/admin/products/:id/image', requireAdminAuth, async (req, res) => {
-    try {
-      const productId = parseInt(req.params.id);
-      const { imageUrl } = req.body;
-      
-      if (!imageUrl) {
-        return res.status(400).json({
-          message: 'Image URL is required',
-          code: 'MISSING_IMAGE_URL'
-        });
-      }
-      
-      const updatedProduct = await storage.updateProductImage(productId, imageUrl);
-      
-      if (!updatedProduct) {
-        return res.status(404).json({
-          message: 'Product not found',
-          code: 'PRODUCT_NOT_FOUND'
-        });
-      }
-      
-      res.json({
-        message: 'Product image updated successfully',
-        product: updatedProduct
-      });
-    } catch (error) {
-      console.error('Update product image error:', error);
-      res.status(500).json({
-        message: 'Failed to update product image',
-        code: 'UPDATE_FAILED'
-      });
-    }
-  });
-
   app.put('/api/admin/products/:id/image', requireAdminAuth, async (req, res) => {
     try {
       const productId = parseInt(req.params.id);
@@ -780,46 +400,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Comprehensive product update endpoint
-  app.patch('/api/admin/products/:id', requireAdminAuth, async (req, res) => {
-    try {
-      const productId = parseInt(req.params.id);
-      const { name, description, price, imageUrl } = req.body;
-      
-      if (!productId || isNaN(productId)) {
-        return res.status(400).json({
-          message: 'Valid product ID is required',
-          code: 'INVALID_PRODUCT_ID'
-        });
-      }
-      
-      const updatedProduct = await storage.updateProduct(productId, {
-        name,
-        description,
-        price,
-        imageUrl
-      });
-      
-      if (!updatedProduct) {
-        return res.status(404).json({
-          message: 'Product not found',
-          code: 'PRODUCT_NOT_FOUND'
-        });
-      }
-      
-      res.json({
-        message: 'Product updated successfully',
-        product: updatedProduct
-      });
-    } catch (error) {
-      console.error('Update product error:', error);
-      res.status(500).json({
-        message: 'Failed to update product',
-        code: 'UPDATE_FAILED'
-      });
-    }
-  });
-
   // Add admin status check to products route
   app.get('/api/products', checkAdminStatus, async (req, res) => {
     try {
@@ -847,10 +427,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch products" });
     }
   });
-
-  // Legacy user authentication endpoint (removed - now using unified auth)
-
-  // Legacy logout endpoint removed - using unified logout above
 
   // Doctor registration endpoint with email notification
   app.post("/api/auth/register", async (req, res) => {
@@ -1030,56 +606,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Brands
-  app.get("/api/brands", async (req, res) => {
-    try {
-      const brands = await storage.getBrands();
-      res.json(brands);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch brands" });
-    }
-  });
-
-  app.get("/api/brands/:id", async (req, res) => {
-    try {
-      const brandId = parseInt(req.params.id);
-      const brand = await storage.getBrandById(brandId);
-      
-      if (!brand) {
-        return res.status(404).json({ message: "Brand not found" });
-      }
-      
-      res.json(brand);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch brand" });
-    }
-  });
-
-  app.patch("/api/brands/:id", requireAdminAuth, async (req, res) => {
-    try {
-      const brandId = parseInt(req.params.id);
-      const { imageUrl } = req.body;
-      
-      if (!imageUrl) {
-        return res.status(400).json({ message: "Image URL is required" });
-      }
-      
-      const updatedBrand = await storage.updateBrandImage(brandId, imageUrl);
-      
-      if (!updatedBrand) {
-        return res.status(404).json({ message: "Brand not found" });
-      }
-      
-      res.json({
-        message: "Brand image updated successfully",
-        brand: updatedBrand
-      });
-    } catch (error) {
-      console.error("Brand update error:", error);
-      res.status(500).json({ message: "Failed to update brand" });
-    }
-  });
-
 
 
   app.get("/api/products/:id", async (req, res) => {
@@ -1164,109 +690,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Checkout endpoint - requires approved user authentication
-  app.post("/api/checkout", requireApprovedUser, async (req, res) => {
-    try {
-      const userId = req.user!.id;
-      const sessionId = req.session.id;
-      
-      // Get cart items for this session
-      const cartItems = await storage.getCartItems(sessionId);
-      
-      if (cartItems.length === 0) {
-        return res.status(400).json({ 
-          message: "Cart is empty",
-          code: "EMPTY_CART"
-        });
-      }
-      
-      // Calculate total
-      const total = cartItems.reduce((sum, item) => {
-        return sum + (parseFloat(item.product.price) * item.quantity);
-      }, 0);
-      
-      // Create order
-      const orderData = insertOrderSchema.parse({
-        userId: userId.toString(),
-        total: total.toString(),
-        status: "pending",
-        orderNumber: `ORD-${Date.now()}`
-      });
-      
-      const orderItems = cartItems.map(item => 
-        insertOrderItemSchema.parse({
-          productId: item.productId,
-          quantity: item.quantity,
-          price: item.product.price
-        })
-      );
-      
-      const order = await storage.createOrder(orderData, orderItems);
-      
-      // Clear cart after successful order
-      await storage.clearCart(sessionId);
-      
-      res.json({
-        message: "Order placed successfully",
-        order,
-        orderNumber: orderData.orderNumber
-      });
-    } catch (error) {
-      console.error("Checkout error:", error);
-      res.status(500).json({ 
-        message: "Failed to process checkout",
-        code: "CHECKOUT_FAILED"
-      });
-    }
-  });
-
-  // Check user approval status for checkout eligibility
-  app.get("/api/checkout/eligibility", async (req, res) => {
-    try {
-      if (!req.session?.userId) {
-        return res.json({
-          eligible: false,
-          reason: "LOGIN_REQUIRED",
-          message: "Please log in to proceed with checkout"
-        });
-      }
-      
-      const user = await storage.getUserById(req.session.userId);
-      
-      if (!user) {
-        return res.json({
-          eligible: false,
-          reason: "USER_NOT_FOUND",
-          message: "User account not found"
-        });
-      }
-      
-      if (!user.isApproved) {
-        return res.json({
-          eligible: false,
-          reason: "APPROVAL_PENDING",
-          message: "Your account is pending admin approval. You can add items to cart but cannot complete purchases until approved."
-        });
-      }
-      
-      res.json({
-        eligible: true,
-        message: "You can proceed with checkout"
-      });
-    } catch (error) {
-      console.error("Eligibility check error:", error);
-      res.status(500).json({
-        eligible: false,
-        reason: "SERVER_ERROR",
-        message: "Unable to check eligibility"
-      });
-    }
-  });
-
   // Orders (Protected routes for logged-in users)
   app.post("/api/orders", requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.id.toString();
+      const userId = req.user.claims.sub;
       const orderData = insertOrderSchema.parse({
         ...req.body,
         userId,
@@ -1288,7 +715,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/orders", requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.id.toString();
+      const userId = req.user.claims.sub;
       const orders = await storage.getUserOrders(userId);
       res.json(orders);
     } catch (error) {
@@ -1299,7 +726,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/orders/:id", requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.id.toString();
+      const userId = req.user.claims.sub;
       const orderId = parseInt(req.params.id);
       const order = await storage.getOrderById(orderId, userId);
       if (!order) {
