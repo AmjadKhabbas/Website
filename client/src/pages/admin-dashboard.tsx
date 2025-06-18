@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { CheckCircle, XCircle, User, Mail, FileText, Building, MapPin, LogOut, Loader2, Package, Plus, Trash2, Edit, Search, Palette } from 'lucide-react';
 import { AdvancedCarouselEditor } from '@/components/advanced-carousel-editor';
+import { ProductImageManager } from '@/components/product-image-manager';
 import { Link } from 'wouter';
 import { useToast } from '@/components/toast';
 import { apiRequest } from '@/lib/queryClient';
@@ -39,6 +40,7 @@ interface Product {
   description: string;
   price: string;
   imageUrl: string;
+  imageUrls: string[] | null;
   categoryId: number;
   inStock: boolean;
   featured: boolean;
