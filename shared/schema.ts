@@ -11,6 +11,7 @@ export const categories = pgTable("categories", {
   icon: text("icon").notNull(),
   color: text("color").notNull().default("blue"),
   itemCount: integer("item_count").notNull().default(0),
+  imageUrl: text("image_url"),
 });
 
 export const products = pgTable("products", {

@@ -52,6 +52,17 @@ interface Category {
   id: number;
   name: string;
   slug: string;
+  description?: string;
+  icon: string;
+  color: string;
+  imageUrl?: string;
+  itemCount: number;
+}
+
+interface Category {
+  id: number;
+  name: string;
+  slug: string;
 }
 
 function EditProductDialog({ product, categories, onClose }: { 
@@ -208,6 +219,7 @@ export default function AdminDashboard() {
   const [deleteProductId, setDeleteProductId] = useState<number | null>(null);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [categoryToDelete, setCategoryToDelete] = useState<number | null>(null);
 
   // Fetch pending users
   const { data: pendingUsers = [], isLoading, error } = useQuery<PendingUser[]>({
@@ -222,7 +234,7 @@ export default function AdminDashboard() {
   });
 
   // Fetch categories for the edit form
-  const { data: categories = [] } = useQuery<Category[]>({
+  const { data: categories = [], isLoading: categoriesLoading } = useQuery<Category[]>({
     queryKey: ['/api/categories'],
     enabled: isAdmin === true
   });
@@ -310,7 +322,7 @@ export default function AdminDashboard() {
 
         {/* Admin Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="users" className="flex items-center gap-2">
               <User className="h-4 w-4" />
               Doctor Registrations ({pendingUsers.length})
@@ -318,6 +330,10 @@ export default function AdminDashboard() {
             <TabsTrigger value="products" className="flex items-center gap-2">
               <Package className="h-4 w-4" />
               Product Management ({products.length})
+            </TabsTrigger>
+            <TabsTrigger value="categories" className="flex items-center gap-2">
+              <Building className="h-4 w-4" />
+              Category Management ({categories.length})
             </TabsTrigger>
           </TabsList>
 
@@ -513,6 +529,103 @@ export default function AdminDashboard() {
                 )}
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="categories">
+            <div className="space-y-6">
+              {/* Category Management Header */}
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-bold">Category Management</h2>
+                  <p className="text-gray-600">Manage product categories and their images</p>
+                </div>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button className="flex items-center gap-2">
+                      <Plus className="h-4 w-4" />
+                      Add Category
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Add New Category</DialogTitle>
+                    </DialogHeader>
+                    <CategoryForm onSuccess={() => queryClient.invalidateQueries({ queryKey: ['/api/categories'] })} />
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              {/* Categories Grid */}
+              {categoriesLoading ? (
+                <div className="flex justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin" />
+                </div>
+              ) : categories.length === 0 ? (
+                <Card>
+                  <CardContent className="py-12 text-center">
+                    <Building className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600">No categories found</p>
+                    <p className="text-sm text-gray-500 mt-2">Create your first category to get started</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {categories.map((category) => (
+                    <Card key={category.id} className="relative group">
+                      <CardContent className="p-6">
+                        <div className="flex flex-col items-center text-center space-y-4">
+                          {/* Category Image */}
+                          <div className="w-24 h-24 bg-blue-100 rounded-lg flex items-center justify-center overflow-hidden">
+                            {category.imageUrl ? (
+                              <img 
+                                src={category.imageUrl} 
+                                alt={category.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <Building className="h-8 w-8 text-blue-600" />
+                            )}
+                          </div>
+                          
+                          {/* Category Info */}
+                          <div>
+                            <h3 className="font-semibold text-lg">{category.name}</h3>
+                            <p className="text-sm text-gray-500">/{category.slug}</p>
+                          </div>
+
+                          {/* Action Buttons */}
+                          <div className="flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button variant="outline" size="sm">
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Edit Category</DialogTitle>
+                                </DialogHeader>
+                                <CategoryForm 
+                                  category={category} 
+                                  onSuccess={() => queryClient.invalidateQueries({ queryKey: ['/api/categories'] })} 
+                                />
+                              </DialogContent>
+                            </Dialog>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => setCategoryToDelete(category.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
           </TabsContent>
         </Tabs>
 
