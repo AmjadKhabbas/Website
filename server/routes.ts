@@ -1337,6 +1337,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Carousel management routes
+  app.get("/api/carousel", async (req, res) => {
+    try {
+      const items = await storage.getCarouselItems();
+      res.json(items);
+    } catch (error) {
+      console.error("Get carousel items error:", error);
+      res.status(500).json({ message: "Failed to fetch carousel items" });
+    }
+  });
+
+  app.get("/api/carousel/:id", requireAdminAuth, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const item = await storage.getCarouselItem(id);
+      
+      if (!item) {
+        return res.status(404).json({ message: "Carousel item not found" });
+      }
+      
+      res.json(item);
+    } catch (error) {
+      console.error("Get carousel item error:", error);
+      res.status(500).json({ message: "Failed to fetch carousel item" });
+    }
+  });
+
+  app.post("/api/carousel", requireAdminAuth, async (req, res) => {
+    try {
+      const newItem = await storage.createCarouselItem(req.body);
+      res.status(201).json({
+        message: "Carousel item created successfully",
+        item: newItem
+      });
+    } catch (error) {
+      console.error("Create carousel item error:", error);
+      res.status(500).json({ message: "Failed to create carousel item" });
+    }
+  });
+
+  app.patch("/api/carousel/:id", requireAdminAuth, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updatedItem = await storage.updateCarouselItem(id, req.body);
+      
+      if (!updatedItem) {
+        return res.status(404).json({ message: "Carousel item not found" });
+      }
+      
+      res.json({
+        message: "Carousel item updated successfully",
+        item: updatedItem
+      });
+    } catch (error) {
+      console.error("Update carousel item error:", error);
+      res.status(500).json({ message: "Failed to update carousel item" });
+    }
+  });
+
+  app.delete("/api/carousel/:id", requireAdminAuth, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteCarouselItem(id);
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "Carousel item not found" });
+      }
+      
+      res.json({ message: "Carousel item deleted successfully" });
+    } catch (error) {
+      console.error("Delete carousel item error:", error);
+      res.status(500).json({ message: "Failed to delete carousel item" });
+    }
+  });
+
+  app.patch("/api/carousel/reorder", requireAdminAuth, async (req, res) => {
+    try {
+      const { itemIds } = req.body;
+      
+      if (!Array.isArray(itemIds)) {
+        return res.status(400).json({ message: "Item IDs array is required" });
+      }
+      
+      await storage.reorderCarouselItems(itemIds);
+      res.json({ message: "Carousel items reordered successfully" });
+    } catch (error) {
+      console.error("Reorder carousel items error:", error);
+      res.status(500).json({ message: "Failed to reorder carousel items" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

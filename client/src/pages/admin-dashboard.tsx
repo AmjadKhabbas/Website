@@ -48,6 +48,22 @@ interface Product {
   };
 }
 
+interface CarouselItem {
+  id: number;
+  title: string;
+  description: string;
+  price: string;
+  originalPrice?: string;
+  discount?: string;
+  imageUrl: string;
+  ctaText?: string;
+  ctaLink?: string;
+  isActive: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 interface Category {
   id: number;
   name: string;
@@ -319,6 +335,10 @@ export default function AdminDashboard() {
               <Package className="h-4 w-4" />
               Product Management ({products.length})
             </TabsTrigger>
+            <TabsTrigger value="carousel" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Carousel Management
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="users">
@@ -513,6 +533,10 @@ export default function AdminDashboard() {
                 )}
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="carousel">
+            <CarouselManagement />
           </TabsContent>
         </Tabs>
 
