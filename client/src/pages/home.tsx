@@ -179,23 +179,27 @@ const HeroSlideshow = () => {
         ))}
       </AnimatePresence>
       
-      <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
-        <button
-          onClick={prevSlide}
-          className="p-3 bg-white shadow-lg hover:shadow-xl border border-slate-200 rounded-full text-teal-600 hover:text-teal-700 transition-all duration-200 hover:scale-110"
-        >
-          <ChevronLeft className="w-6 h-6" />
-        </button>
-      </div>
-      
-      <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-        <button
-          onClick={nextSlide}
-          className="p-3 bg-white shadow-lg hover:shadow-xl border border-slate-200 rounded-full text-teal-600 hover:text-teal-700 transition-all duration-200 hover:scale-110"
-        >
-          <ChevronRight className="w-6 h-6" />
-        </button>
-      </div>
+      {displayItems.length > 1 && (
+        <>
+          <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
+            <button
+              onClick={prevSlide}
+              className="p-3 bg-white shadow-lg hover:shadow-xl border border-slate-200 rounded-full text-teal-600 hover:text-teal-700 transition-all duration-200 hover:scale-110"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+          </div>
+          
+          <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+            <button
+              onClick={nextSlide}
+              className="p-3 bg-white shadow-lg hover:shadow-xl border border-slate-200 rounded-full text-teal-600 hover:text-teal-700 transition-all duration-200 hover:scale-110"
+            >
+              <ChevronRight className="w-6 h-6" />
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 };
