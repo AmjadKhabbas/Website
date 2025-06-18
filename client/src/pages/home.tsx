@@ -296,6 +296,8 @@ export default function HomePage() {
   const handleCancelEdit = () => {
     setEditingBrand(null);
     setBrandImageUrl('');
+    setEditingCategory(null);
+    setCategoryImageUrl('');
     setImageFile(null);
     setPreviewUrl('');
   };
@@ -675,11 +677,11 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Brand Edit Dialog */}
-      <Dialog open={!!editingBrand} onOpenChange={() => handleCancelEdit()}>
+      {/* Edit Dialog - Works for both brands and categories */}
+      <Dialog open={!!(editingBrand || editingCategory)} onOpenChange={() => handleCancelEdit()}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Edit Brand Image</DialogTitle>
+            <DialogTitle>{editingBrand ? 'Edit Brand Image' : 'Edit Category Image'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>

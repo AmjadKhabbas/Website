@@ -25,6 +25,7 @@ export interface IStorage {
   // Categories
   getCategories(): Promise<Category[]>;
   getCategoryBySlug(slug: string): Promise<Category | undefined>;
+  updateCategoryIcon(id: number, icon: string): Promise<Category | undefined>;
 
   // Brands
   getBrands(): Promise<Brand[]>;
@@ -163,6 +164,15 @@ export class DatabaseStorage implements IStorage {
 
   async getCategoryBySlug(slug: string): Promise<Category | undefined> {
     const [category] = await db.select().from(categories).where(eq(categories.slug, slug));
+    return category || undefined;
+  }
+
+  async updateCategoryIcon(id: number, icon: string): Promise<Category | undefined> {
+    const [category] = await db
+      .update(categories)
+      .set({ icon })
+      .where(eq(categories.id, id))
+      .returning();
     return category || undefined;
   }
 

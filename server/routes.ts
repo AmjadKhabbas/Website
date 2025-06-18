@@ -1030,6 +1030,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/categories/:id", requireAdminAuth, async (req, res) => {
+    try {
+      const categoryId = parseInt(req.params.id);
+      const { icon } = req.body;
+      
+      if (!icon) {
+        return res.status(400).json({ message: "Icon URL is required" });
+      }
+      
+      const updatedCategory = await storage.updateCategoryIcon(categoryId, icon);
+      
+      if (!updatedCategory) {
+        return res.status(404).json({ message: "Category not found" });
+      }
+      
+      res.json({
+        message: "Category image updated successfully",
+        category: updatedCategory
+      });
+    } catch (error) {
+      console.error("Category update error:", error);
+      res.status(500).json({ message: "Failed to update category" });
+    }
+  });
+
   // Brands
   app.get("/api/brands", async (req, res) => {
     try {
