@@ -143,8 +143,6 @@ export default function HomePage() {
   const [isSearchLoading, setIsSearchLoading] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const [, navigate] = useLocation();
-  const [featuredIndex, setFeaturedIndex] = useState(0);
-  const [showAllFeatured, setShowAllFeatured] = useState(false);
   const [scrollY, setScrollY] = useState(0);
 
   // Handle click outside search to close suggestions
@@ -200,7 +198,7 @@ export default function HomePage() {
   const { data: productsResponse } = useQuery({
     queryKey: ['/api/products'],
   });
-  const products = productsResponse?.products || [];
+  const products = (productsResponse as any)?.products || [];
   const isAdmin = (productsResponse as any)?.isAdmin || false;
 
   // Brand categories for upload
@@ -252,7 +250,7 @@ export default function HomePage() {
 
   // Filter products based on search query for suggestions
   const searchSuggestions = searchQuery.trim() 
-    ? products.filter(product => 
+    ? products.filter((product: any) => 
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (product.category?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
@@ -373,7 +371,7 @@ export default function HomePage() {
 
                     {/* Product Suggestions */}
                     <div className="py-2">
-                      {searchSuggestions.map((product, index) => (
+                      {searchSuggestions.map((product: any, index: number) => (
                         <motion.div
                           key={product.id}
                           initial={{ opacity: 0, x: -10 }}
@@ -523,7 +521,7 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8">
-            {brandCategories.map((brand, index) => (
+            {brandCategories.map((brand: any, index: number) => (
               <motion.div
                 key={brand.name}
                 initial={{ opacity: 0, y: 20 }}
