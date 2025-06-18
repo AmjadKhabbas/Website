@@ -12,7 +12,7 @@ import type { Category, ProductWithCategory } from '@shared/schema';
 // Hero Slideshow Component - Full Section Slideshow
 const HeroSlideshow = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
-  
+
   const bestSellers = [
     {
       id: 1,
@@ -97,7 +97,7 @@ const HeroSlideshow = () => {
                     </Button>
                   </motion.div>
                 </div>
-                
+
                 <motion.div
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -113,7 +113,7 @@ const HeroSlideshow = () => {
           )
         ))}
       </AnimatePresence>
-      
+
       <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
         <button
           onClick={prevSlide}
@@ -122,7 +122,7 @@ const HeroSlideshow = () => {
           <ChevronLeft className="w-6 h-6" />
         </button>
       </div>
-      
+
       <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
         <button
           onClick={nextSlide}
@@ -170,16 +170,16 @@ export default function HomePage() {
   useEffect(() => {
     const handleScroll = () => {
       setScrollY(window.scrollY);
-      
+
       // Update CSS custom property for parallax effects
       document.documentElement.style.setProperty('--scroll-y', `${window.scrollY * 0.5}px`);
-      
+
       // Reveal elements on scroll
       const elements = document.querySelectorAll('.scroll-reveal');
       elements.forEach((element) => {
         const elementTop = element.getBoundingClientRect().top;
         const windowHeight = window.innerHeight;
-        
+
         if (elementTop < windowHeight * 0.8) {
           element.classList.add('revealed');
         }
@@ -194,10 +194,21 @@ export default function HomePage() {
     queryKey: ['/api/categories'],
   });
 
-  const { data: featuredProductsResponse } = useQuery({
-    queryKey: ['/api/products', { featured: true }],
+  // Featured products query - only show products with valid discounts
+  const { data: featuredProducts = [] } = useQuery<ProductWithCategory[]>({
+    queryKey: ['/api/products', 'featured'],
+    queryFn: async () => {
+      const response = await fetch('/api/products?featured=true');
+      const data = await response.json();
+      const products = data.products || data;
+
+      // Filter to only include products where originalPrice > price (valid discount)
+      return products.filter((product: ProductWithCategory) => 
+        product.originalPrice && 
+        parseFloat(product.originalPrice) > parseFloat(product.price)
+      );
+    },
   });
-  const featuredProducts = featuredProductsResponse?.products || [];
 
   // Fetch all products for search suggestions
   const { data: productsResponse } = useQuery({
@@ -271,12 +282,12 @@ export default function HomePage() {
           transition={{ duration: 1 }}
           className="absolute inset-0 bg-gradient-to-r from-teal-500/5 via-transparent to-cyan-500/5 parallax-fast"
         />
-        
+
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-[600px]">
           <div className="float-animation">
             <HeroSlideshow />
           </div>
-          
+
           {/* Enhanced Search with Live Suggestions */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -530,7 +541,7 @@ export default function HomePage() {
                 <div className="aspect-square bg-gradient-to-br from-teal-100 to-cyan-100 rounded-lg mb-4 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
                   <Heart className="w-12 h-12 text-teal-600" />
                 </div>
-                
+
                 <div className="space-y-3">
                   <div>
                     <h3 className="font-semibold text-slate-800 text-lg group-hover:text-teal-600 transition-colors duration-300">
@@ -538,12 +549,12 @@ export default function HomePage() {
                     </h3>
                     <p className="text-slate-600 text-sm">{product.description}</p>
                   </div>
-                  
+
                   <div className="flex items-center gap-3">
                     <span className="text-2xl font-bold text-teal-600">${product.price}</span>
                     <span className="text-lg text-slate-400 line-through">$299.99</span>
                   </div>
-                  
+
                   <Badge className="bg-teal-100 text-teal-700 hover:bg-teal-200">
                     {product.category?.name || 'Medical'}
                   </Badge>
@@ -561,7 +572,7 @@ export default function HomePage() {
             <h2 className="text-4xl font-bold text-slate-800 mb-6">Stay Updated</h2>
             <p className="text-xl text-slate-600 mb-10">Get the latest medical product updates and exclusive offers</p>
           </div>
-          
+
           <div className="max-w-lg mx-auto">
             <div className="flex gap-3">
               <Input
