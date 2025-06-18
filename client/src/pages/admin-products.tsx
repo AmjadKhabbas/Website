@@ -32,10 +32,21 @@ const productUploadSchema = z.object({
   name: z.string().min(1, "Product name is required").max(100, "Name must be less than 100 characters"),
   description: z.string().min(10, "Description must be at least 10 characters").max(1000, "Description must be less than 1000 characters"),
   price: z.string().min(1, "Price is required").regex(/^\d+(\.\d{1,2})?$/, "Price must be a valid number"),
+  originalPrice: z.string().optional().refine((val) => !val || /^\d+(\.\d{1,2})?$/.test(val), "Original price must be a valid number"),
   categoryId: z.string().min(1, "Category is required"),
   featured: z.boolean().default(false),
   inStock: z.boolean().default(true),
   tags: z.string().optional(),
+}).refine((data) => {
+  if (data.featured && data.originalPrice) {
+    const price = parseFloat(data.price);
+    const originalPrice = parseFloat(data.originalPrice);
+    return originalPrice > price;
+  }
+  return true;
+}, {
+  message: "Original price must be higher than discounted price for featured products",
+  path: ["originalPrice"]
 });
 
 type ProductUploadFormData = z.infer<typeof productUploadSchema>;
@@ -51,6 +62,7 @@ export default function AdminProductsPage() {
       name: "",
       description: "",
       price: "",
+      originalPrice: "",
       categoryId: "",
       featured: false,
       inStock: true,
@@ -289,7 +301,7 @@ export default function AdminProductsPage() {
                       <FormItem>
                         <FormLabel className="text-gray-700 font-medium flex items-center gap-2">
                           <DollarSign className="h-4 w-4" />
-                          Price (CAD)
+                          {form.watch("featured") ? "Discounted Price (CAD)" : "Price (CAD)"}
                         </FormLabel>
                         <FormControl>
                           <Input
@@ -303,6 +315,45 @@ export default function AdminProductsPage() {
                     )}
                   />
                 </div>
+
+                {/* Original Price Field - Only show when product is featured */}
+                {form.watch("featured") && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="originalPrice"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-700 font-medium flex items-center gap-2">
+                            <DollarSign className="h-4 w-4" />
+                            Original Price (CAD)
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="299.00"
+                              {...field}
+                              className="h-12"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <div className="flex items-end">
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-4 w-full">
+                        <p className="text-sm text-green-700 font-medium">
+                          Discount Preview
+                        </p>
+                        <p className="text-xs text-green-600 mt-1">
+                          {form.watch("originalPrice") && form.watch("price") ? 
+                            `Save $${(parseFloat(form.watch("originalPrice") || "0") - parseFloat(form.watch("price"))).toFixed(2)}` :
+                            "Enter both prices to see discount"
+                          }
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <FormField
                   control={form.control}

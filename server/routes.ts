@@ -573,7 +573,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin Product Management Routes
   app.post('/api/admin/products', requireAdminAuth, async (req, res) => {
     try {
-      const { name, description, price, categoryId, imageUrl, featured = false, inStock = true, tags = [] } = req.body;
+      const { name, description, price, originalPrice, categoryId, imageUrl, featured = false, inStock = true, tags = [] } = req.body;
 
       if (!name || !description || !price || !categoryId) {
         return res.status(400).json({
@@ -590,6 +590,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Validate original price format if provided
+      if (originalPrice && !/^\d+(\.\d{1,2})?$/.test(originalPrice)) {
+        return res.status(400).json({
+          message: 'Original price must be a valid number with up to 2 decimal places',
+          code: 'INVALID_ORIGINAL_PRICE_FORMAT'
+        });
+      }
+
+      // For featured products, validate that original price is higher than discounted price
+      if (featured && originalPrice) {
+        const priceNum = parseFloat(price);
+        const originalPriceNum = parseFloat(originalPrice);
+        if (originalPriceNum <= priceNum) {
+          return res.status(400).json({
+            message: 'Original price must be higher than discounted price for featured products',
+            code: 'INVALID_DISCOUNT_PRICING'
+          });
+        }
+      }
+
       // Validate category exists
       const category = await storage.getCategoryBySlug(''); // We'll get by ID instead
 
@@ -597,6 +617,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         name: name.trim(),
         description: description.trim(),
         price: parseFloat(price).toFixed(2),
+        originalPrice: originalPrice ? parseFloat(originalPrice).toFixed(2) : null,
         categoryId: parseInt(categoryId),
         imageUrl: imageUrl || '/api/placeholder/300/300',
         featured: Boolean(featured),
