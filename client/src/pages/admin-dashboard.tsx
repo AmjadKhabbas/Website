@@ -298,24 +298,6 @@ export default function AdminDashboard() {
     },
   });
 
-  // Update product images mutation
-  const updateProductImagesMutation = useMutation({
-    mutationFn: async ({ productId, images }: { productId: number; images: string[] }) => {
-      const [mainImage, ...additionalImages] = images;
-      return await apiRequest('PUT', `/api/admin/products/${productId}/images`, {
-        imageUrl: mainImage,
-        imageUrls: additionalImages
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/products'] });
-      addToast('Product images updated successfully', 'success');
-    },
-    onError: (error: any) => {
-      addToast(error.message || 'Failed to update product images', 'error');
-    },
-  });
-
   if (!isAdmin) {
     setLocation('/login');
     return null;
@@ -530,13 +512,6 @@ export default function AdminDashboard() {
                             </div>
                             
                             <div className="flex gap-2">
-                              <ProductImageManager
-                                product={product}
-                                onUpdate={(productId, images) => 
-                                  updateProductImagesMutation.mutate({ productId, images })
-                                }
-                                isLoading={updateProductImagesMutation.isPending}
-                              />
                               <Button
                                 variant="outline"
                                 size="sm"
