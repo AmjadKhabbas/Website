@@ -165,13 +165,22 @@ export const adminUsers = pgTable("admin_users", {
 export const carouselItems = pgTable("carousel_items", {
   id: serial("id").primaryKey(),
   title: varchar("title", { length: 255 }).notNull(),
+  subtitle: varchar("subtitle", { length: 255 }),
   description: text("description").notNull(),
   price: varchar("price", { length: 50 }).notNull(),
   originalPrice: varchar("original_price", { length: 50 }),
   discount: varchar("discount", { length: 20 }),
+  discountPercentage: integer("discount_percentage"),
   imageUrl: text("image_url").notNull(),
+  backgroundGradient: varchar("background_gradient", { length: 200 }).default("linear-gradient(135deg, #667eea 0%, #764ba2 100%)"),
+  textColor: varchar("text_color", { length: 50 }).default("#ffffff"),
   ctaText: varchar("cta_text", { length: 100 }).default("Shop Now").notNull(),
   ctaLink: varchar("cta_link", { length: 500 }),
+  ctaButtonColor: varchar("cta_button_color", { length: 50 }).default("#10b981"),
+  badgeText: varchar("badge_text", { length: 50 }),
+  badgeColor: varchar("badge_color", { length: 50 }).default("#ef4444"),
+  animationType: varchar("animation_type", { length: 50 }).default("fade"),
+  displayDuration: integer("display_duration").default(5000),
   isActive: boolean("is_active").default(true).notNull(),
   sortOrder: integer("sort_order").default(0).notNull(),
   createdAt: timestamp("created_at").defaultNow(),
@@ -234,6 +243,12 @@ export const insertAdminUserSchema = createInsertSchema(adminUsers).omit({
   createdAt: true,
   updatedAt: true,
   lastLoginAt: true,
+});
+
+export const insertCarouselItemSchema = createInsertSchema(carouselItems).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
 // Database relations
