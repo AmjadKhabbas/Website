@@ -318,12 +318,6 @@ export type Referral = typeof referrals.$inferSelect;
 export type InsertAdminUser = z.infer<typeof insertAdminUserSchema>;
 export type AdminUser = typeof adminUsers.$inferSelect;
 
-export const insertCarouselItemSchema = createInsertSchema(carouselItems).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
 export type InsertCarouselItem = z.infer<typeof insertCarouselItemSchema>;
 export type CarouselItem = typeof carouselItems.$inferSelect;
 

@@ -825,13 +825,22 @@ const CreateCarouselDialog = ({
 }) => {
   const [formData, setFormData] = useState({
     title: '',
+    subtitle: '',
     description: '',
     price: '',
     originalPrice: '',
     discount: '',
+    discountPercentage: '',
     imageUrl: '',
+    backgroundGradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    textColor: '#ffffff',
     ctaText: 'Shop Now',
     ctaLink: '',
+    ctaButtonColor: '#10b981',
+    badgeText: '',
+    badgeColor: '#ef4444',
+    animationType: 'fade',
+    displayDuration: 5000,
     isActive: true,
     sortOrder: 0
   });
