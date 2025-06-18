@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { CheckCircle, XCircle, User, Mail, FileText, Building, MapPin, LogOut, Loader2, Package, Plus, Trash2, Edit, Search } from 'lucide-react';
 import { Link } from 'wouter';
-import { useToast } from '@/components/toast';
+import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
 
@@ -59,10 +59,119 @@ interface Category {
   itemCount: number;
 }
 
-interface Category {
-  id: number;
-  name: string;
-  slug: string;
+function CategoryForm({ category, onSuccess }: { 
+  category?: Category; 
+  onSuccess: () => void; 
+}) {
+  const { addToast } = useToast();
+  const [formData, setFormData] = useState({
+    name: category?.name || '',
+    description: category?.description || '',
+    icon: category?.icon || '📦',
+    color: category?.color || 'blue',
+    imageUrl: category?.imageUrl || ''
+  });
+
+  const createCategoryMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const endpoint = category ? `/api/admin/categories/${category.id}` : '/api/admin/categories';
+      const method = category ? 'PUT' : 'POST';
+      return await apiRequest(method, endpoint, data);
+    },
+    onSuccess: () => {
+      addToast(category ? 'Category updated successfully' : 'Category created successfully', 'success');
+      onSuccess();
+    },
+    onError: (error: any) => {
+      addToast(error.message || 'Failed to save category', 'error');
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name.trim()) {
+      addToast('Category name is required', 'error');
+      return;
+    }
+    
+    const slug = formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    createCategoryMutation.mutate({
+      ...formData,
+      slug
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <Label htmlFor="name">Category Name</Label>
+        <Input
+          id="name"
+          value={formData.name}
+          onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+          placeholder="e.g., Botulinum Toxins"
+          required
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="description">Description</Label>
+        <Textarea
+          id="description"
+          value={formData.description}
+          onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+          placeholder="Brief description of the category"
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="imageUrl">Image URL</Label>
+        <Input
+          id="imageUrl"
+          value={formData.imageUrl}
+          onChange={(e) => setFormData(prev => ({ ...prev, imageUrl: e.target.value }))}
+          placeholder="https://example.com/image.jpg"
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="icon">Icon</Label>
+          <Input
+            id="icon"
+            value={formData.icon}
+            onChange={(e) => setFormData(prev => ({ ...prev, icon: e.target.value }))}
+            placeholder="📦"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="color">Color</Label>
+          <Select value={formData.color} onValueChange={(value) => setFormData(prev => ({ ...prev, color: value }))}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="blue">Blue</SelectItem>
+              <SelectItem value="green">Green</SelectItem>
+              <SelectItem value="purple">Purple</SelectItem>
+              <SelectItem value="red">Red</SelectItem>
+              <SelectItem value="orange">Orange</SelectItem>
+              <SelectItem value="teal">Teal</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <Button 
+        type="submit" 
+        disabled={createCategoryMutation.isPending}
+        className="w-full"
+      >
+        {createCategoryMutation.isPending ? 'Saving...' : (category ? 'Update Category' : 'Create Category')}
+      </Button>
+    </form>
+  );
 }
 
 function EditProductDialog({ product, categories, onClose }: { 
