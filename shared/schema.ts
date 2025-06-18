@@ -36,6 +36,7 @@ export const products = pgTable("products", {
   inStock: boolean("in_stock").notNull().default(true),
   featured: boolean("featured").notNull().default(false),
   tags: text("tags"),
+  bulkDiscounts: jsonb("bulk_discounts").default([]), // Array of bulk discount tiers
 });
 
 export const cartItems = pgTable("cart_items", {
