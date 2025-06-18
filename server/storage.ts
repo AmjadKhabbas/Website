@@ -670,38 +670,51 @@ export class DatabaseStorage implements IStorage {
 
   // Carousel management methods
   async getCarouselItems(): Promise<any[]> {
-    // Return empty array for now until database schema is created
-    return [];
+    const items = await db.select().from(carouselItems).orderBy(carouselItems.sortOrder);
+    return items;
   }
 
   async getCarouselItem(id: number): Promise<any | undefined> {
-    // Return undefined for now until database schema is created
-    return undefined;
+    const [item] = await db.select().from(carouselItems).where(eq(carouselItems.id, id));
+    return item || undefined;
   }
 
   async createCarouselItem(itemData: any): Promise<any> {
-    // Return mock item for now until database schema is created
-    return {
-      id: Date.now(),
-      ...itemData,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
+    const [newItem] = await db
+      .insert(carouselItems)
+      .values({
+        ...itemData,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+      .returning();
+    return newItem;
   }
 
   async updateCarouselItem(id: number, updates: any): Promise<any | undefined> {
-    // Return undefined for now until database schema is created
-    return undefined;
+    const [updatedItem] = await db
+      .update(carouselItems)
+      .set({
+        ...updates,
+        updatedAt: new Date()
+      })
+      .where(eq(carouselItems.id, id))
+      .returning();
+    return updatedItem || undefined;
   }
 
   async deleteCarouselItem(id: number): Promise<boolean> {
-    // Return false for now until database schema is created
-    return false;
+    const result = await db.delete(carouselItems).where(eq(carouselItems.id, id));
+    return result.rowCount > 0;
   }
 
   async reorderCarouselItems(itemIds: number[]): Promise<void> {
-    // No-op for now until database schema is created
-    return;
+    for (let i = 0; i < itemIds.length; i++) {
+      await db
+        .update(carouselItems)
+        .set({ sortOrder: i })
+        .where(eq(carouselItems.id, itemIds[i]));
+    }
   }
 }
 

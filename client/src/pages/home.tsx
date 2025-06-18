@@ -69,7 +69,10 @@ const HeroSlideshow = () => {
     }
   ];
 
-  const displayItems = carouselItems.length > 0 ? carouselItems : defaultItems;
+  // Filter active items and sort by sortOrder
+  const displayItems = carouselItems
+    .filter((item: any) => item.isActive)
+    .sort((a: any, b: any) => a.sortOrder - b.sortOrder);
 
   useEffect(() => {
     const timer = setInterval(() => {
