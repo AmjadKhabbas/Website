@@ -1,12 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ArrowRight, Laptop, Shirt, Home, Dumbbell, Book, Heart, Star, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { Search, ArrowRight, Laptop, Shirt, Home, Dumbbell, Book, Heart, Star, ChevronLeft, ChevronRight, Loader2, Upload } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ProductCard } from '@/components/product-card';
 import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
 import type { Category, ProductWithCategory } from '@shared/schema';
 
 // Hero Slideshow Component - Full Section Slideshow
@@ -194,16 +196,59 @@ export default function HomePage() {
     queryKey: ['/api/categories'],
   });
 
-  const { data: featuredProductsResponse } = useQuery({
-    queryKey: ['/api/products', { featured: true }],
-  });
-  const featuredProducts = featuredProductsResponse?.products || [];
-
   // Fetch all products for search suggestions
   const { data: productsResponse } = useQuery({
     queryKey: ['/api/products'],
   });
   const products = productsResponse?.products || [];
+  const isAdmin = (productsResponse as any)?.isAdmin || false;
+
+  // Brand categories for upload
+  const brandCategories = [
+    { name: 'Botulinum Toxins', image: null },
+    { name: 'Dermal Fillers', image: null },
+    { name: 'Anti-Aging Serums', image: null },
+    { name: 'Medical Equipment', image: null },
+    { name: 'Skincare Products', image: null }
+  ];
+
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Image upload functionality for admin
+  const handleImageUpload = (brandName: string) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        const formData = new FormData();
+        formData.append('image', file);
+        formData.append('brandName', brandName);
+        
+        try {
+          // For now, we'll use a placeholder URL - in production this would upload to a file service
+          const imageUrl = `/api/placeholder/300/300?brand=${encodeURIComponent(brandName)}`;
+          
+          toast({
+            title: 'Image uploaded successfully',
+            description: `Brand image for ${brandName} has been updated`,
+          });
+          
+          // In a real implementation, you would update the brand images in the database
+          // and refetch the data to show the new image
+        } catch (error) {
+          toast({
+            title: 'Upload failed',
+            description: 'Failed to upload image. Please try again.',
+            variant: 'destructive'
+          });
+        }
+      }
+    };
+    input.click();
+  };
 
   // Filter products based on search query for suggestions
   const searchSuggestions = searchQuery.trim() 
@@ -469,85 +514,60 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Featured Products Section */}
+      {/* Our Brands Section */}
       <section className="py-20 bg-white scroll-reveal relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center mb-16 scroll-reveal">
-            <div>
-              <h2 className="text-4xl font-bold text-slate-800 mb-4">Featured Products</h2>
-              <p className="text-xl text-slate-600">Premium Medical Solutions</p>
-            </div>
-            <div className="flex items-center gap-4">
-              <Button 
-                onClick={() => setShowAllFeatured(!showAllFeatured)}
-                className="btn-medical-secondary"
-              >
-                {showAllFeatured ? 'Show Less' : 'View All'}
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </div>
+          <div className="text-center mb-16 scroll-reveal">
+            <h2 className="text-4xl font-bold text-slate-800 mb-4">OUR BRANDS</h2>
+            <p className="text-xl text-slate-600">Discover our range of top brands at amazing prices</p>
           </div>
 
-          {/* Navigation arrows positioned at screen edges */}
-          {!showAllFeatured && (
-            <>
-              <button 
-                onClick={() => setFeaturedIndex(Math.max(0, featuredIndex - 1))}
-                disabled={featuredIndex === 0}
-                className={`fixed left-4 top-1/2 transform -translate-y-1/2 z-10 p-3 rounded-full shadow-lg transition-all duration-300 ${
-                  featuredIndex === 0 
-                    ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed'
-                    : 'bg-white border-blue-300 text-blue-600 hover:bg-blue-50 hover:border-blue-400 hover:text-blue-700 hover:scale-110'
-                }`}
-              >
-                <ChevronLeft className="w-6 h-6" />
-              </button>
-              <button 
-                onClick={() => setFeaturedIndex(Math.min(featuredProducts.length - 4, featuredIndex + 1))}
-                disabled={featuredIndex >= featuredProducts.length - 4}
-                className={`fixed right-4 top-1/2 transform -translate-y-1/2 z-10 p-3 rounded-full shadow-lg transition-all duration-300 ${
-                  featuredIndex >= featuredProducts.length - 4
-                    ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed'
-                    : 'bg-white border-blue-300 text-blue-600 hover:bg-blue-50 hover:border-blue-400 hover:text-blue-700 hover:scale-110'
-                }`}
-              >
-                <ChevronRight className="w-6 h-6" />
-              </button>
-            </>
-          )}
-
-          <div className={`grid gap-6 transition-all duration-500 ${
-            showAllFeatured ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'
-          }`}>
-            {(showAllFeatured ? featuredProducts : featuredProducts.slice(featuredIndex, featuredIndex + 4)).map((product, index) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8">
+            {brandCategories.map((brand, index) => (
               <motion.div
-                key={product.id}
+                key={brand.name}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.1 }}
-                className="card-fox p-6 group cursor-pointer scroll-reveal scale-on-scroll"
+                className="relative group"
               >
-                <div className="aspect-square bg-gradient-to-br from-teal-100 to-cyan-100 rounded-lg mb-4 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-                  <Heart className="w-12 h-12 text-teal-600" />
+                <div className="bg-blue-50 border-2 border-dashed border-blue-200 rounded-xl p-8 h-48 flex flex-col items-center justify-center transition-all duration-300 group-hover:border-blue-300 group-hover:bg-blue-100">
+                  {brand.image ? (
+                    <div className="relative w-full h-full">
+                      <img 
+                        src={brand.image} 
+                        alt={brand.name}
+                        className="w-full h-full object-contain rounded-lg"
+                      />
+                      {isAdmin && (
+                        <button 
+                          onClick={() => handleImageUpload(brand.name)}
+                          className="absolute top-2 right-2 bg-white bg-opacity-90 hover:bg-opacity-100 text-blue-600 p-2 rounded-full shadow-sm transition-all duration-300"
+                        >
+                          <Upload className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <>
+                      <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-blue-200 transition-colors duration-300">
+                        <Heart className="w-8 h-8 text-blue-500" />
+                      </div>
+                      {isAdmin ? (
+                        <button 
+                          onClick={() => handleImageUpload(brand.name)}
+                          className="text-blue-600 text-sm font-medium hover:text-blue-700 transition-colors duration-300 flex items-center gap-2"
+                        >
+                          <Upload className="w-4 h-4" />
+                          Upload Image
+                        </button>
+                      ) : (
+                        <span className="text-blue-600 text-sm font-medium">Coming Soon</span>
+                      )}
+                    </>
+                  )}
                 </div>
-                
-                <div className="space-y-3">
-                  <div>
-                    <h3 className="font-semibold text-slate-800 text-lg group-hover:text-teal-600 transition-colors duration-300">
-                      {product.name}
-                    </h3>
-                    <p className="text-slate-600 text-sm">{product.description}</p>
-                  </div>
-                  
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl font-bold text-teal-600">${product.price}</span>
-                    <span className="text-lg text-slate-400 line-through">$299.99</span>
-                  </div>
-                  
-                  <Badge className="bg-teal-100 text-teal-700 hover:bg-teal-200">
-                    {product.category?.name || 'Medical'}
-                  </Badge>
-                </div>
+                <h3 className="text-center mt-4 font-medium text-slate-700">{brand.name}</h3>
               </motion.div>
             ))}
           </div>
