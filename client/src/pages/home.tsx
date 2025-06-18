@@ -597,20 +597,20 @@ export default function HomePage() {
                     transition={{ duration: 0.3, delay: index * 0.1 }}
                     className="group cursor-pointer scroll-reveal scale-on-scroll"
                   >
-                    <div className="bg-blue-50 rounded-2xl p-8 aspect-square flex items-center justify-center group-hover:bg-blue-100 transition-all duration-300 border-2 border-dashed border-blue-300 group-hover:border-blue-500 relative">
+                    <div className="bg-white rounded-2xl p-6 aspect-square flex items-center justify-center group-hover:shadow-lg transition-all duration-300 border-2 border-dashed border-blue-200 group-hover:border-blue-400 relative">
                       {category.icon ? (
                         <img 
                           src={category.icon} 
                           alt={category.name}
-                          className="w-full h-full object-cover rounded-lg"
+                          className="w-full h-full object-contain rounded-lg"
                         />
                       ) : (
                         <div className="text-center">
-                          <div className="w-16 h-16 bg-blue-100 rounded-lg mx-auto mb-4 flex items-center justify-center group-hover:bg-blue-200 transition-colors duration-300">
-                            <Heart className="w-8 h-8 text-blue-500 group-hover:text-blue-700" />
+                          <div className="w-16 h-16 bg-blue-50 rounded-lg mx-auto mb-4 flex items-center justify-center group-hover:bg-blue-100 transition-colors duration-300">
+                            <Heart className="w-8 h-8 text-blue-400 group-hover:text-blue-600" />
                           </div>
-                          <p className="text-sm text-blue-600 group-hover:text-blue-800 font-medium">
-                            {isAdmin ? 'Click to Upload Image' : 'Upload Image'}
+                          <p className="text-sm text-blue-500 group-hover:text-blue-700 font-medium">
+                            {isAdmin ? 'Click to Upload Image' : category.name}
                           </p>
                         </div>
                       )}
@@ -724,20 +724,26 @@ export default function HomePage() {
                 
                 <Input
                   placeholder="Or enter image URL..."
-                  value={brandImageUrl}
-                  onChange={(e) => setBrandImageUrl(e.target.value)}
+                  value={editingBrand ? brandImageUrl : categoryImageUrl}
+                  onChange={(e) => {
+                    if (editingBrand) {
+                      setBrandImageUrl(e.target.value);
+                    } else {
+                      setCategoryImageUrl(e.target.value);
+                    }
+                  }}
                   className="mb-2"
                 />
               </div>
             </div>
-            {(previewUrl || brandImageUrl) && (
+            {(previewUrl || (editingBrand ? brandImageUrl : categoryImageUrl)) && (
               <div>
                 <label className="text-sm font-medium text-slate-700 mb-2 block">
                   Preview
                 </label>
                 <div className="w-32 h-32 bg-slate-100 rounded-lg overflow-hidden">
                   <img
-                    src={previewUrl || brandImageUrl}
+                    src={previewUrl || (editingBrand ? brandImageUrl : categoryImageUrl)}
                     alt="Preview"
                     className="w-full h-full object-cover"
                     onError={(e) => {
@@ -750,11 +756,15 @@ export default function HomePage() {
             )}
             <div className="flex gap-3 pt-4">
               <Button
-                onClick={handleSaveBrand}
-                disabled={(!brandImageUrl.trim() && !imageFile) || updateBrandMutation.isPending}
+                onClick={editingBrand ? handleSaveBrand : handleSaveCategory}
+                disabled={
+                  (editingBrand && (!brandImageUrl.trim() && !imageFile)) ||
+                  (editingCategory && (!categoryImageUrl.trim() && !imageFile)) ||
+                  updateBrandMutation.isPending || updateCategoryMutation.isPending
+                }
                 className="flex-1"
               >
-                {updateBrandMutation.isPending ? (
+                {(updateBrandMutation.isPending || updateCategoryMutation.isPending) ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     Saving...
@@ -769,7 +779,7 @@ export default function HomePage() {
               <Button
                 variant="outline"
                 onClick={handleCancelEdit}
-                disabled={updateBrandMutation.isPending}
+                disabled={updateBrandMutation.isPending || updateCategoryMutation.isPending}
               >
                 <X className="w-4 h-4 mr-2" />
                 Cancel
