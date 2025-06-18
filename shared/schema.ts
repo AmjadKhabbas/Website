@@ -16,7 +16,7 @@ export const categories = pgTable("categories", {
 export const brands = pgTable("brands", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
-  imageUrl: text("image_url").default(""),
+  imageUrl: text("image_url"),
   slug: text("slug").notNull().unique(),
   description: text("description"),
   isActive: boolean("is_active").notNull().default(true),
