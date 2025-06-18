@@ -489,6 +489,7 @@ export class DatabaseStorage implements IStorage {
     name?: string; 
     description?: string; 
     price?: string; 
+    originalPrice?: string;
     imageUrl?: string; 
     categoryId?: number;
     inStock?: boolean; 
@@ -501,6 +502,7 @@ export class DatabaseStorage implements IStorage {
       if (updates.name !== undefined) updateData.name = updates.name;
       if (updates.description !== undefined) updateData.description = updates.description;
       if (updates.price !== undefined) updateData.price = updates.price;
+      if (updates.originalPrice !== undefined) updateData.originalPrice = updates.originalPrice;
       if (updates.categoryId !== undefined) updateData.categoryId = updates.categoryId;
       if (updates.imageUrl !== undefined) updateData.imageUrl = updates.imageUrl;
       if (updates.inStock !== undefined) updateData.inStock = updates.inStock;

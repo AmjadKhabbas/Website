@@ -710,12 +710,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put('/api/admin/products/:id', requireAdminAuth, async (req, res) => {
     try {
       const productId = parseInt(req.params.id);
-      const { name, description, price, imageUrl, categoryId, inStock, featured } = req.body;
+      const { name, description, price, originalPrice, imageUrl, categoryId, inStock, featured } = req.body;
 
       const updatedProduct = await storage.updateProduct(productId, {
         name,
         description,
         price,
+        originalPrice,
         imageUrl,
         categoryId,
         inStock,

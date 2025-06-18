@@ -196,6 +196,7 @@ function EditProductDialog({ product, categories, onClose }: {
     name: product.name,
     description: product.description,
     price: product.price,
+    originalPrice: (product as any).originalPrice || '',
     imageUrl: product.imageUrl,
     categoryId: product.categoryId,
     inStock: product.inStock,
@@ -246,7 +247,7 @@ function EditProductDialog({ product, categories, onClose }: {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="price">Price ($)</Label>
+              <Label htmlFor="price">{formData.featured ? "Discounted Price ($)" : "Price ($)"}</Label>
               <Input
                 id="price"
                 type="number"
@@ -257,6 +258,33 @@ function EditProductDialog({ product, categories, onClose }: {
               />
             </div>
           </div>
+
+          {/* Original Price Field - Only show when product is featured */}
+          {formData.featured && (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="originalPrice">Original Price ($)</Label>
+                <Input
+                  id="originalPrice"
+                  type="number"
+                  step="0.01"
+                  value={formData.originalPrice}
+                  onChange={(e) => setFormData(prev => ({ ...prev, originalPrice: e.target.value }))}
+                />
+              </div>
+              <div className="flex items-end">
+                <div className="bg-green-50 border border-green-200 rounded-lg p-3 w-full">
+                  <p className="text-sm text-green-700 font-medium">Discount Preview</p>
+                  <p className="text-xs text-green-600 mt-1">
+                    {formData.originalPrice && formData.price ? 
+                      `Save $${(parseFloat(formData.originalPrice) - parseFloat(formData.price)).toFixed(2)}` :
+                      "Enter both prices to see discount"
+                    }
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
