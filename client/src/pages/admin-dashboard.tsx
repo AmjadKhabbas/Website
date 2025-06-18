@@ -12,7 +12,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { CheckCircle, XCircle, User, Mail, FileText, Building, MapPin, LogOut, Loader2, Package, Plus, Trash2, Edit, Search } from 'lucide-react';
+import { CheckCircle, XCircle, User, Mail, FileText, Building, MapPin, LogOut, Loader2, Package, Plus, Trash2, Edit, Search, Palette } from 'lucide-react';
+import { AdvancedCarouselEditor } from '@/components/advanced-carousel-editor';
 import { Link } from 'wouter';
 import { useToast } from '@/components/toast';
 import { apiRequest } from '@/lib/queryClient';
@@ -759,23 +760,24 @@ const CarouselManagement = () => {
         </div>
       )}
 
-      {/* Create Carousel Item Dialog */}
-      <CreateCarouselDialog
-        open={createDialogOpen}
-        onClose={() => setCreateDialogOpen(false)}
-        onSubmit={(data) => createMutation.mutate(data)}
-        isLoading={createMutation.isPending}
+      {/* Advanced Carousel Editor */}
+      <AdvancedCarouselEditor
+        open={createDialogOpen || editingItem !== null}
+        onClose={() => {
+          setCreateDialogOpen(false);
+          setEditingItem(null);
+        }}
+        onSubmit={(data) => {
+          if (editingItem) {
+            updateMutation.mutate({ id: editingItem.id, data });
+          } else {
+            createMutation.mutate(data);
+          }
+        }}
+        isLoading={createMutation.isPending || updateMutation.isPending}
+        mode={editingItem ? 'edit' : 'create'}
+        item={editingItem || undefined}
       />
-
-      {/* Edit Carousel Item Dialog */}
-      {editingItem && (
-        <EditCarouselDialog
-          item={editingItem}
-          onClose={() => setEditingItem(null)}
-          onSubmit={(data) => updateMutation.mutate({ id: editingItem.id, data })}
-          isLoading={updateMutation.isPending}
-        />
-      )}
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteItemId !== null} onOpenChange={() => setDeleteItemId(null)}>
