@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ProductCard } from '@/components/product-card';
 import { ProductImageGallery } from '@/components/product-image-gallery';
+import { BulkDiscountDisplay } from '@/components/bulk-discount-display';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/components/toast';
 import { useCartStore } from '@/lib/cart';
@@ -30,6 +31,7 @@ export default function ProductPage() {
   const [, setLocation] = useLocation();
   
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [selectedQuantity, setSelectedQuantity] = useState(1);
   const { success, error } = useToast();
   const queryClient = useQueryClient();
   const { items } = useCartStore();
@@ -109,6 +111,8 @@ export default function ProductPage() {
 
   const handleQuantityChange = (newQuantity: number) => {
     if (newQuantity < 0) return;
+    
+    setSelectedQuantity(newQuantity);
     
     if (cartItem) {
       // Item exists in cart, update it
@@ -364,7 +368,16 @@ export default function ProductPage() {
                   )}
                 </div>
 
-                
+                {/* Bulk Discount Display */}
+                {product.bulkDiscounts && Array.isArray(product.bulkDiscounts) && product.bulkDiscounts.length > 0 && (
+                  <div className="mt-6">
+                    <BulkDiscountDisplay
+                      basePrice={parseFloat(product.price)}
+                      discounts={product.bulkDiscounts as any[]}
+                      selectedQuantity={Math.max(currentQuantity, selectedQuantity)}
+                    />
+                  </div>
+                )}
 
                 {/* Stock Status */}
                 <div className="flex items-center space-x-2">
