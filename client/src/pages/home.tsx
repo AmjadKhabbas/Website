@@ -149,6 +149,8 @@ export default function HomePage() {
   const [scrollY, setScrollY] = useState(0);
   const [editingBrand, setEditingBrand] = useState<{ id: number; name: string; imageUrl: string } | null>(null);
   const [brandImageUrl, setBrandImageUrl] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>('');
   
   const { user, isAdmin } = useAuth();
   const { success, error } = useToast();
@@ -187,18 +189,51 @@ export default function HomePage() {
     setBrandImageUrl(brand.imageUrl);
   };
 
-  const handleSaveBrand = () => {
-    if (editingBrand && brandImageUrl.trim()) {
+  const handleSaveBrand = async () => {
+    if (!editingBrand) return;
+
+    let finalImageUrl = brandImageUrl.trim();
+
+    // If a file is selected, convert it to base64 for storage
+    if (imageFile) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64String = reader.result as string;
+        updateBrandMutation.mutate({
+          id: editingBrand.id,
+          imageUrl: base64String,
+        });
+      };
+      reader.readAsDataURL(imageFile);
+    } else if (finalImageUrl) {
+      // Use the URL provided
       updateBrandMutation.mutate({
         id: editingBrand.id,
-        imageUrl: brandImageUrl.trim(),
+        imageUrl: finalImageUrl,
       });
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setPreviewUrl(event.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+      // Clear URL input when file is selected
+      setBrandImageUrl('');
     }
   };
 
   const handleCancelEdit = () => {
     setEditingBrand(null);
     setBrandImageUrl('');
+    setImageFile(null);
+    setPreviewUrl('');
   };
 
   // Handle click outside search to close suggestions
@@ -601,26 +636,48 @@ export default function HomePage() {
             </div>
             <div>
               <label className="text-sm font-medium text-slate-700 mb-2 block">
-                Image URL
+                Brand Image
               </label>
-              <Input
-                placeholder="Enter image URL..."
-                value={brandImageUrl}
-                onChange={(e) => setBrandImageUrl(e.target.value)}
-                className="mb-2"
-              />
-              <p className="text-xs text-slate-500">
-                Enter a direct URL to an image (jpg, png, gif, etc.)
-              </p>
+              
+              {/* File Upload Section */}
+              <div className="space-y-3">
+                <div className="flex items-center space-x-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => document.getElementById('brand-file-input')?.click()}
+                    className="flex items-center space-x-2"
+                  >
+                    <Upload className="w-4 h-4" />
+                    <span>Upload Image</span>
+                  </Button>
+                  <span className="text-sm text-slate-500">or enter URL below</span>
+                </div>
+                
+                <input
+                  id="brand-file-input"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+                
+                <Input
+                  placeholder="Or enter image URL..."
+                  value={brandImageUrl}
+                  onChange={(e) => setBrandImageUrl(e.target.value)}
+                  className="mb-2"
+                />
+              </div>
             </div>
-            {brandImageUrl && (
+            {(previewUrl || brandImageUrl) && (
               <div>
                 <label className="text-sm font-medium text-slate-700 mb-2 block">
                   Preview
                 </label>
                 <div className="w-32 h-32 bg-slate-100 rounded-lg overflow-hidden">
                   <img
-                    src={brandImageUrl}
+                    src={previewUrl || brandImageUrl}
                     alt="Preview"
                     className="w-full h-full object-cover"
                     onError={(e) => {
@@ -634,7 +691,7 @@ export default function HomePage() {
             <div className="flex gap-3 pt-4">
               <Button
                 onClick={handleSaveBrand}
-                disabled={!brandImageUrl.trim() || updateBrandMutation.isPending}
+                disabled={(!brandImageUrl.trim() && !imageFile) || updateBrandMutation.isPending}
                 className="flex-1"
               >
                 {updateBrandMutation.isPending ? (
