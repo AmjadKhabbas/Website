@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { CheckCircle, XCircle, User, Mail, FileText, Building, MapPin, LogOut, Loader2, Package, Plus, Trash2, Edit, Search } from 'lucide-react';
 import { Link } from 'wouter';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/toast';
 import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
 
@@ -52,137 +52,6 @@ interface Category {
   id: number;
   name: string;
   slug: string;
-  description?: string;
-  icon: string;
-  color: string;
-  imageUrl?: string;
-  itemCount: number;
-}
-
-function CategoryForm({ category, onSuccess }: { 
-  category?: Category; 
-  onSuccess: () => void; 
-}) {
-  const { toast } = useToast();
-  const [formData, setFormData] = useState({
-    name: category?.name || '',
-    description: category?.description || '',
-    icon: category?.icon || '📦',
-    color: category?.color || 'blue',
-    imageUrl: category?.imageUrl || ''
-  });
-
-  const createCategoryMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const endpoint = category ? `/api/admin/categories/${category.id}` : '/api/admin/categories';
-      const method = category ? 'PUT' : 'POST';
-      return await apiRequest(method, endpoint, data);
-    },
-    onSuccess: () => {
-      toast({
-        title: category ? 'Category updated successfully' : 'Category created successfully',
-        variant: "default"
-      });
-      onSuccess();
-    },
-    onError: (error: any) => {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to save category',
-        variant: "destructive"
-      });
-    },
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name.trim()) {
-      toast({
-        title: 'Error',
-        description: 'Category name is required',
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    const slug = formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-    createCategoryMutation.mutate({
-      ...formData,
-      slug
-    });
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <Label htmlFor="name">Category Name</Label>
-        <Input
-          id="name"
-          value={formData.name}
-          onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-          placeholder="e.g., Botulinum Toxins"
-          required
-        />
-      </div>
-
-      <div>
-        <Label htmlFor="description">Description</Label>
-        <Textarea
-          id="description"
-          value={formData.description}
-          onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-          placeholder="Brief description of the category"
-        />
-      </div>
-
-      <div>
-        <Label htmlFor="imageUrl">Image URL</Label>
-        <Input
-          id="imageUrl"
-          value={formData.imageUrl}
-          onChange={(e) => setFormData(prev => ({ ...prev, imageUrl: e.target.value }))}
-          placeholder="https://example.com/image.jpg"
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="icon">Icon</Label>
-          <Input
-            id="icon"
-            value={formData.icon}
-            onChange={(e) => setFormData(prev => ({ ...prev, icon: e.target.value }))}
-            placeholder="📦"
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="color">Color</Label>
-          <Select value={formData.color} onValueChange={(value) => setFormData(prev => ({ ...prev, color: value }))}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="blue">Blue</SelectItem>
-              <SelectItem value="green">Green</SelectItem>
-              <SelectItem value="purple">Purple</SelectItem>
-              <SelectItem value="red">Red</SelectItem>
-              <SelectItem value="orange">Orange</SelectItem>
-              <SelectItem value="teal">Teal</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <Button 
-        type="submit" 
-        disabled={createCategoryMutation.isPending}
-        className="w-full"
-      >
-        {createCategoryMutation.isPending ? 'Saving...' : (category ? 'Update Category' : 'Create Category')}
-      </Button>
-    </form>
-  );
 }
 
 function EditProductDialog({ product, categories, onClose }: { 
@@ -191,12 +60,11 @@ function EditProductDialog({ product, categories, onClose }: {
   onClose: () => void; 
 }) {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
+  const { addToast } = useToast();
   const [formData, setFormData] = useState({
     name: product.name,
     description: product.description,
     price: product.price,
-    originalPrice: (product as any).originalPrice || '',
     imageUrl: product.imageUrl,
     categoryId: product.categoryId,
     inStock: product.inStock,
@@ -209,18 +77,11 @@ function EditProductDialog({ product, categories, onClose }: {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/products'] });
-      toast({
-        title: 'Product updated successfully',
-        variant: "default"
-      });
+      addToast('Product updated successfully', 'success');
       onClose();
     },
     onError: (error: any) => {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to update product',
-        variant: "destructive"
-      });
+      addToast(error.message || 'Failed to update product', 'error');
     },
   });
 
@@ -247,7 +108,7 @@ function EditProductDialog({ product, categories, onClose }: {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="price">{formData.featured ? "Discounted Price ($)" : "Price ($)"}</Label>
+              <Label htmlFor="price">Price ($)</Label>
               <Input
                 id="price"
                 type="number"
@@ -258,33 +119,6 @@ function EditProductDialog({ product, categories, onClose }: {
               />
             </div>
           </div>
-
-          {/* Original Price Field - Only show when product is featured */}
-          {formData.featured && (
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="originalPrice">Original Price ($)</Label>
-                <Input
-                  id="originalPrice"
-                  type="number"
-                  step="0.01"
-                  value={formData.originalPrice}
-                  onChange={(e) => setFormData(prev => ({ ...prev, originalPrice: e.target.value }))}
-                />
-              </div>
-              <div className="flex items-end">
-                <div className="bg-green-50 border border-green-200 rounded-lg p-3 w-full">
-                  <p className="text-sm text-green-700 font-medium">Discount Preview</p>
-                  <p className="text-xs text-green-600 mt-1">
-                    {formData.originalPrice && formData.price ? 
-                      `Save $${(parseFloat(formData.originalPrice) - parseFloat(formData.price)).toFixed(2)}` :
-                      "Enter both prices to see discount"
-                    }
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
 
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
@@ -367,14 +201,13 @@ function EditProductDialog({ product, categories, onClose }: {
 
 export default function AdminDashboard() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
+  const { addToast } = useToast();
   const [, setLocation] = useLocation();
   const { isAdmin, admin, logoutMutation } = useAuth();
   const [activeTab, setActiveTab] = useState('users');
   const [deleteProductId, setDeleteProductId] = useState<number | null>(null);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [categoryToDelete, setCategoryToDelete] = useState<number | null>(null);
 
   // Fetch pending users
   const { data: pendingUsers = [], isLoading, error } = useQuery<PendingUser[]>({
@@ -389,7 +222,7 @@ export default function AdminDashboard() {
   });
 
   // Fetch categories for the edit form
-  const { data: categories = [], isLoading: categoriesLoading } = useQuery<Category[]>({
+  const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ['/api/categories'],
     enabled: isAdmin === true
   });
@@ -410,17 +243,10 @@ export default function AdminDashboard() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/pending-users'] });
-      toast({
-        title: 'User approved successfully',
-        variant: "default"
-      });
+      addToast('User approved successfully', 'success');
     },
     onError: (error: any) => {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to approve user',
-        variant: "destructive"
-      });
+      addToast(error.message || 'Failed to approve user', 'error');
     },
   });
 
@@ -431,17 +257,10 @@ export default function AdminDashboard() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/pending-users'] });
-      toast({
-        title: 'User rejected successfully',
-        variant: "default"
-      });
+      addToast('User rejected successfully', 'success');
     },
     onError: (error: any) => {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to reject user',
-        variant: "destructive"
-      });
+      addToast(error.message || 'Failed to reject user', 'error');
     }
   });
 
@@ -452,40 +271,11 @@ export default function AdminDashboard() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/products'] });
-      toast({
-        title: 'Product deleted successfully',
-        variant: "default"
-      });
+      addToast('Product deleted successfully', 'success');
       setDeleteProductId(null);
     },
     onError: (error: any) => {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to delete product',
-        variant: "destructive"
-      });
-    },
-  });
-
-  // Delete category mutation
-  const deleteCategoryMutation = useMutation({
-    mutationFn: async (categoryId: number) => {
-      return await apiRequest('DELETE', `/api/admin/categories/${categoryId}`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/categories'] });
-      toast({
-        title: 'Category deleted successfully',
-        variant: "default"
-      });
-      setCategoryToDelete(null);
-    },
-    onError: (error: any) => {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to delete category',
-        variant: "destructive"
-      });
+      addToast(error.message || 'Failed to delete product', 'error');
     },
   });
 
@@ -520,7 +310,7 @@ export default function AdminDashboard() {
 
         {/* Admin Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="users" className="flex items-center gap-2">
               <User className="h-4 w-4" />
               Doctor Registrations ({pendingUsers.length})
@@ -528,10 +318,6 @@ export default function AdminDashboard() {
             <TabsTrigger value="products" className="flex items-center gap-2">
               <Package className="h-4 w-4" />
               Product Management ({products.length})
-            </TabsTrigger>
-            <TabsTrigger value="categories" className="flex items-center gap-2">
-              <Building className="h-4 w-4" />
-              Category Management ({categories.length})
             </TabsTrigger>
           </TabsList>
 
@@ -727,103 +513,6 @@ export default function AdminDashboard() {
                 )}
               </div>
             )}
-          </TabsContent>
-
-          <TabsContent value="categories">
-            <div className="space-y-6">
-              {/* Category Management Header */}
-              <div className="flex justify-between items-center">
-                <div>
-                  <h2 className="text-2xl font-bold">Category Management</h2>
-                  <p className="text-gray-600">Manage product categories and their images</p>
-                </div>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button className="flex items-center gap-2">
-                      <Plus className="h-4 w-4" />
-                      Add Category
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Add New Category</DialogTitle>
-                    </DialogHeader>
-                    <CategoryForm onSuccess={() => queryClient.invalidateQueries({ queryKey: ['/api/categories'] })} />
-                  </DialogContent>
-                </Dialog>
-              </div>
-
-              {/* Categories Grid */}
-              {categoriesLoading ? (
-                <div className="flex justify-center py-12">
-                  <Loader2 className="h-8 w-8 animate-spin" />
-                </div>
-              ) : categories.length === 0 ? (
-                <Card>
-                  <CardContent className="py-12 text-center">
-                    <Building className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-600">No categories found</p>
-                    <p className="text-sm text-gray-500 mt-2">Create your first category to get started</p>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {categories.map((category) => (
-                    <Card key={category.id} className="relative group">
-                      <CardContent className="p-6">
-                        <div className="flex flex-col items-center text-center space-y-4">
-                          {/* Category Image */}
-                          <div className="w-24 h-24 bg-blue-100 rounded-lg flex items-center justify-center overflow-hidden">
-                            {category.imageUrl ? (
-                              <img 
-                                src={category.imageUrl} 
-                                alt={category.name}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <Building className="h-8 w-8 text-blue-600" />
-                            )}
-                          </div>
-                          
-                          {/* Category Info */}
-                          <div>
-                            <h3 className="font-semibold text-lg">{category.name}</h3>
-                            <p className="text-sm text-gray-500">/{category.slug}</p>
-                          </div>
-
-                          {/* Action Buttons */}
-                          <div className="flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button variant="outline" size="sm">
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent>
-                                <DialogHeader>
-                                  <DialogTitle>Edit Category</DialogTitle>
-                                </DialogHeader>
-                                <CategoryForm 
-                                  category={category} 
-                                  onSuccess={() => queryClient.invalidateQueries({ queryKey: ['/api/categories'] })} 
-                                />
-                              </DialogContent>
-                            </Dialog>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => setCategoryToDelete(category.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </div>
           </TabsContent>
         </Tabs>
 

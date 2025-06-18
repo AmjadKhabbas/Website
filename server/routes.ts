@@ -10,7 +10,7 @@ import "./types";
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication system with Passport.js
   setupAuth(app);
-
+  
   // Initialize admin user on startup
   await adminAuthService.initializeAdminUser();
 
@@ -19,7 +19,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { email, password } = req.body;
       console.log('Unified login attempt:', { email, timestamp: new Date().toISOString() });
-
+      
       if (!email || !password) {
         return res.status(400).json({
           message: 'Email and password are required',
@@ -29,11 +29,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const normalizedEmail = email.toLowerCase().trim();
       console.log('Normalized email:', normalizedEmail);
-
+      
       // First, check if this is an admin user
       console.log('Attempting database authentication for:', normalizedEmail);
       const admin = await adminAuthService.authenticateAdmin(normalizedEmail, password);
-
+      
       if (admin) {
         // Admin login successful
         req.session.adminId = admin.id;
@@ -45,7 +45,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               code: 'SESSION_ERROR'
             });
           }
-
+          
           res.json({
             admin: {
               id: admin.id,
@@ -57,7 +57,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
         return;
       }
-
+      
       // Fallback to hardcoded admin if database auth fails
       console.log('Checking hardcoded admin:', normalizedEmail, password);
       if (normalizedEmail === 'amjadkhabbas2002@gmail.com' && password === 'akramsnotcool!') {
@@ -71,7 +71,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               code: 'SESSION_ERROR'
             });
           }
-
+          
           res.json({
             admin: {
               id: 1,
@@ -86,7 +86,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // If not admin, try regular user authentication
       const user = await storage.getUserByEmail(normalizedEmail);
-
+      
       if (!user) {
         return res.status(401).json({
           message: 'Invalid email or password',
@@ -102,7 +102,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const isPasswordValid = await comparePasswords(password, user.password);
-
+      
       if (!isPasswordValid) {
         return res.status(401).json({
           message: 'Invalid email or password',
@@ -120,7 +120,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             code: 'SESSION_ERROR'
           });
         }
-
+        
         res.json({
           user: {
             id: user.id,
@@ -161,7 +161,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         });
       }
-
+      
       // Fallback for hardcoded admin
       if (req.session.adminId === 1) {
         return res.json({
@@ -174,7 +174,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
     }
-
+    
     // Check if regular user is logged in
     if (req.session?.userId) {
       const user = await storage.getUserById(req.session.userId);
@@ -195,7 +195,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
     }
-
+    
     return res.status(401).json({
       message: 'Not authenticated'
     });
@@ -211,7 +211,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           code: 'LOGOUT_ERROR'
         });
       }
-
+      
       res.json({
         message: 'Logged out successfully'
       });
@@ -223,7 +223,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { email, password } = req.body;
       console.log('Admin login attempt:', { email, timestamp: new Date().toISOString() });
-
+      
       if (!email || !password) {
         console.log('Login failed: Missing credentials');
         return res.status(400).json({
@@ -234,11 +234,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const normalizedEmail = email.toLowerCase().trim();
       console.log('Normalized email:', normalizedEmail);
-
+      
       // Try database authentication first
       console.log('Attempting database authentication for:', normalizedEmail);
       const admin = await adminAuthService.authenticateAdmin(normalizedEmail, password);
-
+      
       if (admin) {
         console.log('Database authentication successful for:', normalizedEmail);
         // Store admin ID in session with proper save
@@ -251,7 +251,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               code: 'SESSION_ERROR'
             });
           }
-
+          
           console.log('Admin session saved successfully for:', admin.email);
           res.json({
             message: 'Admin login successful',
@@ -265,11 +265,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
         return;
       }
-
+      
       // Fallback to hardcoded admin if database auth fails
       if (normalizedEmail === 'amjadkhabbas2002@gmail.com' && password === 'akramsnotcool!') {
         console.log('Fallback hardcoded admin login successful');
-
+        
         // Ensure session is saved before responding
         req.session.adminId = 1;
         req.session.save((err) => {
@@ -280,7 +280,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               code: 'SESSION_ERROR'
             });
           }
-
+          
           console.log('Fallback admin session saved successfully');
           res.json({
             message: 'Admin login successful',
@@ -294,13 +294,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
         return;
       }
-
+      
       console.log('All authentication methods failed for:', normalizedEmail);
       return res.status(401).json({
         message: 'Invalid email or password',
         code: 'INVALID_CREDENTIALS'
       });
-
+      
     } catch (error) {
       console.error('Admin login error:', error);
       res.status(500).json({
@@ -312,11 +312,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/admin/user', async (req, res) => {
     const adminId = req.session?.adminId;
-
+    
     if (!adminId) {
       return res.status(401).json({ message: 'Not authenticated' });
     }
-
+    
     // Handle primary admin session
     if (adminId === 1) {
       return res.json({
@@ -326,15 +326,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         role: 'admin'
       });
     }
-
+    
     try {
       const admin = await adminAuthService.verifyAdmin(adminId);
-
+      
       if (!admin) {
         delete req.session.adminId;
         return res.status(401).json({ message: 'Not authenticated' });
       }
-
+      
       res.json({
         id: admin.id,
         email: admin.email,
@@ -356,21 +356,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/admin/reset-password', async (req, res) => {
     try {
       const { currentPassword, newPassword, confirmPassword } = req.body;
-
+      
       if (!currentPassword || !newPassword || !confirmPassword) {
         return res.status(400).json({
           message: 'All fields are required',
           code: 'MISSING_FIELDS'
         });
       }
-
+      
       if (newPassword !== confirmPassword) {
         return res.status(400).json({
           message: 'New passwords do not match',
           code: 'PASSWORD_MISMATCH'
         });
       }
-
+      
       // Verify current password
       if (currentPassword !== 'akramsnotcool!') {
         return res.status(401).json({
@@ -378,14 +378,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           code: 'INVALID_CURRENT_PASSWORD'
         });
       }
-
+      
       console.log('Admin password reset requested. New password will be:', newPassword);
-
+      
       res.json({
         message: 'Password reset successful. Please update the hardcoded password in the server code.',
         note: 'This is a development environment. In production, this would update the database.'
       });
-
+      
     } catch (error) {
       console.error('Password reset error:', error);
       res.status(500).json({
@@ -397,11 +397,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/admin/status', async (req, res) => {
     const adminId = req.session?.adminId;
-
+    
     if (!adminId) {
       return res.json({ isAdmin: false, admin: null });
     }
-
+    
     // Handle primary admin session
     if (adminId === 1) {
       return res.json({
@@ -414,15 +414,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       });
     }
-
+    
     try {
       const admin = await adminAuthService.verifyAdmin(adminId);
-
+      
       if (!admin) {
         delete req.session.adminId;
         return res.json({ isAdmin: false, admin: null });
       }
-
+      
       res.json({
         isAdmin: true,
         admin: {
@@ -456,16 +456,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = parseInt(req.params.id);
       const approvedBy = req.admin?.email || 'admin';
-
+      
       const user = await storage.approveUser(userId, approvedBy);
-
+      
       if (!user) {
         return res.status(404).json({
           message: 'User not found',
           code: 'USER_NOT_FOUND'
         });
       }
-
+      
       res.json({
         message: 'User approved successfully',
         user
@@ -482,16 +482,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete('/api/admin/reject-user/:id', requireAdminAuth, async (req, res) => {
     try {
       const userId = parseInt(req.params.id);
-
+      
       const success = await storage.deleteUser(userId);
-
+      
       if (!success) {
         return res.status(404).json({
           message: 'User not found',
           code: 'USER_NOT_FOUND'
         });
       }
-
+      
       res.json({
         message: 'User rejected and removed successfully'
       });
@@ -504,58 +504,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin Category Management Routes
-  app.post('/api/admin/categories', requireAdminAuth, async (req, res) => {
-    try {
-      const categoryData = req.body;
-      const newCategory = await storage.createCategory(categoryData);
-      res.status(201).json(newCategory);
-    } catch (error) {
-      console.error('Error creating category:', error);
-      res.status(500).json({ error: 'Failed to create category' });
-    }
-  });
-
-  app.put('/api/admin/categories/:id', requireAdminAuth, async (req, res) => {
-    try {
-      const categoryId = parseInt(req.params.id);
-      const categoryData = req.body;
-      const updatedCategory = await storage.updateCategory(categoryId, categoryData);
-      
-      if (!updatedCategory) {
-        return res.status(404).json({ error: 'Category not found' });
-      }
-      
-      res.json(updatedCategory);
-    } catch (error) {
-      console.error('Error updating category:', error);
-      res.status(500).json({ error: 'Failed to update category' });
-    }
-  });
-
-  app.delete('/api/admin/categories/:id', requireAdminAuth, async (req, res) => {
-    try {
-      const categoryId = parseInt(req.params.id);
-      const success = await storage.deleteCategory(categoryId);
-      
-      if (!success) {
-        return res.status(404).json({ error: 'Category not found' });
-      }
-      
-      res.json({ success: true });
-    } catch (error) {
-      console.error('Error deleting category:', error);
-      res.status(500).json({ error: 'Failed to delete category' });
-    }
-  });
-
   // Image upload endpoint for product images
   app.post('/api/admin/upload-image', requireAdminAuth, async (req, res) => {
     try {
       // For demonstration, we'll use a placeholder image service
       // In production, you would integrate with cloud storage like AWS S3, Cloudinary, etc.
       const imageUrl = `/api/placeholder/300/300?random=${Date.now()}`;
-
+      
       res.json({
         success: true,
         imageUrl: imageUrl,
@@ -573,8 +528,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin Product Management Routes
   app.post('/api/admin/products', requireAdminAuth, async (req, res) => {
     try {
-      const { name, description, price, originalPrice, categoryId, imageUrl, featured = false, inStock = true, tags = [] } = req.body;
-
+      const { name, description, price, categoryId, imageUrl, featured = false, inStock = true, tags = [] } = req.body;
+      
       if (!name || !description || !price || !categoryId) {
         return res.status(400).json({
           message: 'Name, description, price, and category are required',
@@ -590,43 +545,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Validate original price format if provided
-      if (originalPrice && !/^\d+(\.\d{1,2})?$/.test(originalPrice)) {
-        return res.status(400).json({
-          message: 'Original price must be a valid number with up to 2 decimal places',
-          code: 'INVALID_ORIGINAL_PRICE_FORMAT'
-        });
-      }
-
-      // For featured products, validate that original price is higher than discounted price
-      if (featured && originalPrice) {
-        const priceNum = parseFloat(price);
-        const originalPriceNum = parseFloat(originalPrice);
-        if (originalPriceNum <= priceNum) {
-          return res.status(400).json({
-            message: 'Original price must be higher than discounted price for featured products',
-            code: 'INVALID_DISCOUNT_PRICING'
-          });
-        }
-      }
-
       // Validate category exists
       const category = await storage.getCategoryBySlug(''); // We'll get by ID instead
-
+      
       const productData = {
         name: name.trim(),
         description: description.trim(),
         price: parseFloat(price).toFixed(2),
-        originalPrice: originalPrice ? parseFloat(originalPrice).toFixed(2) : null,
         categoryId: parseInt(categoryId),
         imageUrl: imageUrl || '/api/placeholder/300/300',
         featured: Boolean(featured),
         inStock: Boolean(inStock),
         tags: Array.isArray(tags) ? tags.join(', ') : (tags || null)
       };
-
+      
       const newProduct = await storage.createProduct(productData);
-
+      
       res.status(201).json({
         message: 'Product created successfully',
         product: newProduct
@@ -644,23 +578,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const productId = parseInt(req.params.id);
       const { price } = req.body;
-
+      
       if (!price || isNaN(parseFloat(price))) {
         return res.status(400).json({
           message: 'Valid price is required',
           code: 'INVALID_PRICE'
         });
       }
-
+      
       const updatedProduct = await storage.updateProductPrice(productId, price);
-
+      
       if (!updatedProduct) {
         return res.status(404).json({
           message: 'Product not found',
           code: 'PRODUCT_NOT_FOUND'
         });
       }
-
+      
       res.json({
         message: 'Product price updated successfully',
         product: updatedProduct
@@ -677,23 +611,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete('/api/admin/products/:id', requireAdminAuth, async (req, res) => {
     try {
       const productId = parseInt(req.params.id);
-
+      
       if (!productId || isNaN(productId)) {
         return res.status(400).json({
           message: 'Valid product ID is required',
           code: 'INVALID_PRODUCT_ID'
         });
       }
-
+      
       const success = await storage.deleteProduct(productId);
-
+      
       if (!success) {
         return res.status(404).json({
           message: 'Product not found',
           code: 'PRODUCT_NOT_FOUND'
         });
       }
-
+      
       res.json({
         message: 'Product deleted successfully'
       });
@@ -710,26 +644,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put('/api/admin/products/:id', requireAdminAuth, async (req, res) => {
     try {
       const productId = parseInt(req.params.id);
-      const { name, description, price, originalPrice, imageUrl, categoryId, inStock, featured } = req.body;
-
+      const { name, description, price, imageUrl, categoryId, inStock, featured } = req.body;
+      
       const updatedProduct = await storage.updateProduct(productId, {
         name,
         description,
         price,
-        originalPrice,
         imageUrl,
         categoryId,
         inStock,
         featured
       });
-
+      
       if (!updatedProduct) {
         return res.status(404).json({
           message: 'Product not found',
           code: 'PRODUCT_NOT_FOUND'
         });
       }
-
+      
       res.json({
         message: 'Product updated successfully',
         product: updatedProduct
@@ -748,23 +681,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const productId = parseInt(req.params.id);
       const { price } = req.body;
-
+      
       if (!price) {
         return res.status(400).json({
           message: 'Price is required',
           code: 'MISSING_PRICE'
         });
       }
-
+      
       const updatedProduct = await storage.updateProductPrice(productId, price);
-
+      
       if (!updatedProduct) {
         return res.status(404).json({
           message: 'Product not found',
           code: 'PRODUCT_NOT_FOUND'
         });
       }
-
+      
       res.json({
         message: 'Product price updated successfully',
         product: updatedProduct
@@ -783,23 +716,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const productId = parseInt(req.params.id);
       const { imageUrl } = req.body;
-
+      
       if (!imageUrl) {
         return res.status(400).json({
           message: 'Image URL is required',
           code: 'MISSING_IMAGE_URL'
         });
       }
-
+      
       const updatedProduct = await storage.updateProductImage(productId, imageUrl);
-
+      
       if (!updatedProduct) {
         return res.status(404).json({
           message: 'Product not found',
           code: 'PRODUCT_NOT_FOUND'
         });
       }
-
+      
       res.json({
         message: 'Product image updated successfully',
         product: updatedProduct
@@ -817,23 +750,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const productId = parseInt(req.params.id);
       const { imageUrl } = req.body;
-
+      
       if (!imageUrl) {
         return res.status(400).json({
           message: 'Image URL is required',
           code: 'MISSING_IMAGE_URL'
         });
       }
-
+      
       const updatedProduct = await storage.updateProductImage(productId, imageUrl);
-
+      
       if (!updatedProduct) {
         return res.status(404).json({
           message: 'Product not found',
           code: 'PRODUCT_NOT_FOUND'
         });
       }
-
+      
       res.json({
         message: 'Product image updated successfully',
         product: updatedProduct
@@ -852,28 +785,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const productId = parseInt(req.params.id);
       const { name, description, price, imageUrl } = req.body;
-
+      
       if (!productId || isNaN(productId)) {
         return res.status(400).json({
           message: 'Valid product ID is required',
           code: 'INVALID_PRODUCT_ID'
         });
       }
-
+      
       const updatedProduct = await storage.updateProduct(productId, {
         name,
         description,
         price,
         imageUrl
       });
-
+      
       if (!updatedProduct) {
         return res.status(404).json({
           message: 'Product not found',
           code: 'PRODUCT_NOT_FOUND'
         });
       }
-
+      
       res.json({
         message: 'Product updated successfully',
         product: updatedProduct
@@ -895,7 +828,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const featured = req.query.featured === 'true';
       const search = req.query.search as string;
       const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
-
+      
       const products = await storage.getProductsWithCategory({
         categoryId,
         categorySlug,
@@ -903,7 +836,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         search,
         limit
       });
-
+      
       // Include admin status in response
       res.json({
         products,
@@ -937,7 +870,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Validate required fields
       const requiredFields = ['fullName', 'email', 'licenseNumber', 'collegeName', 'provinceState', 'practiceName', 'practiceAddress'];
-
+      
       for (const field of requiredFields) {
         if (!formData[field as keyof typeof formData]) {
           return res.status(400).json({ 
@@ -969,7 +902,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       const newUser = await storage.createUser(userData);
-
+      
       // Send admin notification email to amjadkhabbas2002@gmail.com
       try {
         const { emailService } = await import('./email');
@@ -988,7 +921,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error('Failed to send admin notification email:', emailError);
         // Continue with registration even if email fails
       }
-
+      
       res.status(201).json({ 
         message: "Your account is pending approval. You will receive an update via email soon.",
         user: {
@@ -1023,7 +956,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = parseInt(req.params.id);
       const user = await storage.approveUser(userId, req.admin?.email || 'admin');
-
+      
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
       }
@@ -1031,7 +964,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Send approval email
       const { emailService } = await import('./email');
       await emailService.sendApprovalEmail(user.email, user.fullName, true);
-
+      
       res.json({ message: 'User approved successfully', user });
     } catch (error) {
       console.error('Error approving user:', error);
@@ -1044,7 +977,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = parseInt(req.params.id);
       const user = await storage.getUserById(userId);
-
+      
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
       }
@@ -1052,10 +985,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Send rejection email before deleting
       const { emailService } = await import('./email');
       await emailService.sendApprovalEmail(user.email, user.fullName, false);
-
+      
       // Remove user from database
       await storage.deleteUser(userId);
-
+      
       res.json({ message: 'User rejected and removed successfully' });
     } catch (error) {
       console.error('Error rejecting user:', error);
@@ -1115,88 +1048,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Cart
   app.get("/api/cart", async (req, res) => {
     try {
-      if (!req.session?.userId) {
-        // Return empty cart for guest users - they'll manage cart in localStorage
-        return res.json([]);
-      }
-
-      const cartItems = await storage.getCartItems(req.session.id);
+      const sessionId = req.session.id;
+      const cartItems = await storage.getCartItems(sessionId);
       res.json(cartItems);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch cart items" });
     }
   });
 
-  // Add item to cart
   app.post("/api/cart", async (req, res) => {
     try {
-      // Allow guest users to add items to cart
-      const userId = req.session?.userId || null;
-      const { productId, quantity } = req.body;
-
-      if (!productId || !quantity) {
-        return res.status(400).json({ message: "Product ID and quantity are required" });
-      }
-
-      if (userId) {
-        // Authenticated user - save to database
-        const cartItem = await storage.addToCart(req.session.id, productId, quantity);
-        res.json(cartItem);
-      } else {
-        // Guest user - return a temporary cart item structure
-        const product = await storage.getProduct(productId);
-        if (!product) {
-          return res.status(404).json({ message: "Product not found" });
-        }
-
-        // Return a guest cart item structure
-        const guestCartItem = {
-          id: Date.now(), // Temporary ID for frontend
-          productId,
-          quantity,
-          product,
-          userId: null
-        };
-        res.json(guestCartItem);
-      }
+      const sessionId = req.session.id;
+      const cartItemData = insertCartItemSchema.parse({
+        ...req.body,
+        sessionId,
+      });
+      
+      const cartItem = await storage.addToCart(cartItemData);
+      res.json(cartItem);
     } catch (error) {
-      console.error("Cart add error:", error);
-      res.status(500).json({ message: "Failed to add item to cart" });
+      res.status(400).json({ message: "Invalid cart item data" });
     }
   });
 
-  // Update cart item quantity
   app.put("/api/cart/:id", async (req, res) => {
     try {
-      if (!req.session?.userId) {
-        // For guest users, return success - frontend will handle with localStorage
-        return res.json({ success: true });
-      }
       const id = parseInt(req.params.id);
       const { quantity } = req.body;
-
+      
       if (!quantity || quantity < 1) {
         return res.status(400).json({ message: "Invalid quantity" });
       }
-
+      
       const updatedItem = await storage.updateCartItem(id, quantity);
       if (!updatedItem) {
         return res.status(404).json({ message: "Cart item not found" });
       }
-
+      
       res.json(updatedItem);
     } catch (error) {
       res.status(500).json({ message: "Failed to update cart item" });
     }
   });
 
-  // Remove item from cart
   app.delete("/api/cart/:id", async (req, res) => {
     try {
-      if (!req.session?.userId) {
-        // For guest users, return success - frontend will handle with localStorage
-        return res.json({ success: true });
-      }
       const id = parseInt(req.params.id);
       const success = await storage.removeFromCart(id);
       if (!success) {
@@ -1223,22 +1119,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user!.id;
       const sessionId = req.session.id;
-
+      
       // Get cart items for this session
       const cartItems = await storage.getCartItems(sessionId);
-
+      
       if (cartItems.length === 0) {
         return res.status(400).json({ 
           message: "Cart is empty",
           code: "EMPTY_CART"
         });
       }
-
+      
       // Calculate total
       const total = cartItems.reduce((sum, item) => {
         return sum + (parseFloat(item.product.price) * item.quantity);
       }, 0);
-
+      
       // Create order
       const orderData = insertOrderSchema.parse({
         userId: userId.toString(),
@@ -1246,7 +1142,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: "pending",
         orderNumber: `ORD-${Date.now()}`
       });
-
+      
       const orderItems = cartItems.map(item => 
         insertOrderItemSchema.parse({
           productId: item.productId,
@@ -1254,12 +1150,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           price: item.product.price
         })
       );
-
+      
       const order = await storage.createOrder(orderData, orderItems);
-
+      
       // Clear cart after successful order
       await storage.clearCart(sessionId);
-
+      
       res.json({
         message: "Order placed successfully",
         order,
@@ -1284,9 +1180,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: "Please log in to proceed with checkout"
         });
       }
-
+      
       const user = await storage.getUserById(req.session.userId);
-
+      
       if (!user) {
         return res.json({
           eligible: false,
@@ -1294,7 +1190,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: "User account not found"
         });
       }
-
+      
       if (!user.isApproved) {
         return res.json({
           eligible: false,
@@ -1302,7 +1198,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: "Your account is pending admin approval. You can add items to cart but cannot complete purchases until approved."
         });
       }
-
+      
       res.json({
         eligible: true,
         message: "You can proceed with checkout"
@@ -1326,12 +1222,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId,
         status: 'pending'
       });
-
+      
       const { items, ...order } = req.body;
       const orderItemsData = items.map((item: any) => 
         insertOrderItemSchema.parse(item)
       );
-
+      
       const newOrder = await storage.createOrder(orderData, orderItemsData);
       res.json(newOrder);
     } catch (error) {
@@ -1366,23 +1262,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Placeholder image endpoint
-  app.get('/api/placeholder/:width/:height', (req, res) => {
-    const { width, height } = req.params;
-    const svg = `
-      <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
-        <rect width="100%" height="100%" fill="#f3f4f6"/>
-        <text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="#6b7280" font-family="Arial, sans-serif" font-size="14">
-          ${width}x${height}
-        </text>
-      </svg>
-    `;
-    
-    res.setHeader('Content-Type', 'image/svg+xml');
-    res.send(svg);
-  });
-
   const httpServer = createServer(app);
   return httpServer;
 }
-// The code is updated to allow guest users to add and manage cart items, but they still need to be logged in to proceed with checkout.
