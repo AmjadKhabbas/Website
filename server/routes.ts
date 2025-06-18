@@ -11,6 +11,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication system with Passport.js
   setupAuth(app);
   
+  // Serve uploaded images statically
+  const path = require('path');
+  app.use('/attached_assets', express.static(path.join(process.cwd(), 'attached_assets')));
+  
   // Initialize admin user on startup
   await adminAuthService.initializeAdminUser();
 
@@ -504,7 +508,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Image upload endpoint for product images
+  // Image upload endpoint for product images and brands
   app.post('/api/admin/upload-image', requireAdminAuth, async (req, res) => {
     try {
       // For demonstration, we'll use a placeholder image service
@@ -521,6 +525,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({
         success: false,
         message: 'Failed to upload image'
+      });
+    }
+  });
+
+  // Brand image upload with file handling
+  app.post('/api/admin/upload-brand-image', requireAdminAuth, async (req, res) => {
+    try {
+      const multer = require('multer');
+      const path = require('path');
+      const fs = require('fs').promises;
+      
+      // Configure multer for memory storage
+      const storage = multer.memoryStorage();
+      const upload = multer({
+        storage: storage,
+        limits: {
+          fileSize: 5 * 1024 * 1024, // 5MB limit
+        },
+        fileFilter: (req, file, cb) => {
+          if (file.mimetype.startsWith('image/')) {
+            cb(null, true);
+          } else {
+            cb(new Error('Only image files are allowed'), false);
+          }
+        }
+      }).single('image');
+
+      upload(req, res, async (err) => {
+        if (err) {
+          return res.status(400).json({
+            success: false,
+            message: err.message
+          });
+        }
+
+        if (!req.file) {
+          return res.status(400).json({
+            success: false,
+            message: 'No file provided'
+          });
+        }
+
+        try {
+          // Create uploads directory if it doesn't exist
+          const uploadsDir = path.join(process.cwd(), 'attached_assets');
+          try {
+            await fs.access(uploadsDir);
+          } catch {
+            await fs.mkdir(uploadsDir, { recursive: true });
+          }
+
+          // Generate unique filename
+          const timestamp = Date.now();
+          const randomStr = Math.random().toString(36).substring(2, 8);
+          const extension = path.extname(req.file.originalname);
+          const filename = `brand_image_${timestamp}_${randomStr}${extension}`;
+          const filepath = path.join(uploadsDir, filename);
+
+          // Save file to disk
+          await fs.writeFile(filepath, req.file.buffer);
+
+          // Return the URL path
+          const imageUrl = `/attached_assets/${filename}`;
+
+          res.json({
+            success: true,
+            imageUrl: imageUrl,
+            message: 'Brand image uploaded successfully'
+          });
+        } catch (saveError) {
+          console.error('File save error:', saveError);
+          res.status(500).json({
+            success: false,
+            message: 'Failed to save uploaded file'
+          });
+        }
+      });
+    } catch (error) {
+      console.error('Brand image upload error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to upload brand image'
       });
     }
   });

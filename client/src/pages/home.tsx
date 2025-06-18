@@ -177,6 +177,8 @@ export default function HomePage() {
       success('Brand image updated successfully');
       setEditingBrand(null);
       setBrandImageUrl('');
+      setImageFile(null);
+      setPreviewUrl('');
       queryClient.invalidateQueries({ queryKey: ['/api/brands'] });
     },
     onError: (err: Error) => {
@@ -194,19 +196,32 @@ export default function HomePage() {
 
     let finalImageUrl = brandImageUrl.trim();
 
-    // If a file is selected, convert it to base64 for storage
+    // If a file is selected, upload it first
     if (imageFile) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const base64String = reader.result as string;
-        updateBrandMutation.mutate({
-          id: editingBrand.id,
-          imageUrl: base64String,
+      try {
+        const formData = new FormData();
+        formData.append('image', imageFile);
+
+        const uploadResponse = await fetch('/api/admin/upload-brand-image', {
+          method: 'POST',
+          body: formData,
         });
-      };
-      reader.readAsDataURL(imageFile);
-    } else if (finalImageUrl) {
-      // Use the URL provided
+
+        if (!uploadResponse.ok) {
+          const errorData = await uploadResponse.json();
+          throw new Error(errorData.message || 'Upload failed');
+        }
+
+        const uploadResult = await uploadResponse.json();
+        finalImageUrl = uploadResult.imageUrl;
+      } catch (uploadError) {
+        error(`Failed to upload image: ${uploadError.message}`);
+        return;
+      }
+    }
+
+    if (finalImageUrl) {
+      // Use the uploaded URL or provided URL
       updateBrandMutation.mutate({
         id: editingBrand.id,
         imageUrl: finalImageUrl,
@@ -217,6 +232,18 @@ export default function HomePage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Validate file size (5MB limit)
+      if (file.size > 5 * 1024 * 1024) {
+        error('File size must be less than 5MB');
+        return;
+      }
+
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        error('Please select a valid image file');
+        return;
+      }
+
       setImageFile(file);
       // Create preview URL
       const reader = new FileReader();
