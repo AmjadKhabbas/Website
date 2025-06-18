@@ -158,9 +158,12 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
         <div className="relative w-32 h-32 bg-gradient-to-br from-blue-50 to-slate-50 overflow-hidden rounded-lg flex-shrink-0">
           <Link href={`/product/${product.id}`}>
             <img
-              src={product.imageUrl}
+              src={product.imageUrl || '/api/placeholder/300/300'}
               alt={product.name}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
+              onError={(e) => {
+                e.currentTarget.src = '/api/placeholder/300/300';
+              }}
             />
           </Link>
 
@@ -375,9 +378,12 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
       <div className="relative aspect-square bg-gradient-to-br from-blue-50 to-slate-50 overflow-hidden">
         <Link href={`/product/${product.id}`}>
           <img
-            src={product.imageUrl}
+            src={product.imageUrl || '/api/placeholder/300/300'}
             alt={product.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
+            onError={(e) => {
+              e.currentTarget.src = '/api/placeholder/300/300';
+            }}
           />
         </Link>
 

@@ -179,9 +179,12 @@ export default function ProductPage() {
             >
               <div className="aspect-square bg-gray-800 rounded-2xl overflow-hidden border border-gray-700">
                 <img
-                  src={product.imageUrl}
+                  src={product.imageUrl || '/api/placeholder/300/300'}
                   alt={product.name}
                   className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.src = '/api/placeholder/300/300';
+                  }}
                 />
                 {hasDiscount && (
                   <div className="absolute top-6 left-6">
