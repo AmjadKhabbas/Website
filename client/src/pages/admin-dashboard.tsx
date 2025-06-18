@@ -63,7 +63,7 @@ function CategoryForm({ category, onSuccess }: {
   category?: Category; 
   onSuccess: () => void; 
 }) {
-  const { addToast } = useToast();
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: category?.name || '',
     description: category?.description || '',
@@ -79,18 +79,29 @@ function CategoryForm({ category, onSuccess }: {
       return await apiRequest(method, endpoint, data);
     },
     onSuccess: () => {
-      addToast(category ? 'Category updated successfully' : 'Category created successfully', 'success');
+      toast({
+        title: category ? 'Category updated successfully' : 'Category created successfully',
+        variant: "default"
+      });
       onSuccess();
     },
     onError: (error: any) => {
-      addToast(error.message || 'Failed to save category', 'error');
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to save category',
+        variant: "destructive"
+      });
     },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim()) {
-      addToast('Category name is required', 'error');
+      toast({
+        title: 'Error',
+        description: 'Category name is required',
+        variant: "destructive"
+      });
       return;
     }
     
@@ -180,7 +191,7 @@ function EditProductDialog({ product, categories, onClose }: {
   onClose: () => void; 
 }) {
   const queryClient = useQueryClient();
-  const { addToast } = useToast();
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: product.name,
     description: product.description,
@@ -197,11 +208,18 @@ function EditProductDialog({ product, categories, onClose }: {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/products'] });
-      addToast('Product updated successfully', 'success');
+      toast({
+        title: 'Product updated successfully',
+        variant: "default"
+      });
       onClose();
     },
     onError: (error: any) => {
-      addToast(error.message || 'Failed to update product', 'error');
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to update product',
+        variant: "destructive"
+      });
     },
   });
 
@@ -321,7 +339,7 @@ function EditProductDialog({ product, categories, onClose }: {
 
 export default function AdminDashboard() {
   const queryClient = useQueryClient();
-  const { addToast } = useToast();
+  const { toast } = useToast();
   const [, setLocation] = useLocation();
   const { isAdmin, admin, logoutMutation } = useAuth();
   const [activeTab, setActiveTab] = useState('users');

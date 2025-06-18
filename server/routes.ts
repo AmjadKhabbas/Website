@@ -504,6 +504,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin Category Management Routes
+  app.post('/api/admin/categories', requireAdminAuth, async (req, res) => {
+    try {
+      const categoryData = req.body;
+      const newCategory = await storage.createCategory(categoryData);
+      res.status(201).json(newCategory);
+    } catch (error) {
+      console.error('Error creating category:', error);
+      res.status(500).json({ error: 'Failed to create category' });
+    }
+  });
+
+  app.put('/api/admin/categories/:id', requireAdminAuth, async (req, res) => {
+    try {
+      const categoryId = parseInt(req.params.id);
+      const categoryData = req.body;
+      const updatedCategory = await storage.updateCategory(categoryId, categoryData);
+      
+      if (!updatedCategory) {
+        return res.status(404).json({ error: 'Category not found' });
+      }
+      
+      res.json(updatedCategory);
+    } catch (error) {
+      console.error('Error updating category:', error);
+      res.status(500).json({ error: 'Failed to update category' });
+    }
+  });
+
+  app.delete('/api/admin/categories/:id', requireAdminAuth, async (req, res) => {
+    try {
+      const categoryId = parseInt(req.params.id);
+      const success = await storage.deleteCategory(categoryId);
+      
+      if (!success) {
+        return res.status(404).json({ error: 'Category not found' });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      res.status(500).json({ error: 'Failed to delete category' });
+    }
+  });
+
   // Image upload endpoint for product images
   app.post('/api/admin/upload-image', requireAdminAuth, async (req, res) => {
     try {
