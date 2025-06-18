@@ -149,6 +149,8 @@ export default function HomePage() {
   const [scrollY, setScrollY] = useState(0);
   const [editingBrand, setEditingBrand] = useState<{ id: number; name: string; imageUrl: string } | null>(null);
   const [brandImageUrl, setBrandImageUrl] = useState('');
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [categoryImageUrl, setCategoryImageUrl] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
   
@@ -177,6 +179,8 @@ export default function HomePage() {
       success('Brand image updated successfully');
       setEditingBrand(null);
       setBrandImageUrl('');
+      setImageFile(null);
+      setPreviewUrl('');
       queryClient.invalidateQueries({ queryKey: ['/api/brands'] });
     },
     onError: (err: Error) => {
@@ -184,9 +188,69 @@ export default function HomePage() {
     },
   });
 
+  // Category editing mutation
+  const updateCategoryMutation = useMutation({
+    mutationFn: async (categoryData: { id: number; icon: string }) => {
+      const response = await fetch(`/api/categories/${categoryData.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ icon: categoryData.icon }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update category');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      success('Category image updated successfully');
+      setEditingCategory(null);
+      setCategoryImageUrl('');
+      setImageFile(null);
+      setPreviewUrl('');
+      queryClient.invalidateQueries({ queryKey: ['/api/categories'] });
+    },
+    onError: (err: Error) => {
+      error(`Failed to update category: ${err.message}`);
+    },
+  });
+
   const handleBrandEdit = (brand: { id: number; name: string; imageUrl: string }) => {
     setEditingBrand(brand);
     setBrandImageUrl(brand.imageUrl);
+  };
+
+  const handleCategoryEdit = (category: Category) => {
+    setEditingCategory(category);
+    setCategoryImageUrl(category.icon || '');
+  };
+
+  const handleSaveCategory = async () => {
+    if (!editingCategory) return;
+
+    let finalImageUrl = categoryImageUrl.trim();
+
+    // If a file is selected, convert it to base64 for storage
+    if (imageFile) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64String = reader.result as string;
+        updateCategoryMutation.mutate({
+          id: editingCategory.id,
+          icon: base64String,
+        });
+      };
+      reader.readAsDataURL(imageFile);
+    } else if (finalImageUrl) {
+      // Use the URL provided
+      updateCategoryMutation.mutate({
+        id: editingCategory.id,
+        icon: finalImageUrl,
+      });
+    }
   };
 
   const handleSaveBrand = async () => {
@@ -522,14 +586,8 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 mb-12">
-            {[
-              { id: 1, name: 'Botulinum Toxins', imageUrl: '' },
-              { id: 2, name: 'Dermal Fillers', imageUrl: '' }, 
-              { id: 3, name: 'Anti-Aging Serums', imageUrl: '' },
-              { id: 4, name: 'Medical Equipment', imageUrl: '' },
-              { id: 5, name: 'Skincare Products', imageUrl: '' }
-            ].map((brand, index) => (
-              <div key={brand.id} className="relative">
+            {categories.map((category, index) => (
+              <div key={category.id} className="relative">
                 <Link href="/products">
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -538,10 +596,10 @@ export default function HomePage() {
                     className="group cursor-pointer scroll-reveal scale-on-scroll"
                   >
                     <div className="bg-blue-50 rounded-2xl p-8 aspect-square flex items-center justify-center group-hover:bg-blue-100 transition-all duration-300 border-2 border-dashed border-blue-300 group-hover:border-blue-500 relative">
-                      {brand.imageUrl ? (
+                      {category.icon ? (
                         <img 
-                          src={brand.imageUrl} 
-                          alt={brand.name}
+                          src={category.icon} 
+                          alt={category.name}
                           className="w-full h-full object-cover rounded-lg"
                         />
                       ) : (
@@ -557,7 +615,7 @@ export default function HomePage() {
                     </div>
                     <div className="mt-4 text-center">
                       <h3 className="font-semibold text-slate-800 text-sm group-hover:text-blue-700 transition-colors duration-300">
-                        {brand.name}
+                        {category.name}
                       </h3>
                     </div>
                   </motion.div>
@@ -568,7 +626,7 @@ export default function HomePage() {
                   <Button
                     onClick={(e) => {
                       e.preventDefault();
-                      handleBrandEdit(brand);
+                      handleCategoryEdit(category);
                     }}
                     size="sm"
                     variant="outline"
