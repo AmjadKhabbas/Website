@@ -583,3 +583,594 @@ export default function AdminDashboard() {
     </div>
   );
 }
+
+// Carousel Management Component
+const CarouselManagement = () => {
+  const { addToast } = useToast();
+  const queryClient = useQueryClient();
+  const [editingItem, setEditingItem] = useState<CarouselItem | null>(null);
+  const [deleteItemId, setDeleteItemId] = useState<number | null>(null);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+
+  // Fetch carousel items
+  const { data: carouselItems = [], isLoading: itemsLoading } = useQuery({
+    queryKey: ['/api/carousel'],
+    queryFn: async () => {
+      const response = await fetch('/api/carousel');
+      if (!response.ok) throw new Error('Failed to fetch carousel items');
+      return response.json();
+    },
+  });
+
+  // Create carousel item mutation
+  const createMutation = useMutation({
+    mutationFn: async (data: Partial<CarouselItem>) => {
+      return await apiRequest('POST', '/api/carousel', data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/carousel'] });
+      addToast('Carousel item created successfully', 'success');
+      setCreateDialogOpen(false);
+    },
+    onError: (error: any) => {
+      addToast(error.message || 'Failed to create carousel item', 'error');
+    },
+  });
+
+  // Update carousel item mutation
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number, data: Partial<CarouselItem> }) => {
+      return await apiRequest('PATCH', `/api/carousel/${id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/carousel'] });
+      addToast('Carousel item updated successfully', 'success');
+      setEditingItem(null);
+    },
+    onError: (error: any) => {
+      addToast(error.message || 'Failed to update carousel item', 'error');
+    },
+  });
+
+  // Delete carousel item mutation
+  const deleteMutation = useMutation({
+    mutationFn: async (id: number) => {
+      return await apiRequest('DELETE', `/api/carousel/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/carousel'] });
+      addToast('Carousel item deleted successfully', 'success');
+      setDeleteItemId(null);
+    },
+    onError: (error: any) => {
+      addToast(error.message || 'Failed to delete carousel item', 'error');
+    },
+  });
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Carousel Management
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400">
+            Manage the rotating hero section content
+          </p>
+        </div>
+        <Button onClick={() => setCreateDialogOpen(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Add Carousel Item
+        </Button>
+      </div>
+
+      {itemsLoading ? (
+        <div className="flex justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      ) : carouselItems.length === 0 ? (
+        <Card>
+          <CardContent className="py-12 text-center">
+            <p className="text-gray-600 dark:text-gray-400">
+              No carousel items found. Create your first item to get started.
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-6">
+          {carouselItems.map((item: CarouselItem) => (
+            <Card key={item.id} className="border-l-4 border-l-blue-500">
+              <CardContent className="p-6">
+                <div className="flex justify-between items-start">
+                  <div className="flex gap-6 flex-1">
+                    <div className="w-32 h-32 bg-gray-100 rounded-lg overflow-hidden">
+                      {item.imageUrl ? (
+                        <img 
+                          src={item.imageUrl} 
+                          alt={item.title}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                          No Image
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="flex-1 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                          {item.title}
+                        </h3>
+                        <Badge variant={item.isActive ? "default" : "secondary"}>
+                          {item.isActive ? "Active" : "Inactive"}
+                        </Badge>
+                      </div>
+                      
+                      <p className="text-gray-600 dark:text-gray-400 text-sm">
+                        {item.description}
+                      </p>
+                      
+                      <div className="flex items-center gap-4 text-sm">
+                        <span className="font-semibold text-green-600">
+                          ${item.price}
+                        </span>
+                        {item.originalPrice && (
+                          <span className="text-gray-500 line-through">
+                            ${item.originalPrice}
+                          </span>
+                        )}
+                        {item.discount && (
+                          <Badge variant="destructive">
+                            {item.discount} off
+                          </Badge>
+                        )}
+                      </div>
+                      
+                      {item.ctaText && (
+                        <div className="text-sm text-blue-600">
+                          CTA: "{item.ctaText}"
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setEditingItem(item)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => setDeleteItemId(item.id)}
+                      disabled={deleteMutation.isPending}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Create Carousel Item Dialog */}
+      <CreateCarouselDialog
+        open={createDialogOpen}
+        onClose={() => setCreateDialogOpen(false)}
+        onSubmit={(data) => createMutation.mutate(data)}
+        isLoading={createMutation.isPending}
+      />
+
+      {/* Edit Carousel Item Dialog */}
+      {editingItem && (
+        <EditCarouselDialog
+          item={editingItem}
+          onClose={() => setEditingItem(null)}
+          onSubmit={(data) => updateMutation.mutate({ id: editingItem.id, data })}
+          isLoading={updateMutation.isPending}
+        />
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteItemId !== null} onOpenChange={() => setDeleteItemId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Carousel Item</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600">
+              Are you sure you want to delete this carousel item? This action cannot be undone.
+            </p>
+            <div className="flex space-x-2">
+              <Button
+                variant="outline"
+                onClick={() => setDeleteItemId(null)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => deleteItemId && deleteMutation.mutate(deleteItemId)}
+                disabled={deleteMutation.isPending}
+                className="flex-1"
+              >
+                {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+// Create Carousel Dialog Component
+const CreateCarouselDialog = ({
+  open,
+  onClose,
+  onSubmit,
+  isLoading
+}: {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (data: Partial<CarouselItem>) => void;
+  isLoading: boolean;
+}) => {
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    price: '',
+    originalPrice: '',
+    discount: '',
+    imageUrl: '',
+    ctaText: 'Shop Now',
+    ctaLink: '',
+    isActive: true,
+    sortOrder: 0
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit(formData);
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setFormData(prev => ({ ...prev, imageUrl: result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Create Carousel Item</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="title">Title *</Label>
+              <Input
+                id="title"
+                value={formData.title}
+                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="price">Price *</Label>
+              <Input
+                id="price"
+                type="number"
+                step="0.01"
+                value={formData.price}
+                onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description">Description *</Label>
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="originalPrice">Original Price</Label>
+              <Input
+                id="originalPrice"
+                type="number"
+                step="0.01"
+                value={formData.originalPrice}
+                onChange={(e) => setFormData(prev => ({ ...prev, originalPrice: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="discount">Discount</Label>
+              <Input
+                id="discount"
+                placeholder="e.g., 25%"
+                value={formData.discount}
+                onChange={(e) => setFormData(prev => ({ ...prev, discount: e.target.value }))}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Image</Label>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="imageFile" className="text-sm">Upload Image</Label>
+                <Input
+                  id="imageFile"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="imageUrl" className="text-sm">Or Image URL</Label>
+                <Input
+                  id="imageUrl"
+                  type="url"
+                  value={formData.imageUrl}
+                  onChange={(e) => setFormData(prev => ({ ...prev, imageUrl: e.target.value }))}
+                  className="mt-1"
+                />
+              </div>
+            </div>
+            {formData.imageUrl && (
+              <div className="mt-2">
+                <img 
+                  src={formData.imageUrl} 
+                  alt="Preview"
+                  className="w-32 h-32 object-cover rounded-lg border"
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="ctaText">Call-to-Action Text</Label>
+              <Input
+                id="ctaText"
+                value={formData.ctaText}
+                onChange={(e) => setFormData(prev => ({ ...prev, ctaText: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="ctaLink">Call-to-Action Link</Label>
+              <Input
+                id="ctaLink"
+                type="url"
+                value={formData.ctaLink}
+                onChange={(e) => setFormData(prev => ({ ...prev, ctaLink: e.target.value }))}
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="isActive"
+              checked={formData.isActive}
+              onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isActive: checked }))}
+            />
+            <Label htmlFor="isActive">Active</Label>
+          </div>
+
+          <div className="flex space-x-2 pt-4">
+            <Button type="button" variant="outline" onClick={onClose} className="flex-1">
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isLoading} className="flex-1">
+              {isLoading ? 'Creating...' : 'Create Item'}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+// Edit Carousel Dialog Component  
+const EditCarouselDialog = ({
+  item,
+  onClose,
+  onSubmit,
+  isLoading
+}: {
+  item: CarouselItem;
+  onClose: () => void;
+  onSubmit: (data: Partial<CarouselItem>) => void;
+  isLoading: boolean;
+}) => {
+  const [formData, setFormData] = useState({
+    title: item.title,
+    description: item.description,
+    price: item.price,
+    originalPrice: item.originalPrice || '',
+    discount: item.discount || '',
+    imageUrl: item.imageUrl,
+    ctaText: item.ctaText || 'Shop Now',
+    ctaLink: item.ctaLink || '',
+    isActive: item.isActive,
+    sortOrder: item.sortOrder
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit(formData);
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setFormData(prev => ({ ...prev, imageUrl: result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  return (
+    <Dialog open={true} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Edit Carousel Item</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="title">Title *</Label>
+              <Input
+                id="title"
+                value={formData.title}
+                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="price">Price *</Label>
+              <Input
+                id="price"
+                type="number"
+                step="0.01"
+                value={formData.price}
+                onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description">Description *</Label>
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="originalPrice">Original Price</Label>
+              <Input
+                id="originalPrice"
+                type="number"
+                step="0.01"
+                value={formData.originalPrice}
+                onChange={(e) => setFormData(prev => ({ ...prev, originalPrice: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="discount">Discount</Label>
+              <Input
+                id="discount"
+                placeholder="e.g., 25%"
+                value={formData.discount}
+                onChange={(e) => setFormData(prev => ({ ...prev, discount: e.target.value }))}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Image</Label>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="imageFile" className="text-sm">Upload Image</Label>
+                <Input
+                  id="imageFile"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="imageUrl" className="text-sm">Or Image URL</Label>
+                <Input
+                  id="imageUrl"
+                  type="url"
+                  value={formData.imageUrl}
+                  onChange={(e) => setFormData(prev => ({ ...prev, imageUrl: e.target.value }))}
+                  className="mt-1"
+                />
+              </div>
+            </div>
+            {formData.imageUrl && (
+              <div className="mt-2">
+                <img 
+                  src={formData.imageUrl} 
+                  alt="Preview"
+                  className="w-32 h-32 object-cover rounded-lg border"
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="ctaText">Call-to-Action Text</Label>
+              <Input
+                id="ctaText"
+                value={formData.ctaText}
+                onChange={(e) => setFormData(prev => ({ ...prev, ctaText: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="ctaLink">Call-to-Action Link</Label>
+              <Input
+                id="ctaLink"
+                type="url"
+                value={formData.ctaLink}
+                onChange={(e) => setFormData(prev => ({ ...prev, ctaLink: e.target.value }))}
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="isActive"
+              checked={formData.isActive}
+              onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isActive: checked }))}
+            />
+            <Label htmlFor="isActive">Active</Label>
+          </div>
+
+          <div className="flex space-x-2 pt-4">
+            <Button type="button" variant="outline" onClick={onClose} className="flex-1">
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isLoading} className="flex-1">
+              {isLoading ? 'Updating...' : 'Update Item'}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+};
