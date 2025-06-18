@@ -484,34 +484,61 @@ export default function HomePage() {
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 mb-12">
             {[
-              'Botulinum Toxins',
-              'Dermal Fillers', 
-              'Anti-Aging Serums',
-              'Medical Equipment',
-              'Skincare Products'
-            ].map((brandName, index) => (
-              <Link key={index} href="/products">
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.1 }}
-                  className="group cursor-pointer scroll-reveal scale-on-scroll"
-                >
-                  <div className="bg-blue-50 rounded-2xl p-8 aspect-square flex items-center justify-center group-hover:bg-blue-100 transition-all duration-300 border-2 border-dashed border-blue-300 group-hover:border-blue-500">
-                    <div className="text-center">
-                      <div className="w-16 h-16 bg-blue-100 rounded-lg mx-auto mb-4 flex items-center justify-center group-hover:bg-blue-200 transition-colors duration-300">
-                        <Heart className="w-8 h-8 text-blue-500 group-hover:text-blue-700" />
-                      </div>
-                      <p className="text-sm text-blue-600 group-hover:text-blue-800 font-medium">Upload Image</p>
+              { id: 1, name: 'Botulinum Toxins', imageUrl: '' },
+              { id: 2, name: 'Dermal Fillers', imageUrl: '' }, 
+              { id: 3, name: 'Anti-Aging Serums', imageUrl: '' },
+              { id: 4, name: 'Medical Equipment', imageUrl: '' },
+              { id: 5, name: 'Skincare Products', imageUrl: '' }
+            ].map((brand, index) => (
+              <div key={brand.id} className="relative">
+                <Link href="/products">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                    className="group cursor-pointer scroll-reveal scale-on-scroll"
+                  >
+                    <div className="bg-blue-50 rounded-2xl p-8 aspect-square flex items-center justify-center group-hover:bg-blue-100 transition-all duration-300 border-2 border-dashed border-blue-300 group-hover:border-blue-500 relative">
+                      {brand.imageUrl ? (
+                        <img 
+                          src={brand.imageUrl} 
+                          alt={brand.name}
+                          className="w-full h-full object-cover rounded-lg"
+                        />
+                      ) : (
+                        <div className="text-center">
+                          <div className="w-16 h-16 bg-blue-100 rounded-lg mx-auto mb-4 flex items-center justify-center group-hover:bg-blue-200 transition-colors duration-300">
+                            <Heart className="w-8 h-8 text-blue-500 group-hover:text-blue-700" />
+                          </div>
+                          <p className="text-sm text-blue-600 group-hover:text-blue-800 font-medium">
+                            {isAdmin ? 'Click to Upload Image' : 'Upload Image'}
+                          </p>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                  <div className="mt-4 text-center">
-                    <h3 className="font-semibold text-slate-800 text-sm group-hover:text-blue-700 transition-colors duration-300">
-                      {brandName}
-                    </h3>
-                  </div>
-                </motion.div>
-              </Link>
+                    <div className="mt-4 text-center">
+                      <h3 className="font-semibold text-slate-800 text-sm group-hover:text-blue-700 transition-colors duration-300">
+                        {brand.name}
+                      </h3>
+                    </div>
+                  </motion.div>
+                </Link>
+                
+                {/* Admin Edit Button */}
+                {isAdmin && (
+                  <Button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleBrandEdit(brand);
+                    }}
+                    size="sm"
+                    variant="outline"
+                    className="absolute top-2 right-2 bg-white/90 hover:bg-white border-blue-300 text-blue-600 hover:text-blue-700 p-2"
+                  >
+                    <Edit3 className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
             ))}
           </div>
 
@@ -550,6 +577,86 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Brand Edit Dialog */}
+      <Dialog open={!!editingBrand} onOpenChange={() => handleCancelEdit()}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Brand Image</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium text-slate-700 mb-2 block">
+                Brand Name
+              </label>
+              <Input
+                value={editingBrand?.name || ''}
+                disabled
+                className="bg-slate-50"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-slate-700 mb-2 block">
+                Image URL
+              </label>
+              <Input
+                placeholder="Enter image URL..."
+                value={brandImageUrl}
+                onChange={(e) => setBrandImageUrl(e.target.value)}
+                className="mb-2"
+              />
+              <p className="text-xs text-slate-500">
+                Enter a direct URL to an image (jpg, png, gif, etc.)
+              </p>
+            </div>
+            {brandImageUrl && (
+              <div>
+                <label className="text-sm font-medium text-slate-700 mb-2 block">
+                  Preview
+                </label>
+                <div className="w-32 h-32 bg-slate-100 rounded-lg overflow-hidden">
+                  <img
+                    src={brandImageUrl}
+                    alt="Preview"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+            <div className="flex gap-3 pt-4">
+              <Button
+                onClick={handleSaveBrand}
+                disabled={!brandImageUrl.trim() || updateBrandMutation.isPending}
+                className="flex-1"
+              >
+                {updateBrandMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4 mr-2" />
+                    Save Image
+                  </>
+                )}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleCancelEdit}
+                disabled={updateBrandMutation.isPending}
+              >
+                <X className="w-4 h-4 mr-2" />
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <style>{`
         .bg-grid-pattern {

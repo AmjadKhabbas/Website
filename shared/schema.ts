@@ -13,6 +13,15 @@ export const categories = pgTable("categories", {
   itemCount: integer("item_count").notNull().default(0),
 });
 
+export const brands = pgTable("brands", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  imageUrl: text("image_url").default(""),
+  slug: text("slug").notNull().unique(),
+  description: text("description"),
+  isActive: boolean("is_active").notNull().default(true),
+});
+
 export const products = pgTable("products", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
@@ -156,6 +165,10 @@ export const insertCategorySchema = createInsertSchema(categories).omit({
   id: true,
 });
 
+export const insertBrandSchema = createInsertSchema(brands).omit({
+  id: true,
+});
+
 export const insertProductSchema = createInsertSchema(products).omit({
   id: true,
 });
@@ -244,6 +257,9 @@ export const categoriesRelations = relations(categories, ({ many }) => ({
 
 export type InsertCategory = z.infer<typeof insertCategorySchema>;
 export type Category = typeof categories.$inferSelect;
+
+export type InsertBrand = z.infer<typeof insertBrandSchema>;
+export type Brand = typeof brands.$inferSelect;
 
 export type InsertProduct = z.infer<typeof insertProductSchema>;
 export type Product = typeof products.$inferSelect;
