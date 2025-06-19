@@ -21,7 +21,12 @@ interface BulkDiscountManagerProps {
 }
 
 export function BulkDiscountManager({ basePrice, discounts, onChange }: BulkDiscountManagerProps) {
-  const [newTier, setNewTier] = useState<Partial<BulkDiscountTier>>({
+  const [newTier, setNewTier] = useState<{
+    minQuantity: number;
+    maxQuantity: number | null;
+    discountPercentage: number;
+    discountedPrice: number;
+  }>({
     minQuantity: 1,
     maxQuantity: null,
     discountPercentage: 0,
@@ -36,7 +41,7 @@ export function BulkDiscountManager({ basePrice, discounts, onChange }: BulkDisc
     if (newTier.minQuantity && newTier.discountPercentage !== undefined) {
       const tier: BulkDiscountTier = {
         minQuantity: newTier.minQuantity,
-        maxQuantity: newTier.maxQuantity,
+        maxQuantity: newTier.maxQuantity || null,
         discountPercentage: newTier.discountPercentage,
         discountedPrice: calculateDiscountedPrice(newTier.discountPercentage)
       };
@@ -90,68 +95,86 @@ export function BulkDiscountManager({ basePrice, discounts, onChange }: BulkDisc
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Current Tiers */}
+        {/* Current Tiers - Table View */}
         {discounts.length > 0 && (
           <div className="space-y-3">
-            <Label className="text-sm font-medium">Current Discount Tiers</Label>
-            <div className="space-y-2">
-              <AnimatePresence>
-                {discounts.map((tier, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="flex items-center gap-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
-                  >
-                    <div className="flex-1 grid grid-cols-4 gap-4 items-center">
-                      <div>
-                        <Label className="text-xs text-gray-500">Quantity</Label>
-                        <Badge variant="secondary" className="mt-1">
-                          {formatQuantityRange(tier)}
-                        </Badge>
-                      </div>
-                      
-                      <div>
-                        <Label className="text-xs text-gray-500">Discount</Label>
-                        <div className="flex items-center gap-1 mt-1">
-                          <Input
-                            type="number"
-                            value={tier.discountPercentage}
-                            onChange={(e) => updateTier(index, 'discountPercentage', parseFloat(e.target.value) || 0)}
-                            className="h-8 w-16"
-                            min="0"
-                            max="100"
-                            step="0.1"
-                          />
-                          <span className="text-sm text-gray-500">%</span>
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <Label className="text-xs text-gray-500">Price</Label>
-                        <div className="flex items-center gap-1 mt-1">
-                          <DollarSign className="h-4 w-4 text-gray-400" />
-                          <span className="font-medium">
-                            {tier.discountedPrice.toFixed(2)}
+            <Label className="text-sm font-medium">Bulk Pricing Tiers</Label>
+            <div className="border rounded-lg overflow-hidden">
+              <table className="w-full">
+                <thead className="bg-blue-100 dark:bg-blue-900">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Quantity
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Discount (%)
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Price
+                    </th>
+                    <th className="px-4 py-3 text-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <AnimatePresence>
+                    {discounts.map((tier, index) => (
+                      <motion.tr
+                        key={index}
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className={`border-b ${
+                          index === 0 
+                            ? 'bg-blue-50 dark:bg-blue-950' 
+                            : index % 2 === 0 
+                            ? 'bg-gray-50 dark:bg-gray-800' 
+                            : 'bg-white dark:bg-gray-900'
+                        }`}
+                      >
+                        <td className="px-4 py-3">
+                          <Badge 
+                            variant={index === 0 ? "default" : "secondary"} 
+                            className={index === 0 ? "bg-blue-500 text-white" : ""}
+                          >
+                            {formatQuantityRange(tier)}
+                          </Badge>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-1">
+                            <Input
+                              type="number"
+                              value={tier.discountPercentage}
+                              onChange={(e) => updateTier(index, 'discountPercentage', parseFloat(e.target.value) || 0)}
+                              className="h-8 w-20"
+                              min="0"
+                              max="100"
+                              step="0.01"
+                            />
+                            <span className="text-sm text-gray-500">%</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="font-semibold text-green-600">
+                            ${tier.discountedPrice.toFixed(2)}
                           </span>
-                        </div>
-                      </div>
-                      
-                      <div className="text-right">
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => removeTier(index)}
-                          className="h-8 w-8 p-0"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => removeTier(index)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </td>
+                      </motion.tr>
+                    ))}
+                  </AnimatePresence>
+                </tbody>
+              </table>
             </div>
           </div>
         )}
