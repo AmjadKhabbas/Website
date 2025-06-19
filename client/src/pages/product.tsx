@@ -158,12 +158,12 @@ export default function ProductPage() {
     : 0;
 
   return (
-    <div className="min-h-screen pt-16 bg-black">
+    <div className="min-h-screen pt-16 bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Breadcrumb */}
-      <div className="bg-gray-900 py-4 border-b border-gray-800">
+      <div className="bg-white/80 backdrop-blur-sm py-4 border-b border-blue-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Link href="/">
-            <Button variant="ghost" size="sm" className="mb-4 text-gray-300 hover:text-white hover:bg-gray-800">
+            <Button variant="ghost" size="sm" className="mb-4 text-blue-600 hover:text-blue-800 hover:bg-blue-100">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Products
             </Button>
@@ -237,7 +237,7 @@ export default function ProductPage() {
             >
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <h1 className="text-3xl font-bold text-white">{product.name}</h1>
+                  <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
                   
                   {/* Admin Controls */}
                   {isAdmin && (
@@ -280,7 +280,7 @@ export default function ProductPage() {
 
                 {/* Price */}
                 <div className="flex items-center space-x-4 mb-6">
-                  <span className="text-4xl font-bold text-white">
+                  <span className="text-4xl font-bold text-blue-600">
                     {formatPrice(product.price)}
                   </span>
                   {hasDiscount && (
@@ -289,13 +289,13 @@ export default function ProductPage() {
                     </span>
                   )}
                   {hasDiscount && (
-                    <Badge className="bg-red-900 text-red-400 text-sm">
+                    <Badge className="bg-red-100 text-red-800 text-sm">
                       Save {formatPrice((parseFloat(product.originalPrice!) - parseFloat(product.price)).toString())}
                     </Badge>
                   )}
                 </div>
 
-                <p className="text-lg text-gray-300 leading-relaxed mb-6">
+                <p className="text-lg text-gray-700 leading-relaxed mb-6">
                   {product.description}
                 </p>
 
@@ -303,7 +303,7 @@ export default function ProductPage() {
                 {product.tags && product.tags.length > 0 && (
                   <div className="flex flex-wrap gap-2 mb-6">
                     {product.tags.split(',').map((tag, index) => (
-                      <Badge key={index} variant="outline" className="text-sm text-gray-300 border-gray-600">
+                      <Badge key={index} variant="outline" className="text-sm text-gray-600 border-gray-300">
                         {tag.trim()}
                       </Badge>
                     ))}
@@ -322,12 +322,12 @@ export default function ProductPage() {
                 )}
               </div>
 
-              <Separator className="bg-gray-700" />
+              <Separator className="bg-gray-200" />
 
               {/* Quantity Controls */}
               <div className="space-y-6">
                 <div className="space-y-4">
-                  <span className="text-lg font-semibold text-white">Add to Cart:</span>
+                  <span className="text-lg font-semibold text-gray-900">Add to Cart:</span>
                   {!product.inStock ? (
                     <Button disabled className="w-full py-4 rounded-lg font-semibold text-lg">
                       Out of Stock
@@ -379,21 +379,12 @@ export default function ProductPage() {
                   )}
                 </div>
 
-                {/* Bulk Discount Display */}
-                {product.bulkDiscounts && Array.isArray(product.bulkDiscounts) && product.bulkDiscounts.length > 0 && (
-                  <div className="mt-6">
-                    <BulkDiscountDisplay
-                      basePrice={parseFloat(product.price)}
-                      discounts={product.bulkDiscounts as any[]}
-                      selectedQuantity={Math.max(currentQuantity, selectedQuantity)}
-                    />
-                  </div>
-                )}
+
 
                 {/* Stock Status */}
                 <div className="flex items-center space-x-2">
                   <div className={`w-3 h-3 rounded-full ${product.inStock ? 'bg-green-500' : 'bg-red-500'}`} />
-                  <span className={`font-medium ${product.inStock ? 'text-green-400' : 'text-red-400'}`}>
+                  <span className={`font-medium ${product.inStock ? 'text-green-600' : 'text-red-600'}`}>
                     {product.inStock ? 'In Stock' : 'Out of Stock'}
                   </span>
                 </div>
@@ -405,9 +396,9 @@ export default function ProductPage() {
 
       {/* Related Products */}
       {relatedProducts.length > 0 && (
-        <section className="py-16 bg-gray-900 border-t border-gray-800">
+        <section className="py-16 bg-white border-t border-gray-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold text-white mb-8">Related Products</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-8">Related Products</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {relatedProducts.map((relatedProduct, index) => (
                 <ProductCard key={relatedProduct.id} product={relatedProduct} index={index} />
