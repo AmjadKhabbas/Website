@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, requireAuth, requireApprovedUser, hashPassword, comparePasswords } from "./auth";
 import { adminAuthService, requireAdminAuth, checkAdminStatus } from "./adminAuth";
+import { setupUploadRoutes } from "./upload";
 import { insertCartItemSchema, insertOrderSchema, insertOrderItemSchema, insertReferralSchema } from "@shared/schema";
 import session from "express-session";
 import "./types";
@@ -1462,6 +1463,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to reorder carousel items" });
     }
   });
+
+  // Setup file upload routes
+  setupUploadRoutes(app);
 
   const httpServer = createServer(app);
   return httpServer;

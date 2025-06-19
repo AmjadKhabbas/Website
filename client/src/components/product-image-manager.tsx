@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, X, GripVertical, Upload, Link2, Save, Loader2 } from 'lucide-react';
+import { Plus, X, GripVertical, Upload, Link2, Save, Loader2, ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
 
 interface ProductImageManagerProps {
   product: {
@@ -28,6 +29,10 @@ export function ProductImageManager({ product, onUpdate, isLoading = false }: Pr
   ].filter(Boolean));
   const [newImageUrl, setNewImageUrl] = useState('');
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [uploadingFiles, setUploadingFiles] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   const addImage = () => {
     if (newImageUrl.trim()) {
