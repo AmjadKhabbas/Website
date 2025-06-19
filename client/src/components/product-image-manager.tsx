@@ -310,54 +310,58 @@ export function ProductImageManager({ product, onUpdate, isLoading = false }: Pr
                         className={`relative group rounded-lg overflow-hidden border-2 ${
                           index === 0 ? 'border-blue-500' : 'border-gray-200'
                         }`}
-                        draggable
-                        onDragStart={(e: React.DragEvent) => handleDragStart(e, index)}
-                        onDragOver={handleDragOver}
-                        onDrop={(e: React.DragEvent) => handleDrop(e, index)}
                       >
-                        <div className="aspect-square bg-gray-100">
-                          <img
-                            src={imageUrl}
-                            alt={`Product image ${index + 1}`}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        
-                        {/* Image Controls */}
-                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2">
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            className="h-8 w-8 p-0"
-                            title="Drag to reorder"
-                          >
-                            <GripVertical className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            className="h-8 w-8 p-0"
-                            onClick={() => removeImage(index)}
-                            disabled={images.length === 1}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
+                        <div
+                          draggable
+                          onDragStart={(e) => handleDragStart(e, index)}
+                          onDragOver={handleDragOver}
+                          onDrop={(e) => handleDrop(e, index)}
+                          className="cursor-move w-full h-full"
+                        >
+                            <div className="aspect-square bg-gray-100">
+                              <img
+                                src={imageUrl}
+                                alt={`Product image ${index + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            
+                            {/* Image Controls */}
+                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2">
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                                title="Drag to reorder"
+                              >
+                                <GripVertical className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                                onClick={() => removeImage(index)}
+                                disabled={images.length === 1}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
 
-                        {/* Primary Image Badge */}
-                        {index === 0 && (
-                          <div className="absolute top-2 left-2">
-                            <Badge className="bg-blue-500 text-white text-xs">
-                              Main
-                            </Badge>
-                          </div>
-                        )}
+                            {/* Primary Image Badge */}
+                            {index === 0 && (
+                              <div className="absolute top-2 left-2">
+                                <Badge className="bg-blue-500 text-white text-xs">
+                                  Main
+                                </Badge>
+                              </div>
+                            )}
 
-                        {/* Image Index */}
-                        <div className="absolute bottom-2 right-2">
-                          <Badge variant="secondary" className="text-xs">
-                            {index + 1}
-                          </Badge>
+                            {/* Image Index */}
+                            <div className="absolute bottom-2 right-2">
+                              <Badge variant="secondary" className="text-xs">
+                                {index + 1}
+                              </Badge>
+                            </div>
                         </div>
                       </motion.div>
                     ))}
