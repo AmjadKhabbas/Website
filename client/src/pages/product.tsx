@@ -309,6 +309,17 @@ export default function ProductPage() {
                     ))}
                   </div>
                 )}
+
+                {/* Bulk Discount Display */}
+                {product.bulkDiscounts && Array.isArray(product.bulkDiscounts) && product.bulkDiscounts.length > 0 && (
+                  <div className="mb-6">
+                    <BulkDiscountDisplay
+                      basePrice={parseFloat(product.price)}
+                      discounts={product.bulkDiscounts}
+                      selectedQuantity={selectedQuantity}
+                    />
+                  </div>
+                )}
               </div>
 
               <Separator className="bg-gray-700" />

@@ -390,6 +390,11 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
               -{discountPercentage}%
             </Badge>
           )}
+          {product.bulkDiscounts && Array.isArray(product.bulkDiscounts) && product.bulkDiscounts.length > 0 && (
+            <Badge className="bg-green-500 text-white font-semibold text-xs">
+              Bulk Pricing
+            </Badge>
+          )}
         </div>
 
         {/* Admin Controls - Grid View */}
