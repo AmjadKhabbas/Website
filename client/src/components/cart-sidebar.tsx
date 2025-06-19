@@ -132,9 +132,38 @@ export function CartSidebar() {
                         <h4 className="font-semibold text-slate-900 truncate">
                           {item.product.name}
                         </h4>
-                        <p className="text-lg font-bold text-blue-600">
-                          {formatPrice(parseFloat(item.product.price))}
-                        </p>
+                        
+                        {/* Pricing with bulk discount */}
+                        <div className="space-y-1">
+                          {(() => {
+                            const unitPrice = getBulkDiscountPrice(item);
+                            const originalPrice = parseFloat(item.product.price);
+                            const isDiscounted = unitPrice < originalPrice;
+                            
+                            return (
+                              <div className="flex items-center gap-2">
+                                <p className="text-lg font-bold text-blue-600">
+                                  {formatPrice(unitPrice)}
+                                </p>
+                                {isDiscounted && (
+                                  <>
+                                    <p className="text-sm text-gray-500 line-through">
+                                      {formatPrice(originalPrice)}
+                                    </p>
+                                    <Badge className="bg-green-100 text-green-800 text-xs">
+                                      BULK
+                                    </Badge>
+                                  </>
+                                )}
+                              </div>
+                            );
+                          })()}
+                          
+                          {/* Item total */}
+                          <p className="text-sm text-gray-600">
+                            Total: {formatPrice(getItemTotalPrice(item))}
+                          </p>
+                        </div>
                         
                         {/* Quantity Controls */}
                         <div className="flex items-center space-x-2 mt-2">
