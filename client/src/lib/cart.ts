@@ -2,6 +2,13 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { CartItemWithProduct } from '@shared/schema';
 
+interface BulkDiscountTier {
+  minQuantity: number;
+  maxQuantity: number | null;
+  discountPercentage: number;
+  discountedPrice: number;
+}
+
 interface CartStore {
   items: CartItemWithProduct[];
   isOpen: boolean;
@@ -15,6 +22,8 @@ interface CartStore {
   closeCart: () => void;
   getTotalItems: () => number;
   getTotalPrice: () => number;
+  getBulkDiscountPrice: (item: CartItemWithProduct) => number;
+  getItemTotalPrice: (item: CartItemWithProduct) => number;
   generateSessionId: () => string;
 }
 
@@ -59,13 +68,33 @@ export const useCartStore = create<CartStore>()(
         set({ sessionId: newSessionId });
         return newSessionId;
       },
+      getBulkDiscountPrice: (item: CartItemWithProduct) => {
+        // Parse bulk discounts from product if available
+        const bulkDiscounts = item.product.bulkDiscounts as BulkDiscountTier[] || [];
+        if (bulkDiscounts.length === 0) {
+          return parseFloat(item.product.price);
+        }
+
+        // Find the applicable discount tier based on quantity
+        const applicableTier = bulkDiscounts
+          .filter(tier => item.quantity >= tier.minQuantity)
+          .filter(tier => tier.maxQuantity === null || item.quantity <= tier.maxQuantity)
+          .sort((a, b) => b.discountPercentage - a.discountPercentage)[0];
+
+        return applicableTier ? applicableTier.discountedPrice : parseFloat(item.product.price);
+      },
+      getItemTotalPrice: (item: CartItemWithProduct) => {
+        const { getBulkDiscountPrice } = get();
+        const unitPrice = getBulkDiscountPrice(item);
+        return unitPrice * item.quantity;
+      },
       getTotalItems: () => {
         const { items } = get();
         return items.reduce((total, item) => total + item.quantity, 0);
       },
       getTotalPrice: () => {
-        const { items } = get();
-        return items.reduce((total, item) => total + (parseFloat(item.product.price) * item.quantity), 0);
+        const { items, getItemTotalPrice } = get();
+        return items.reduce((total, item) => total + getItemTotalPrice(item), 0);
       },
     }),
     {

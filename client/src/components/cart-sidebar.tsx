@@ -12,7 +12,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { Link } from 'wouter';
 
 export function CartSidebar() {
-  const { items, isOpen, closeCart, getTotalPrice, getTotalItems } = useCartStore();
+  const { items, isOpen, closeCart, getTotalPrice, getTotalItems, getBulkDiscountPrice, getItemTotalPrice } = useCartStore();
   const { success, error } = useToast();
   const queryClient = useQueryClient();
   const { user, admin, isLoading } = useAuth();
