@@ -45,6 +45,83 @@ export function ProductImageManager({ product, onUpdate, isLoading = false }: Pr
     setImages(images.filter((_, i) => i !== index));
   };
 
+  const uploadFiles = async (files: FileList) => {
+    if (files.length === 0) return;
+
+    setUploadingFiles(true);
+    const formData = new FormData();
+    
+    // Add all files to form data
+    Array.from(files).forEach((file) => {
+      formData.append('images', file);
+    });
+
+    try {
+      const response = await fetch('/api/upload/images', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+
+      const data = await response.json();
+      const newImageUrls = data.files.map((file: any) => file.imageUrl);
+      
+      setImages([...images, ...newImageUrls]);
+      
+      toast({
+        title: "Upload successful",
+        description: `${files.length} image(s) uploaded successfully`,
+      });
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast({
+        title: "Upload failed",
+        description: "Failed to upload images. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingFiles(false);
+    }
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files) {
+      uploadFiles(files);
+    }
+  };
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  };
+
+  const handleUploadDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleFileDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+    
+    const files = e.dataTransfer.files;
+    if (files) {
+      uploadFiles(files);
+    }
+  };
+
   const moveImage = (fromIndex: number, toIndex: number) => {
     const newImages = [...images];
     const [removed] = newImages.splice(fromIndex, 1);
@@ -154,14 +231,49 @@ export function ProductImageManager({ product, onUpdate, isLoading = false }: Pr
                 </TabsContent>
                 
                 <TabsContent value="upload" className="space-y-4">
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                    <Upload className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                    <p className="text-sm text-gray-600">
-                      File upload functionality would require a file upload service
-                    </p>
-                    <p className="text-xs text-gray-500 mt-2">
-                      Please use the URL method for now
-                    </p>
+                  <div 
+                    className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+                      isDragOver 
+                        ? 'border-blue-500 bg-blue-50' 
+                        : 'border-gray-300 hover:border-gray-400'
+                    }`}
+                    onDragEnter={handleDragEnter}
+                    onDragLeave={handleDragLeave}
+                    onDragOver={handleUploadDragOver}
+                    onDrop={handleFileDrop}
+                  >
+                    {uploadingFiles ? (
+                      <div className="flex flex-col items-center">
+                        <Loader2 className="h-12 w-12 mx-auto text-blue-500 mb-4 animate-spin" />
+                        <p className="text-sm text-gray-600">Uploading images...</p>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center">
+                        <ImageIcon className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                        <p className="text-sm text-gray-600 mb-2">
+                          Drag and drop images here, or click to select files
+                        </p>
+                        <p className="text-xs text-gray-500 mb-4">
+                          Supports JPG, PNG, GIF, WebP (max 10MB each)
+                        </p>
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          multiple
+                          accept="image/*"
+                          onChange={handleFileSelect}
+                          className="hidden"
+                        />
+                        <Button 
+                          type="button"
+                          variant="outline"
+                          onClick={() => fileInputRef.current?.click()}
+                        >
+                          <Upload className="h-4 w-4 mr-2" />
+                          Select Files
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </TabsContent>
               </Tabs>
@@ -199,9 +311,9 @@ export function ProductImageManager({ product, onUpdate, isLoading = false }: Pr
                           index === 0 ? 'border-blue-500' : 'border-gray-200'
                         }`}
                         draggable
-                        onDragStart={(e) => handleDragStart(e, index)}
+                        onDragStart={(e: React.DragEvent) => handleDragStart(e, index)}
                         onDragOver={handleDragOver}
-                        onDrop={(e) => handleDrop(e, index)}
+                        onDrop={(e: React.DragEvent) => handleDrop(e, index)}
                       >
                         <div className="aspect-square bg-gray-100">
                           <img
