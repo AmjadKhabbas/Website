@@ -1293,7 +1293,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Check user approval status for checkout eligibility
   app.get("/api/checkout/eligibility", async (req, res) => {
     try {
-      if (!req.session?.userId) {
+      // Check if user is authenticated (either regular user or admin)
+      const userId = req.session?.userId;
+      const adminId = req.session?.adminId;
+      
+      if (!userId && !adminId) {
         return res.json({
           eligible: false,
           reason: "LOGIN_REQUIRED",
@@ -1301,7 +1305,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      const user = await storage.getUserById(req.session.userId);
+      // If admin is logged in, they can always checkout
+      if (adminId) {
+        return res.json({
+          eligible: true,
+          message: "You can proceed with checkout (Admin)"
+        });
+      }
+      
+      // For regular users, check approval status
+      const user = await storage.getUserById(userId);
       
       if (!user) {
         return res.json({
