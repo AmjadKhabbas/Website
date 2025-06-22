@@ -16,6 +16,7 @@ import ReferralsPage from "@/pages/referrals";
 import FAQPage from "@/pages/faq";
 import ContactPage from "@/pages/contact";
 import LoginPage from "@/pages/login";
+import CheckoutPage from "@/pages/checkout";
 
 import AdminDashboard from "@/pages/admin-dashboard";
 import AdminProductsPage from "@/pages/admin-products";
@@ -33,6 +34,7 @@ function Router() {
       <Route path="/faq" component={FAQPage} />
       <Route path="/contact" component={ContactPage} />
       <Route path="/login" component={LoginPage} />
+      <Route path="/checkout" component={CheckoutPage} />
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/admin/dashboard" component={AdminDashboard} />
       <Route path="/admin/products" component={AdminProductsPage} />

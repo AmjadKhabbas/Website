@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import Stripe from "stripe";
 import { storage } from "./storage";
 import { setupAuth, requireAuth, requireApprovedUser, hashPassword, comparePasswords } from "./auth";
 import { adminAuthService, requireAdminAuth, checkAdminStatus } from "./adminAuth";
@@ -7,6 +8,14 @@ import { setupUploadRoutes } from "./upload";
 import { insertCartItemSchema, insertOrderSchema, insertOrderItemSchema, insertReferralSchema } from "@shared/schema";
 import session from "express-session";
 import "./types";
+
+// Initialize Stripe
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
+}
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: "2024-06-20",
+});
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication system with Passport.js
@@ -1466,6 +1475,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Setup file upload routes
   setupUploadRoutes(app);
+
+  // Stripe payment routes
+  app.post("/api/create-payment-intent", async (req, res) => {
+    try {
+      const { amount, currency = 'usd', metadata = {} } = req.body;
+
+      // Validate amount
+      if (!amount || amount <= 0) {
+        return res.status(400).json({
+          message: "Invalid amount",
+          code: "INVALID_AMOUNT"
+        });
+      }
+
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(amount * 100), // Convert to cents
+        currency,
+        metadata,
+        automatic_payment_methods: {
+          enabled: true,
+        },
+      });
+
+      res.json({ 
+        clientSecret: paymentIntent.client_secret,
+        paymentIntentId: paymentIntent.id
+      });
+    } catch (error: any) {
+      console.error('Stripe PaymentIntent error:', error);
+      res.status(500).json({ 
+        message: "Error creating payment intent: " + error.message,
+        code: "STRIPE_ERROR"
+      });
+    }
+  });
+
+  // Create order endpoint
+  app.post('/api/orders', async (req, res) => {
+    try {
+      const { items, shippingAddress, billingAddress, totalAmount } = req.body;
+      
+      // Generate unique order number
+      const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+      
+      // Create order data
+      const orderData = {
+        userId: req.session?.userId || req.session?.adminId?.toString() || 'guest',
+        orderNumber,
+        status: 'pending',
+        totalAmount: totalAmount.toString(),
+        shippingAddress: JSON.stringify(shippingAddress),
+        billingAddress: JSON.stringify(billingAddress),
+        paymentMethod: 'stripe',
+        paymentStatus: 'pending'
+      };
+
+      // Create order items data
+      const orderItemsData = items.map((item: any) => ({
+        productId: item.productId,
+        quantity: item.quantity,
+        price: item.price.toString(),
+        totalPrice: (item.price * item.quantity).toString()
+      }));
+
+      // Create order in database
+      const order = await storage.createOrder(orderData, orderItemsData);
+      
+      res.status(201).json({
+        message: 'Order created successfully',
+        order: {
+          id: order.id,
+          orderNumber: order.orderNumber,
+          status: order.status,
+          totalAmount: order.totalAmount
+        }
+      });
+    } catch (error: any) {
+      console.error('Order creation error:', error);
+      res.status(500).json({
+        message: 'Failed to create order: ' + error.message,
+        code: 'ORDER_CREATION_ERROR'
+      });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;
