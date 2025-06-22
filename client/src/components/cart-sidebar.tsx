@@ -232,7 +232,7 @@ export function CartSidebar() {
                   <Link href="/checkout">
                     <Button
                       className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl text-lg font-semibold"
-                      onClick={() => setIsOpen(false)}
+                      onClick={() => closeCart()}
                     >
                       Proceed to Checkout (Admin)
                     </Button>
@@ -241,7 +241,7 @@ export function CartSidebar() {
                   <Link href="/checkout">
                     <Button
                       className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl text-lg font-semibold"
-                      onClick={() => setIsOpen(false)}
+                      onClick={() => closeCart()}
                     >
                       Proceed to Checkout
                     </Button>
