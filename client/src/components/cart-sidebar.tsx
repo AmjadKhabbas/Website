@@ -229,23 +229,23 @@ export function CartSidebar() {
                     </Link>
                   </div>
                 ) : admin ? (
-                  <Button
-                    className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl text-lg font-semibold"
-                    onClick={() => {
-                      success('Admin checkout functionality coming soon!');
-                    }}
-                  >
-                    Proceed to Checkout (Admin)
-                  </Button>
+                  <Link href="/checkout">
+                    <Button
+                      className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl text-lg font-semibold"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      Proceed to Checkout (Admin)
+                    </Button>
+                  </Link>
                 ) : eligibility?.eligible ? (
-                  <Button
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl text-lg font-semibold"
-                    onClick={() => {
-                      success('Checkout functionality coming soon!');
-                    }}
-                  >
-                    Proceed to Checkout
-                  </Button>
+                  <Link href="/checkout">
+                    <Button
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl text-lg font-semibold"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      Proceed to Checkout
+                    </Button>
+                  </Link>
                 ) : eligibility?.reason === 'APPROVAL_PENDING' ? (
                   <div className="space-y-3">
                     <Alert className="border-orange-200 bg-orange-50">
