@@ -1563,8 +1563,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const orderItemsData = items.map((item: any) => ({
         productId: item.productId,
         quantity: item.quantity,
-        price: item.price.toString(),
-        totalPrice: (item.price * item.quantity).toString()
+        unitPrice: item.price.toString(),
+        totalPrice: (item.price * item.quantity).toString(),
+        productName: `Product ${item.productId}`, // Will be updated in storage
+        productImageUrl: '' // Will be updated in storage
       }));
 
       // Create order in database

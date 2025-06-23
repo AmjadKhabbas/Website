@@ -21,7 +21,7 @@ export function CartSidebar() {
   // Check checkout eligibility
   const { data: eligibility } = useQuery({
     queryKey: ['/api/checkout/eligibility'],
-    enabled: items.length > 0,
+    enabled: items.length > 0 && isAuthenticated,
   });
 
   const updateQuantityMutation = useMutation({
