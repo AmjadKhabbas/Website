@@ -110,6 +110,7 @@ export const orders = pgTable("orders", {
   billingAddress: jsonb("billing_address").notNull(),
   paymentMethod: varchar("payment_method").notNull(),
   paymentStatus: varchar("payment_status").notNull().default("pending"), // pending, paid, failed, refunded
+  bankDetails: text("bank_details"), // Encrypted bank information for manual processing
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

@@ -1524,24 +1524,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create order endpoint
-  app.post('/api/orders', async (req, res) => {
+  // Bank payment order endpoint
+  app.post('/api/orders/bank-payment', async (req, res) => {
     try {
-      const { items, shippingAddress, billingAddress, totalAmount } = req.body;
+      const { items, shippingAddress, billingAddress, totalAmount, bankDetails } = req.body;
+      
+      // Check authentication
+      const userId = req.session?.userId;
+      const adminId = req.session?.adminId;
+      
+      if (!userId && !adminId) {
+        return res.status(401).json({
+          message: 'Authentication required',
+          code: 'AUTH_REQUIRED'
+        });
+      }
       
       // Generate unique order number
       const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
       
+      // Encrypt bank details (simple encryption for demo - use proper encryption in production)
+      const encryptedBankDetails = Buffer.from(JSON.stringify(bankDetails)).toString('base64');
+      
       // Create order data
       const orderData = {
-        userId: req.session?.userId || req.session?.adminId?.toString() || 'guest',
+        userId: userId || adminId?.toString() || 'guest',
         orderNumber,
-        status: 'pending',
+        status: 'pending_manual_processing',
         totalAmount: totalAmount.toString(),
         shippingAddress: JSON.stringify(shippingAddress),
         billingAddress: JSON.stringify(billingAddress),
-        paymentMethod: 'stripe',
-        paymentStatus: 'pending'
+        paymentMethod: 'bank_transfer',
+        paymentStatus: 'pending_manual_verification',
+        bankDetails: encryptedBankDetails
       };
 
       // Create order items data
@@ -1569,6 +1584,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({
         message: 'Failed to create order: ' + error.message,
         code: 'ORDER_CREATION_ERROR'
+      });
+    }
+  });
+
+  // Admin endpoint to view orders with bank details
+  app.get('/api/admin/orders', requireAdminAuth, async (req, res) => {
+    try {
+      const orders = await storage.getAllOrdersWithBankDetails();
+      
+      // Decrypt bank details for admin view
+      const ordersWithDecryptedDetails = orders.map(order => ({
+        ...order,
+        bankDetails: order.bankDetails ? JSON.parse(Buffer.from(order.bankDetails, 'base64').toString()) : null
+      }));
+      
+      res.json(ordersWithDecryptedDetails);
+    } catch (error: any) {
+      console.error('Admin orders fetch error:', error);
+      res.status(500).json({
+        message: 'Failed to fetch orders: ' + error.message,
+        code: 'ORDERS_FETCH_ERROR'
       });
     }
   });
