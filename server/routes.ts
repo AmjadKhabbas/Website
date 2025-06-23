@@ -1611,6 +1611,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin endpoint to approve order
+  app.patch('/api/admin/orders/:id/approve', requireAdminAuth, async (req, res) => {
+    try {
+      const orderId = parseInt(req.params.id);
+      
+      if (!orderId || isNaN(orderId)) {
+        return res.status(400).json({
+          message: 'Valid order ID is required',
+          code: 'INVALID_ORDER_ID'
+        });
+      }
+
+      const updatedOrder = await storage.updateOrderStatus(orderId, 'approved');
+      
+      if (!updatedOrder) {
+        return res.status(404).json({
+          message: 'Order not found',
+          code: 'ORDER_NOT_FOUND'
+        });
+      }
+
+      res.json({
+        message: 'Order approved successfully',
+        order: updatedOrder
+      });
+    } catch (error: any) {
+      console.error('Order approval error:', error);
+      res.status(500).json({
+        message: 'Failed to approve order: ' + error.message,
+        code: 'APPROVAL_ERROR'
+      });
+    }
+  });
+
+  // Admin endpoint to reject order
+  app.patch('/api/admin/orders/:id/reject', requireAdminAuth, async (req, res) => {
+    try {
+      const orderId = parseInt(req.params.id);
+      
+      if (!orderId || isNaN(orderId)) {
+        return res.status(400).json({
+          message: 'Valid order ID is required',
+          code: 'INVALID_ORDER_ID'
+        });
+      }
+
+      const updatedOrder = await storage.updateOrderStatus(orderId, 'rejected');
+      
+      if (!updatedOrder) {
+        return res.status(404).json({
+          message: 'Order not found',
+          code: 'ORDER_NOT_FOUND'
+        });
+      }
+
+      res.json({
+        message: 'Order rejected successfully',
+        order: updatedOrder
+      });
+    } catch (error: any) {
+      console.error('Order rejection error:', error);
+      res.status(500).json({
+        message: 'Failed to reject order: ' + error.message,
+        code: 'REJECTION_ERROR'
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

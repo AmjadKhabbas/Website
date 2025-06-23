@@ -21,6 +21,7 @@ import BankCheckoutPage from "@/pages/bank-checkout";
 import OrderConfirmationPage from "@/pages/order-confirmation";
 
 import AdminDashboard from "@/pages/admin-dashboard";
+import AdminSimpleDashboard from "@/pages/admin-simple-dashboard";
 import AdminProductsPage from "@/pages/admin-products";
 import AdminOrdersPage from "@/pages/admin-orders";
 import NotFound from "@/pages/not-found";
@@ -39,8 +40,8 @@ function Router() {
       <Route path="/login" component={LoginPage} />
       <Route path="/checkout" component={BankCheckoutPage} />
       <Route path="/order-confirmation" component={OrderConfirmationPage} />
-      <Route path="/admin" component={AdminDashboard} />
-      <Route path="/admin/dashboard" component={AdminDashboard} />
+      <Route path="/admin" component={AdminSimpleDashboard} />
+      <Route path="/admin/dashboard" component={AdminSimpleDashboard} />
       <Route path="/admin/products" component={AdminProductsPage} />
       <Route path="/admin/orders" component={AdminOrdersPage} />
 
