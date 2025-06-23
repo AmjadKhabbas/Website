@@ -401,22 +401,23 @@ export default function ProductsPage() {
                   </p>
                 </div>
               ) : (
-                <div className={viewMode === 'grid' 
-                  ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4'
-                  : 'space-y-3'
-                }>
-                  {filteredProducts.map((product: ProductWithCategory, index: number) => (
-                    <motion.div
-                      key={product.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="scroll-reveal"
-                    >
-                      <ProductCard product={product} index={index} viewMode={viewMode} />
-                    </motion.div>
-                  ))}
-                </div>
+                viewMode === 'grid' ? (
+                  <CompactProductView products={filteredProducts} />
+                ) : (
+                  <div className="space-y-3">
+                    {filteredProducts.map((product: ProductWithCategory, index: number) => (
+                      <motion.div
+                        key={product.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="scroll-reveal"
+                      >
+                        <ProductCard product={product} index={index} viewMode={viewMode} />
+                      </motion.div>
+                    ))}
+                  </div>
+                )
               )}
             </motion.main>
           </div>
