@@ -72,6 +72,7 @@ export interface IStorage {
   getAdminById(id: number): Promise<AdminUser | undefined>;
   updateAdminLastLogin(id: number): Promise<void>;
   getAllOrdersWithBankDetails(): Promise<Order[]>;
+  saveBillingInfo(userId: number | string, billingAddress: any, encryptedBankDetails: string): Promise<void>;
 
   // Admin product management
   updateProductPrice(productId: number, price: string): Promise<Product | undefined>;
@@ -478,6 +479,16 @@ export class DatabaseStorage implements IStorage {
       .from(orders)
       .orderBy(desc(orders.createdAt));
     return result;
+  }
+
+  async saveBillingInfo(userId: number | string, billingAddress: any, encryptedBankDetails: string): Promise<void> {
+    await db
+      .update(users)
+      .set({
+        savedBillingAddress: billingAddress,
+        savedBankDetails: encryptedBankDetails
+      })
+      .where(eq(users.id, Number(userId)));
   }
 
   // Admin product management

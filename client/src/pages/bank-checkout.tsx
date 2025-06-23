@@ -31,6 +31,15 @@ interface BankInfo {
   accountType: 'checking' | 'savings';
 }
 
+interface BillingAddress {
+  fullName: string;
+  address: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
+}
+
 export default function BankCheckoutPage() {
   const [, setLocation] = useLocation();
   const { items, getTotalPrice, getItemTotalPrice, clearCart } = useCartStore();
@@ -39,9 +48,21 @@ export default function BankCheckoutPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
   const [orderNumber, setOrderNumber] = useState('');
+  const [useSavedInfo, setUseSavedInfo] = useState(true);
+
+  const currentUser = user || admin;
 
   const [shippingInfo, setShippingInfo] = useState<ShippingInfo>({
-    fullName: '',
+    fullName: currentUser?.fullName || '',
+    address: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    country: 'US'
+  });
+
+  const [billingAddress, setBillingAddress] = useState<BillingAddress>({
+    fullName: currentUser?.fullName || '',
     address: '',
     city: '',
     state: '',
@@ -50,14 +71,19 @@ export default function BankCheckoutPage() {
   });
 
   const [bankInfo, setBankInfo] = useState<BankInfo>({
-    accountHolderName: '',
+    accountHolderName: currentUser?.fullName || '',
     bankName: '',
     accountNumber: '',
     routingNumber: '',
     accountType: 'checking'
   });
 
-  const currentUser = user || admin;
+  // Load saved information if available
+  useEffect(() => {
+    if (currentUser && 'savedBillingAddress' in currentUser && currentUser.savedBillingAddress) {
+      setBillingAddress(currentUser.savedBillingAddress as BillingAddress);
+    }
+  }, [currentUser]);
   const totalAmount = getTotalPrice();
 
   const handleShippingChange = (field: keyof ShippingInfo, value: string) => {
@@ -66,6 +92,10 @@ export default function BankCheckoutPage() {
 
   const handleBankChange = (field: keyof BankInfo, value: string) => {
     setBankInfo(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleBillingAddressChange = (field: keyof BillingAddress, value: string) => {
+    setBillingAddress(prev => ({ ...prev, [field]: value }));
   };
 
   const formatPrice = (price: number) => {
@@ -86,6 +116,19 @@ export default function BankCheckoutPage() {
       toast({
         title: "Missing Information",
         description: "Please fill in all shipping details.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate billing address
+    const requiredBillingFields = ['fullName', 'address', 'city', 'state', 'zipCode'];
+    const missingBillingFields = requiredBillingFields.filter(field => !billingAddress[field as keyof BillingAddress]);
+    
+    if (missingBillingFields.length > 0) {
+      toast({
+        title: "Missing Billing Information",
+        description: "Please fill in all billing address details.",
         variant: "destructive",
       });
       return;
@@ -115,9 +158,10 @@ export default function BankCheckoutPage() {
           price: getItemTotalPrice(item) / item.quantity
         })),
         shippingAddress: shippingInfo,
-        billingAddress: shippingInfo,
+        billingAddress: billingAddress,
         totalAmount: totalAmount,
-        bankDetails: bankInfo
+        bankDetails: bankInfo,
+        saveBillingInfo: !useSavedInfo // Save if using new info
       });
 
       const data = await response.json();
@@ -355,6 +399,91 @@ export default function BankCheckoutPage() {
                       value={shippingInfo.zipCode}
                       onChange={(e) => handleShippingChange('zipCode', e.target.value)}
                       placeholder="ZIP Code"
+                      required
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Billing Address */}
+              <Card className="shadow-xl border-0 bg-white">
+                <CardHeader>
+                  <CardTitle className="text-xl font-bold text-gray-900">
+                    Billing Address
+                  </CardTitle>
+                  {currentUser && 'savedBillingAddress' in currentUser && currentUser.savedBillingAddress && (
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="useSavedInfo"
+                        checked={useSavedInfo}
+                        onChange={(e) => setUseSavedInfo(e.target.checked)}
+                        className="rounded"
+                      />
+                      <Label htmlFor="useSavedInfo" className="text-sm">
+                        Use saved billing information
+                      </Label>
+                    </div>
+                  )}
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label htmlFor="billingFullName">Full Name</Label>
+                    <Input
+                      id="billingFullName"
+                      value={billingAddress.fullName}
+                      onChange={(e) => handleBillingAddressChange('fullName', e.target.value)}
+                      placeholder="Enter billing name"
+                      disabled={useSavedInfo && currentUser && 'savedBillingAddress' in currentUser && currentUser.savedBillingAddress}
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="billingAddress">Address</Label>
+                    <Input
+                      id="billingAddress"
+                      value={billingAddress.address}
+                      onChange={(e) => handleBillingAddressChange('address', e.target.value)}
+                      placeholder="Enter billing address"
+                      disabled={useSavedInfo && currentUser && 'savedBillingAddress' in currentUser && currentUser.savedBillingAddress}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="billingCity">City</Label>
+                      <Input
+                        id="billingCity"
+                        value={billingAddress.city}
+                        onChange={(e) => handleBillingAddressChange('city', e.target.value)}
+                        placeholder="City"
+                        disabled={useSavedInfo && currentUser && 'savedBillingAddress' in currentUser && currentUser.savedBillingAddress}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="billingState">State</Label>
+                      <Input
+                        id="billingState"
+                        value={billingAddress.state}
+                        onChange={(e) => handleBillingAddressChange('state', e.target.value)}
+                        placeholder="State"
+                        disabled={useSavedInfo && currentUser && 'savedBillingAddress' in currentUser && currentUser.savedBillingAddress}
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="billingZipCode">ZIP Code</Label>
+                    <Input
+                      id="billingZipCode"
+                      value={billingAddress.zipCode}
+                      onChange={(e) => handleBillingAddressChange('zipCode', e.target.value)}
+                      placeholder="ZIP Code"
+                      disabled={useSavedInfo && currentUser && 'savedBillingAddress' in currentUser && currentUser.savedBillingAddress}
                       required
                     />
                   </div>

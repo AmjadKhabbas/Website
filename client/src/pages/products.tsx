@@ -9,6 +9,7 @@ import { Slider } from '@/components/ui/slider';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ProductCard } from '@/components/product-card';
+import { CompactProductView } from '@/components/compact-product-view';
 import { useLocation } from 'wouter';
 import type { Product, ProductWithCategory, Category } from '@shared/schema';
 

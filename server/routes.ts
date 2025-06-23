@@ -1527,7 +1527,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Bank payment order endpoint
   app.post('/api/orders/bank-payment', async (req, res) => {
     try {
-      const { items, shippingAddress, billingAddress, totalAmount, bankDetails } = req.body;
+      const { items, shippingAddress, billingAddress, totalAmount, bankDetails, saveBillingInfo } = req.body;
       
       // Check authentication
       const userId = req.session?.userId;
@@ -1571,6 +1571,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Create order in database
       const order = await storage.createOrder(orderData, orderItemsData);
+      
+      // Save billing information if requested
+      if (saveBillingInfo && (userId || adminId)) {
+        await storage.saveBillingInfo(userId || adminId, billingAddress, Buffer.from(JSON.stringify(bankDetails)).toString('base64'));
+      }
       
       res.status(201).json({
         message: 'Order created successfully',
