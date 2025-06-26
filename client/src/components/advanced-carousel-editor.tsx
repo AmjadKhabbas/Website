@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CarouselItem } from '@shared/schema';
+import { CarouselItem, Product } from '@shared/schema';
 
 interface AdvancedCarouselEditorProps {
   item?: CarouselItem;
@@ -41,6 +42,7 @@ export const AdvancedCarouselEditor = ({
     textColor: item?.textColor || '#ffffff',
     ctaText: item?.ctaText || 'Shop Now',
     ctaLink: item?.ctaLink || '',
+    linkedProductId: item?.linkedProductId || null,
     ctaButtonColor: item?.ctaButtonColor || '#10b981',
     badgeText: item?.badgeText || '',
     badgeColor: item?.badgeColor || '#ef4444',
@@ -49,6 +51,12 @@ export const AdvancedCarouselEditor = ({
     isActive: item?.isActive ?? true,
     sortOrder: item?.sortOrder || 0
   });
+
+  // Fetch available products for linking
+  const { data: productsResponse } = useQuery<{ products: Product[] }>({
+    queryKey: ['/api/products'],
+  });
+  const products = productsResponse?.products || [];
 
   const [previewMode, setPreviewMode] = useState(false);
 
@@ -139,14 +147,39 @@ export const AdvancedCarouselEditor = ({
                         />
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-4">
                         <div className="space-y-2">
-                          <Label htmlFor="ctaText">Button Text</Label>
-                          <Input
-                            id="ctaText"
-                            value={formData.ctaText}
-                            onChange={(e) => setFormData(prev => ({ ...prev, ctaText: e.target.value }))}
-                            placeholder="Shop Now"
+                          <Label htmlFor="linkedProduct">Link to Product</Label>
+                          <Select
+                            value={formData.linkedProductId?.toString() || ""}
+                            onValueChange={(value) => setFormData(prev => ({ 
+                              ...prev, 
+                              linkedProductId: value ? parseInt(value) : null,
+                              ctaLink: value ? `/product/${value}` : ''
+                            }))}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a product to link (optional)" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="">No product link</SelectItem>
+                              {products.map((product) => (
+                                <SelectItem key={product.id} value={product.id.toString()}>
+                                  {product.name} - ${product.price}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="ctaText">Button Text</Label>
+                            <Input
+                              id="ctaText"
+                              value={formData.ctaText}
+                              onChange={(e) => setFormData(prev => ({ ...prev, ctaText: e.target.value }))}
+                              placeholder="Shop Now"
                           />
                         </div>
                         <div className="space-y-2">
