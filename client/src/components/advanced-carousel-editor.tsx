@@ -180,9 +180,20 @@ export const AdvancedCarouselEditor = ({
                               value={formData.ctaText}
                               onChange={(e) => setFormData(prev => ({ ...prev, ctaText: e.target.value }))}
                               placeholder="Shop Now"
-                          />
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="ctaLink">Custom Link (if not using product link)</Label>
+                            <Input
+                              id="ctaLink"
+                              value={formData.ctaLink}
+                              onChange={(e) => setFormData(prev => ({ ...prev, ctaLink: e.target.value }))}
+                              placeholder="/products or https://example.com"
+                              disabled={!!formData.linkedProductId}
+                            />
+                          </div>
                         </div>
-                        <div className="space-y-2">
+                      </div>
                           <Label htmlFor="ctaLink">Button Link</Label>
                           <Input
                             id="ctaLink"
@@ -198,6 +209,13 @@ export const AdvancedCarouselEditor = ({
                         <Input
                           id="badgeText"
                           value={formData.badgeText}
+                          onChange={(e) => setFormData(prev => ({ ...prev, badgeText: e.target.value }))}
+                          placeholder="Sale!, New!, Limited Time!"
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
                           onChange={(e) => setFormData(prev => ({ ...prev, badgeText: e.target.value }))}
                           placeholder="Limited Time"
                         />

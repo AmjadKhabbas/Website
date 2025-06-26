@@ -268,7 +268,7 @@ export class SecurityAudit {
  * IP whitelist for admin operations (optional)
  */
 export const adminIPWhitelist = (req: Request, res: Response, next: NextFunction) => {
-  const clientIP = req.ip || req.connection.remoteAddress;
+  const clientIP = req.ip || req.connection.remoteAddress || 'unknown';
   const allowedIPs = process.env.ADMIN_IP_WHITELIST?.split(',') || [];
   
   // Skip IP checking in development
@@ -281,7 +281,7 @@ export const adminIPWhitelist = (req: Request, res: Response, next: NextFunction
       action: 'ADMIN_ACCESS_DENIED',
       resource: req.path,
       ip: clientIP,
-      userAgent: req.headers['user-agent'] || '',
+      userAgent: req.headers['user-agent'] || 'unknown',
       success: false,
       details: { reason: 'IP not whitelisted' }
     });
