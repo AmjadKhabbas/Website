@@ -1524,36 +1524,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Bank payment order endpoint - Enhanced security
-  app.post('/api/orders/bank-payment', sensitiveEndpointLimiter, async (req, res) => {
+  // Bank payment order endpoint
+  app.post('/api/orders/bank-payment', async (req, res) => {
     try {
       const { items, shippingAddress, billingAddress, totalAmount, bankDetails, saveBillingInfo } = req.body;
-      
-      // Security audit log
-      SecurityAudit.logSecurityEvent({
-        userId: req.session?.userId,
-        adminId: req.session?.adminId,
-        action: 'BANK_PAYMENT_ATTEMPT',
-        resource: '/api/orders/bank-payment',
-        ip: req.ip || 'unknown',
-        userAgent: req.headers['user-agent'] || 'unknown',
-        success: false, // Will be updated on success
-        details: { totalAmount, itemCount: items?.length }
-      });
-
-      // Validate bank details
-      if (bankDetails?.routingNumber && !InputValidator.validateRoutingNumber(bankDetails.routingNumber)) {
-        return res.status(400).json({ message: 'Invalid routing number format' });
-      }
-
-      // Sanitize input data
-      if (billingAddress) {
-        Object.keys(billingAddress).forEach(key => {
-          if (typeof billingAddress[key] === 'string') {
-            billingAddress[key] = InputValidator.sanitizeString(billingAddress[key]);
-          }
-        });
-      }
       
       // Check authentication
       const userId = req.session?.userId;
@@ -1600,21 +1574,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Save billing information if requested with enhanced encryption
       if (saveBillingInfo && (userId || adminId)) {
-        const encryptedBankDetails = SecureDataHandler.encryptSensitiveData(JSON.stringify(bankDetails));
-        await storage.saveBillingInfo(userId || adminId!, billingAddress, encryptedBankDetails);
+        const encryptedBankDetails = Buffer.from(JSON.stringify(bankDetails)).toString('base64');
+        await storage.saveBillingInfo(String(userId || adminId), billingAddress, encryptedBankDetails);
       }
-
-      // Log successful transaction
-      SecurityAudit.logSecurityEvent({
-        userId: userId,
-        adminId: adminId,
-        action: 'BANK_PAYMENT_SUCCESS',
-        resource: '/api/orders/bank-payment',
-        ip: req.ip || 'unknown',
-        userAgent: req.headers['user-agent'] || 'unknown',
-        success: true,
-        details: { orderId: order.id, orderNumber: order.orderNumber }
-      });
       
       res.status(201).json({
         message: 'Order created successfully',

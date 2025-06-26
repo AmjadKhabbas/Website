@@ -491,7 +491,7 @@ export default function BankCheckoutPage() {
               </Card>
 
               {/* Bank Information */}
-              <Card className="shadow-xl border-0 bg-white">
+              <Card className="shadow-xl border-0 bg-white border-2 border-green-500 bg-green-50">
                 <CardHeader>
                   <CardTitle className="text-xl font-bold text-gray-900 flex items-center gap-2">
                     <CreditCard className="h-5 w-5" />
