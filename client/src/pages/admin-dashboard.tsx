@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { CheckCircle, XCircle, User, Mail, FileText, Building, MapPin, LogOut, Loader2, Package, Plus, Trash2, Edit, Search, Palette } from 'lucide-react';
-import { AdvancedCarouselEditor } from '@/components/advanced-carousel-editor';
+import { AdminCarouselManager } from '@/components/admin-carousel-manager';
 import { ProductImageManager } from '@/components/product-image-manager';
 import { Link } from 'wouter';
 import { useToast } from '@/components/toast';
@@ -347,7 +347,7 @@ export default function AdminDashboard() {
 
         {/* Admin Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="users" className="flex items-center gap-2">
               <User className="h-4 w-4" />
               Doctor Registrations ({pendingUsers.length})
@@ -564,7 +564,7 @@ export default function AdminDashboard() {
           </TabsContent>
 
           <TabsContent value="carousel">
-            <CarouselManagement />
+            <AdminCarouselManager />
           </TabsContent>
         </Tabs>
 
