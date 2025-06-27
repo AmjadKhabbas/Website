@@ -33,6 +33,12 @@ interface OrderWithBankDetails {
   userId: string;
 }
 
+interface CustomerContact {
+  email: string;
+  orderId: number;
+  orderNumber: string;
+}
+
 interface PendingUser {
   id: number;
   email: string;
@@ -52,6 +58,7 @@ export default function AdminSimpleDashboard() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [visibleBankDetails, setVisibleBankDetails] = useState<Record<number, boolean>>({});
+  const [customerContact, setCustomerContact] = useState<CustomerContact | null>(null);
 
   const { data: pendingUsers, isLoading: usersLoading } = useQuery<PendingUser[]>({
     queryKey: ['/api/admin/pending-users'],
@@ -93,13 +100,34 @@ export default function AdminSimpleDashboard() {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/orders'] });
       toast({
         title: "Success",
-        description: "Order rejected successfully",
+        description: "Order rejected and removed successfully",
       });
     },
     onError: () => {
       toast({
         title: "Error",
         description: "Failed to reject order",
+        variant: "destructive",
+      });
+    }
+  });
+
+  const contactCustomerMutation = useMutation({
+    mutationFn: async (orderId: number): Promise<CustomerContact> => {
+      const response = await apiRequest('GET', `/api/admin/orders/${orderId}/customer-email`);
+      return await response.json();
+    },
+    onSuccess: (data) => {
+      setCustomerContact(data);
+      toast({
+        title: "Customer Contact Information",
+        description: `Customer email: ${data.email}`,
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to get customer contact information",
         variant: "destructive",
       });
     }
@@ -341,24 +369,36 @@ export default function AdminSimpleDashboard() {
                     <Separator className="my-4" />
 
                     {/* Action Buttons */}
-                    <div className="flex justify-end space-x-3">
+                    <div className="flex justify-between">
                       <Button
                         variant="outline"
-                        onClick={() => rejectOrderMutation.mutate(order.id)}
-                        disabled={rejectOrderMutation.isPending}
-                        className="text-red-600 border-red-300 hover:bg-red-50"
+                        onClick={() => contactCustomerMutation.mutate(order.id)}
+                        disabled={contactCustomerMutation.isPending}
+                        className="text-blue-600 border-blue-300 hover:bg-blue-50"
                       >
-                        <XCircle className="h-4 w-4 mr-2" />
-                        Reject Order
+                        <Users className="h-4 w-4 mr-2" />
+                        Contact Customer
                       </Button>
-                      <Button
-                        onClick={() => approveOrderMutation.mutate(order.id)}
-                        disabled={approveOrderMutation.isPending}
-                        className="bg-green-600 hover:bg-green-700 text-white"
-                      >
-                        <CheckCircle className="h-4 w-4 mr-2" />
-                        Approve Order
-                      </Button>
+                      
+                      <div className="flex space-x-3">
+                        <Button
+                          variant="outline"
+                          onClick={() => rejectOrderMutation.mutate(order.id)}
+                          disabled={rejectOrderMutation.isPending}
+                          className="text-red-600 border-red-300 hover:bg-red-50"
+                        >
+                          <XCircle className="h-4 w-4 mr-2" />
+                          Cancel & Remove Order
+                        </Button>
+                        <Button
+                          onClick={() => approveOrderMutation.mutate(order.id)}
+                          disabled={approveOrderMutation.isPending}
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          <CheckCircle className="h-4 w-4 mr-2" />
+                          Approve Order
+                        </Button>
+                      </div>
                     </div>
                   </motion.div>
                 ))}
