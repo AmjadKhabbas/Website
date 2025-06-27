@@ -115,11 +115,6 @@ export function BulkDiscountManager({ basePrice, discounts, onChange }: BulkDisc
     setEditingTier({ ...editingTier, discountedPrice: price, discountPercentage });
   };
 
-  const removeTier = (index: number) => {
-    const updatedDiscounts = discounts.filter((_, i) => i !== index);
-    onChange(updatedDiscounts);
-  };
-
   const updateTier = (index: number, field: keyof BulkDiscountTier, value: number | null) => {
     const updatedDiscounts = [...discounts];
     updatedDiscounts[index] = {
