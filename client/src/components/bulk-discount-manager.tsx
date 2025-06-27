@@ -1,18 +1,19 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, Percent, DollarSign } from 'lucide-react';
+import { Plus, Trash2, Percent, DollarSign, Edit2, Save, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-
-export interface BulkDiscountTier {
-  minQuantity: number;
-  maxQuantity: number | null; // null means "and above"
-  discountPercentage: number;
-  discountedPrice: number;
-}
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { 
+  BulkDiscountTier, 
+  calculateDiscountedPrice, 
+  formatQuantityRange, 
+  validateTier, 
+  sortTiersByQuantity 
+} from '@shared/bulk-discount-types';
 
 interface BulkDiscountManagerProps {
   basePrice: number;

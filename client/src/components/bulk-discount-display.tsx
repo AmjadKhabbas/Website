@@ -1,13 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, Package } from "lucide-react";
-
-export interface BulkDiscountTier {
-  minQuantity: number;
-  maxQuantity: number | null;
-  discountPercentage: number;
-  discountedPrice: number;
-}
+import { ShoppingCart, Package, TrendingDown } from "lucide-react";
+import { BulkDiscountTier, findApplicableDiscount, formatQuantityRange } from "@shared/bulk-discount-types";
 
 interface BulkDiscountDisplayProps {
   basePrice: number;

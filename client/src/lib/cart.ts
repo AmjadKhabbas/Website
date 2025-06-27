@@ -1,13 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { CartItemWithProduct } from '@shared/schema';
-
-interface BulkDiscountTier {
-  minQuantity: number;
-  maxQuantity: number | null;
-  discountPercentage: number;
-  discountedPrice: number;
-}
+import { BulkDiscountTier, findApplicableDiscount } from '@shared/bulk-discount-types';
 
 interface CartStore {
   items: CartItemWithProduct[];
