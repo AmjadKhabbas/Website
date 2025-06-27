@@ -281,7 +281,7 @@ export default function ProductPage() {
                 {/* Price */}
                 <div className="flex items-center space-x-4 mb-6">
                   <span className="text-4xl font-bold text-blue-600">
-                    {formatPrice(displayPrice!)}
+                    {displayPrice ? formatPrice(displayPrice) : formatPrice(product.price)}
                   </span>
                   {hasDiscount && (
                     <span className="text-xl text-gray-500 line-through">

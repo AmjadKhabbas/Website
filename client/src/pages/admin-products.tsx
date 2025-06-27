@@ -405,7 +405,7 @@ export default function AdminProductsPage() {
                         <FormControl>
                           <Switch
                             checked={field.value}
-                            onCheckedChange={(checked) => {
+                            onCheckedChange={(checked: boolean) => {
                               field.onChange(checked);
                               setIsOnSale(checked);
                             }}
