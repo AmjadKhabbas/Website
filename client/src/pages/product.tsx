@@ -152,9 +152,9 @@ export default function ProductPage() {
     );
   }
 
-  const hasDiscount = product.originalPrice && parseFloat(product.originalPrice) > parseFloat(product.price);
+  const hasDiscount = product?.isOnSale && product?.salePrice && parseFloat(product.salePrice) < parseFloat(product.price);
   const discountPercentage = hasDiscount
-    ? Math.round(((parseFloat(product.originalPrice!) - parseFloat(product.price)) / parseFloat(product.originalPrice!)) * 100)
+    ? Math.round(((parseFloat(product.price) - parseFloat(product.salePrice!)) / parseFloat(product.price)) * 100)
     : 0;
 
   return (
@@ -300,7 +300,7 @@ export default function ProductPage() {
                 </p>
 
                 {/* Tags */}
-                {product.tags && product.tags.length > 0 && (
+                {product.tags && typeof product.tags === 'string' && product.tags.length > 0 && (
                   <div className="flex flex-wrap gap-2 mb-6">
                     {product.tags.split(',').map((tag, index) => (
                       <Badge key={index} variant="outline" className="text-sm text-gray-600 border-gray-300">

@@ -141,9 +141,9 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
     }).format(parseFloat(price));
   };
 
-  const hasDiscount = product.originalPrice && parseFloat(product.originalPrice) > parseFloat(product.price);
+  const hasDiscount = product.isOnSale && product.salePrice && parseFloat(product.salePrice) < parseFloat(product.price);
   const discountPercentage = hasDiscount
-    ? Math.round(((parseFloat(product.originalPrice!) - parseFloat(product.price)) / parseFloat(product.originalPrice!)) * 100)
+    ? Math.round(((parseFloat(product.price) - parseFloat(product.salePrice!)) / parseFloat(product.price)) * 100)
     : 0;
 
   if (viewMode === 'list') {
@@ -301,7 +301,7 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
               </span>
               {hasDiscount && (
                 <span className="text-sm text-slate-400 line-through">
-                  {formatPrice(product.originalPrice!)}
+                  {formatPrice(product.price)}
                 </span>
               )}
             </div>
