@@ -104,12 +104,34 @@ export const orders = pgTable("orders", {
   id: serial("id").primaryKey(),
   userId: varchar("user_id").notNull(),
   orderNumber: varchar("order_number").notNull().unique(),
-  status: varchar("status").notNull().default("pending"), // pending, confirmed, shipped, delivered, cancelled
+  status: varchar("status").notNull().default("pending"), // pending, approved, declined, shipped, delivered, cancelled
   totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
+  
+  // Shipping & Billing Information
   shippingAddress: jsonb("shipping_address").notNull(),
   billingAddress: jsonb("billing_address").notNull(),
+  
+  // Doctor's Banking Information (Admin Only)
+  doctorBankingInfo: jsonb("doctor_banking_info").notNull(), // { bankName, accountNumber, routingNumber, accountType }
+  institutionNumber: varchar("institution_number").notNull(),
+  
+  // Card Information (Admin Only)
+  cardInfo: jsonb("card_info").notNull(), // { last4, expiryMonth, expiryYear, cardType }
+  
+  // Payment Details
   paymentMethod: varchar("payment_method").notNull(),
   paymentStatus: varchar("payment_status").notNull().default("pending"), // pending, paid, failed, refunded
+  
+  // Doctor Information
+  doctorEmail: varchar("doctor_email").notNull(),
+  doctorName: varchar("doctor_name").notNull(),
+  doctorPhone: varchar("doctor_phone"),
+  
+  // Admin Actions
+  approvedBy: varchar("approved_by"), // Admin email who approved/declined
+  approvedAt: timestamp("approved_at"),
+  declineReason: text("decline_reason"),
+  
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
