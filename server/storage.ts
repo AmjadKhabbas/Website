@@ -442,7 +442,67 @@ export class DatabaseStorage implements IStorage {
   async updateOrderStatus(orderId: number, status: string): Promise<Order | undefined> {
     const [order] = await db
       .update(orders)
-      .set({ orderStatus: status, updatedAt: new Date() })
+      .set({ status, updatedAt: new Date() })
+      .where(eq(orders.id, orderId))
+      .returning();
+    return order || undefined;
+  }
+
+  // Admin order management
+  async getPendingOrders(): Promise<OrderWithItems[]> {
+    const ordersResult = await db
+      .select()
+      .from(orders)
+      .where(eq(orders.status, "pending"))
+      .orderBy(desc(orders.createdAt));
+
+    const ordersWithItems: OrderWithItems[] = [];
+
+    for (const order of ordersResult) {
+      const itemsResult = await db
+        .select()
+        .from(orderItems)
+        .leftJoin(products, eq(orderItems.productId, products.id))
+        .where(eq(orderItems.orderId, order.id));
+
+      const items = itemsResult.map(result => ({
+        ...result.order_items,
+        product: result.products!
+      }));
+
+      ordersWithItems.push({
+        ...order,
+        items
+      });
+    }
+
+    return ordersWithItems;
+  }
+
+  async approveOrder(orderId: number, adminEmail: string): Promise<Order | undefined> {
+    const [order] = await db
+      .update(orders)
+      .set({ 
+        status: "approved", 
+        approvedBy: adminEmail,
+        approvedAt: new Date(),
+        updatedAt: new Date()
+      })
+      .where(eq(orders.id, orderId))
+      .returning();
+    return order || undefined;
+  }
+
+  async declineOrder(orderId: number, adminEmail: string, reason: string): Promise<Order | undefined> {
+    const [order] = await db
+      .update(orders)
+      .set({ 
+        status: "declined", 
+        approvedBy: adminEmail,
+        approvedAt: new Date(),
+        declineReason: reason,
+        updatedAt: new Date()
+      })
       .where(eq(orders.id, orderId))
       .returning();
     return order || undefined;

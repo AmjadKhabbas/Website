@@ -63,15 +63,28 @@ export default function AdminPendingOrdersPage() {
   // Fetch pending orders
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ["/api/admin/pending-orders"],
-    queryFn: () => apiRequest("/api/admin/pending-orders"),
+    queryFn: async () => {
+      const response = await fetch("/api/admin/pending-orders");
+      if (!response.ok) {
+        throw new Error("Failed to fetch pending orders");
+      }
+      return response.json();
+    },
   });
 
   // Approve order mutation
   const approveOrderMutation = useMutation({
     mutationFn: async (orderId: number) => {
-      return apiRequest(`/api/admin/orders/${orderId}/approve`, {
+      const response = await fetch(`/api/admin/orders/${orderId}/approve`, {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
+      if (!response.ok) {
+        throw new Error("Failed to approve order");
+      }
+      return response.json();
     },
     onSuccess: () => {
       toast({
@@ -93,10 +106,17 @@ export default function AdminPendingOrdersPage() {
   // Decline order mutation
   const declineOrderMutation = useMutation({
     mutationFn: async ({ orderId, reason }: { orderId: number; reason: string }) => {
-      return apiRequest(`/api/admin/orders/${orderId}/decline`, {
+      const response = await fetch(`/api/admin/orders/${orderId}/decline`, {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ reason }),
       });
+      if (!response.ok) {
+        throw new Error("Failed to decline order");
+      }
+      return response.json();
     },
     onSuccess: () => {
       toast({
