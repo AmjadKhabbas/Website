@@ -313,10 +313,9 @@ export default function ProductPage() {
                 {/* Bulk Discount Display */}
                 {product.bulkDiscounts && Array.isArray(product.bulkDiscounts) && product.bulkDiscounts.length > 0 && (
                   <div className="mb-6">
-                    <BulkDiscountDisplay
+                    <ProductTierDisplay
+                      bulkDiscounts={product.bulkDiscounts as any}
                       basePrice={parseFloat(product.price)}
-                      discounts={product.bulkDiscounts}
-                      selectedQuantity={selectedQuantity}
                     />
                   </div>
                 )}

@@ -818,24 +818,7 @@ const CarouselManagement = () => {
         </div>
       )}
 
-      {/* Advanced Carousel Editor */}
-      <AdvancedCarouselEditor
-        open={createDialogOpen || editingItem !== null}
-        onClose={() => {
-          setCreateDialogOpen(false);
-          setEditingItem(null);
-        }}
-        onSubmit={(data) => {
-          if (editingItem) {
-            updateMutation.mutate({ id: editingItem.id, data });
-          } else {
-            createMutation.mutate(data);
-          }
-        }}
-        isLoading={createMutation.isPending || updateMutation.isPending}
-        mode={editingItem ? 'edit' : 'create'}
-        item={editingItem || undefined}
-      />
+
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteItemId !== null} onOpenChange={() => setDeleteItemId(null)}>
