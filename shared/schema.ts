@@ -34,8 +34,6 @@ export const products = pgTable("products", {
   rating: decimal("rating", { precision: 2, scale: 1 }).notNull().default("0.0"),
   reviewCount: integer("review_count").notNull().default(0),
   inStock: boolean("in_stock").notNull().default(true),
-  featured: boolean("featured").notNull().default(false),
-  tags: text("tags"),
   bulkDiscounts: jsonb("bulk_discounts").default([]), // Array of bulk discount tiers
 });
 
