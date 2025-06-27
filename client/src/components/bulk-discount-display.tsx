@@ -77,8 +77,8 @@ export function BulkDiscountDisplay({ basePrice, discounts, selectedQuantity = 1
           })}
         </div>
 
-        {currentDiscount && (
-          <div className="mt-4 p-3 bg-green-100 border border-green-300 rounded-lg">
+        {currentDiscount && selectedQuantity > 0 && (
+          <div className="mt-4 p-3 bg-gradient-to-r from-green-100 to-green-50 border border-green-300 rounded-lg">
             <div className="flex items-center gap-2 text-green-800">
               <ShoppingCart className="h-4 w-4" />
               <span className="text-sm font-medium">
@@ -87,6 +87,9 @@ export function BulkDiscountDisplay({ basePrice, discounts, selectedQuantity = 1
             </div>
             <div className="mt-1 text-sm text-green-700">
               Total savings: ${((basePrice - currentDiscount.discountedPrice) * selectedQuantity).toFixed(2)}
+            </div>
+            <div className="mt-1 text-xs text-green-600">
+              Unit price: ${currentDiscount.discountedPrice.toFixed(2)} (was ${basePrice.toFixed(2)})
             </div>
           </div>
         )}

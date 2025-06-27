@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ShoppingCart, Minus, Plus, ArrowLeft, Trash2, X } from 'lucide-react';
 import { Link, useParams, useLocation } from 'wouter';
@@ -60,6 +60,11 @@ export default function ProductPage() {
   // Get current quantity in cart
   const cartItem = items.find(item => item.product.id === parseInt(id!));
   const currentQuantity = cartItem?.quantity || 0;
+  
+  // Initialize selectedQuantity with current cart quantity
+  useEffect(() => {
+    setSelectedQuantity(currentQuantity);
+  }, [currentQuantity]);
 
   const addToCartMutation = useMutation({
     mutationFn: async (quantity: number) => {
