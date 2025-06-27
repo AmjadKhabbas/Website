@@ -39,11 +39,14 @@ interface Product {
   name: string;
   description: string;
   price: string;
+  salePrice?: string;
+  isOnSale?: boolean;
   imageUrl: string;
   imageUrls: string[] | null;
   categoryId: number;
   inStock: boolean;
   featured: boolean;
+  bulkDiscounts?: any[];
   category: {
     id: number;
     name: string;
@@ -84,6 +87,8 @@ function EditProductDialog({ product, categories, onClose }: {
     name: product.name,
     description: product.description,
     price: product.price,
+    salePrice: product.salePrice || '',
+    isOnSale: product.isOnSale || false,
     imageUrl: product.imageUrl,
     categoryId: product.categoryId,
     inStock: product.inStock,
@@ -127,7 +132,7 @@ function EditProductDialog({ product, categories, onClose }: {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="price">Price ($)</Label>
+              <Label htmlFor="price">Regular Price ($)</Label>
               <Input
                 id="price"
                 type="number"
@@ -137,6 +142,32 @@ function EditProductDialog({ product, categories, onClose }: {
                 required
               />
             </div>
+          </div>
+
+          {/* Sale Price Section */}
+          <div className="border border-orange-200 rounded-lg p-4 bg-orange-50">
+            <div className="flex items-center space-x-2 mb-3">
+              <Switch
+                id="isOnSale"
+                checked={formData.isOnSale}
+                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isOnSale: checked }))}
+              />
+              <Label htmlFor="isOnSale" className="text-orange-800 font-medium">Mark as On Sale</Label>
+            </div>
+            
+            {formData.isOnSale && (
+              <div className="space-y-2">
+                <Label htmlFor="salePrice">Sale Price ($)</Label>
+                <Input
+                  id="salePrice"
+                  type="number"
+                  step="0.01"
+                  value={formData.salePrice}
+                  onChange={(e) => setFormData(prev => ({ ...prev, salePrice: e.target.value }))}
+                  placeholder="Enter discounted price"
+                />
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">

@@ -33,6 +33,8 @@ const productUploadSchema = z.object({
   name: z.string().min(1, "Product name is required").max(100, "Name must be less than 100 characters"),
   description: z.string().min(10, "Description must be at least 10 characters").max(1000, "Description must be less than 1000 characters"),
   price: z.string().min(1, "Price is required").regex(/^\d+(\.\d{1,2})?$/, "Price must be a valid number"),
+  salePrice: z.string().optional(),
+  isOnSale: z.boolean().default(false),
   categoryId: z.string().min(1, "Category is required"),
   featured: z.boolean().default(false),
   inStock: z.boolean().default(true),
@@ -46,6 +48,7 @@ export default function AdminProductsPage() {
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [imageUploadLoading, setImageUploadLoading] = useState(false);
   const [bulkDiscounts, setBulkDiscounts] = useState<BulkDiscountTier[]>([]);
+  const [isOnSale, setIsOnSale] = useState(false);
 
   const form = useForm<ProductUploadFormData>({
     resolver: zodResolver(productUploadSchema),
@@ -53,6 +56,8 @@ export default function AdminProductsPage() {
       name: "",
       description: "",
       price: "",
+      salePrice: "",
+      isOnSale: false,
       categoryId: "",
       featured: false,
       inStock: true,
@@ -90,6 +95,8 @@ export default function AdminProductsPage() {
       });
       form.reset();
       setUploadedImages([]);
+      setBulkDiscounts([]);
+      setIsOnSale(false);
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
     },
     onError: (error: Error) => {
@@ -168,6 +175,8 @@ export default function AdminProductsPage() {
         name: data.name,
         description: data.description,
         price: data.price,
+        salePrice: data.isOnSale && data.salePrice ? data.salePrice : null,
+        isOnSale: data.isOnSale,
         categoryId: parseInt(data.categoryId),
         imageUrl: uploadedImages[0] || "/api/placeholder/300/300",
         imageUrls: uploadedImages.slice(1),
@@ -183,6 +192,7 @@ export default function AdminProductsPage() {
       form.reset();
       setUploadedImages([]);
       setBulkDiscounts([]);
+      setIsOnSale(false);
     } catch (error) {
       console.error("Product creation failed:", error);
     }
@@ -376,6 +386,58 @@ export default function AdminProductsPage() {
                     </FormItem>
                   )}
                 />
+
+                {/* Sale Price Section */}
+                <div className="border border-orange-200 rounded-lg p-6 bg-orange-50">
+                  <FormField
+                    control={form.control}
+                    name="isOnSale"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border border-orange-300 bg-white p-4 mb-4">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-base font-medium text-orange-800">
+                            Mark as On Sale
+                          </FormLabel>
+                          <p className="text-sm text-orange-600">
+                            Enable sale pricing for this product
+                          </p>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={(checked) => {
+                              field.onChange(checked);
+                              setIsOnSale(checked);
+                            }}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  
+                  {form.watch("isOnSale") && (
+                    <FormField
+                      control={form.control}
+                      name="salePrice"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-orange-800 font-medium flex items-center gap-2">
+                            <Tag className="h-4 w-4" />
+                            Sale Price (CAD)
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="169.00"
+                              {...field}
+                              className="h-12 border-orange-300 focus:border-orange-500"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                </div>
 
                 {/* Product Options */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
