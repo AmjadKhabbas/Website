@@ -299,16 +299,7 @@ export default function ProductPage() {
                   {product.description}
                 </p>
 
-                {/* Tags */}
-                {product.tags && product.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-6">
-                    {product.tags.split(',').map((tag, index) => (
-                      <Badge key={index} variant="outline" className="text-sm text-gray-600 border-gray-300">
-                        {tag.trim()}
-                      </Badge>
-                    ))}
-                  </div>
-                )}
+
 
                 {/* Bulk Discount Display */}
                 {product.bulkDiscounts && Array.isArray(product.bulkDiscounts) && product.bulkDiscounts.length > 0 && (

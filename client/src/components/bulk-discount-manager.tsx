@@ -124,7 +124,7 @@ export function BulkDiscountManager({ basePrice, discounts, onChange }: BulkDisc
     
     // Recalculate discounted price if percentage changed
     if (field === 'discountPercentage') {
-      updatedDiscounts[index].discountedPrice = calculateDiscountedPrice(value as number);
+      updatedDiscounts[index].discountedPrice = calculateDiscountedPrice(basePrice, value as number);
     }
     
     onChange(updatedDiscounts.sort((a, b) => a.minQuantity - b.minQuantity));
@@ -215,7 +215,7 @@ export function BulkDiscountManager({ basePrice, discounts, onChange }: BulkDisc
                           <Button
                             variant="destructive"
                             size="sm"
-                            onClick={() => removeTier(index)}
+                            onClick={() => removeTier(tier.id)}
                             className="h-8 w-8 p-0"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -280,7 +280,7 @@ export function BulkDiscountManager({ basePrice, discounts, onChange }: BulkDisc
                     setNewTier(prev => ({ 
                       ...prev, 
                       discountPercentage: percentage,
-                      discountedPrice: calculateDiscountedPrice(percentage)
+                      discountedPrice: calculateDiscountedPrice(basePrice, percentage)
                     }));
                   }}
                   min="0"
