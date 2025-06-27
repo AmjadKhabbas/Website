@@ -76,7 +76,6 @@ export function BulkDiscountManager({ basePrice, discounts, onChange }: BulkDisc
       updatedDiscounts[index].discountedPrice = calculateDiscountedPrice(value as number);
     }
     
-    // Just update the state without triggering auto-upload
     onChange(updatedDiscounts.sort((a, b) => a.minQuantity - b.minQuantity));
   };
 

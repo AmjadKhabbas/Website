@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ProductCard } from '@/components/product-card';
 import { ProductImageGallery } from '@/components/product-image-gallery';
-import { ProductTierDisplay } from '@/components/product-tier-display';
+import { BulkDiscountDisplay } from '@/components/bulk-discount-display';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/components/toast';
 import { useCartStore } from '@/lib/cart';
@@ -152,9 +152,9 @@ export default function ProductPage() {
     );
   }
 
-  const hasDiscount = product?.isOnSale && product?.salePrice && parseFloat(product.salePrice) < parseFloat(product.price);
+  const hasDiscount = product.originalPrice && parseFloat(product.originalPrice) > parseFloat(product.price);
   const discountPercentage = hasDiscount
-    ? Math.round(((parseFloat(product.price) - parseFloat(product.salePrice!)) / parseFloat(product.price)) * 100)
+    ? Math.round(((parseFloat(product.originalPrice!) - parseFloat(product.price)) / parseFloat(product.originalPrice!)) * 100)
     : 0;
 
   return (
@@ -281,16 +281,16 @@ export default function ProductPage() {
                 {/* Price */}
                 <div className="flex items-center space-x-4 mb-6">
                   <span className="text-4xl font-bold text-blue-600">
-                    {displayPrice ? formatPrice(displayPrice) : formatPrice(product.price)}
+                    {formatPrice(product.price)}
                   </span>
                   {hasDiscount && (
                     <span className="text-xl text-gray-500 line-through">
-                      {formatPrice(product.price)}
+                      {formatPrice(product.originalPrice!)}
                     </span>
                   )}
                   {hasDiscount && (
                     <Badge className="bg-red-100 text-red-800 text-sm">
-                      Save {formatPrice((parseFloat(product.price) - parseFloat(product.salePrice!)).toString())}
+                      Save {formatPrice((parseFloat(product.originalPrice!) - parseFloat(product.price)).toString())}
                     </Badge>
                   )}
                 </div>
@@ -300,7 +300,7 @@ export default function ProductPage() {
                 </p>
 
                 {/* Tags */}
-                {product.tags && typeof product.tags === 'string' && product.tags.length > 0 && (
+                {product.tags && product.tags.length > 0 && (
                   <div className="flex flex-wrap gap-2 mb-6">
                     {product.tags.split(',').map((tag, index) => (
                       <Badge key={index} variant="outline" className="text-sm text-gray-600 border-gray-300">
@@ -313,9 +313,10 @@ export default function ProductPage() {
                 {/* Bulk Discount Display */}
                 {product.bulkDiscounts && Array.isArray(product.bulkDiscounts) && product.bulkDiscounts.length > 0 && (
                   <div className="mb-6">
-                    <ProductTierDisplay
-                      bulkDiscounts={product.bulkDiscounts as any}
+                    <BulkDiscountDisplay
                       basePrice={parseFloat(product.price)}
+                      discounts={product.bulkDiscounts}
+                      selectedQuantity={selectedQuantity}
                     />
                   </div>
                 )}
