@@ -10,6 +10,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
+import { CompareIcon } from '@/components/compare-button';
 
 interface Product {
   id: number;
@@ -20,6 +21,9 @@ interface Product {
   categoryId: number;
   inStock: boolean;
   featured: boolean;
+  rating: string;
+  reviewCount: number;
+  tags?: string;
   category?: {
     id: number;
     name: string;
@@ -191,22 +195,28 @@ export function CompactProductView({ products }: CompactProductViewProps) {
                       </Button>
                     </div>
                     
-                    <Link href={`/product/${product.id}`}>
+                    <div className="flex gap-2">
+                      <Link href={`/product/${product.id}`} className="flex-1">
+                        <Button variant="outline" size="sm" className="w-full h-8 text-sm">
+                          <Eye className="w-3 h-3 mr-1" />
+                          View Details
+                        </Button>
+                      </Link>
+                      <CompareIcon product={product} />
+                    </div>
+                  </div>
+                )}
+                
+                {!product.inStock && (
+                  <div className="flex gap-2">
+                    <Link href={`/product/${product.id}`} className="flex-1">
                       <Button variant="outline" size="sm" className="w-full h-8 text-sm">
                         <Eye className="w-3 h-3 mr-1" />
                         View Details
                       </Button>
                     </Link>
+                    <CompareIcon product={product} />
                   </div>
-                )}
-                
-                {!product.inStock && (
-                  <Link href={`/product/${product.id}`}>
-                    <Button variant="outline" size="sm" className="w-full h-8 text-sm">
-                      <Eye className="w-3 h-3 mr-1" />
-                      View Details
-                    </Button>
-                  </Link>
                 )}
               </CardContent>
             </Card>

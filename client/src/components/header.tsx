@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Search, ShoppingCart, User, Menu, ChevronDown, LogIn, LogOut, Package, UserPlus, HelpCircle, Loader2 } from 'lucide-react';
+import { Search, ShoppingCart, User, Menu, ChevronDown, LogIn, LogOut, Package, UserPlus, HelpCircle, Loader2, Scale } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
 import medsGoLogo from '@assets/image_1749025160394.png';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useCartStore } from '@/lib/cart';
+import { useComparisonStore } from '@/lib/comparison';
 import { MobileMenu } from '@/components/mobile-menu';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/use-auth';
@@ -59,6 +60,7 @@ export function Header() {
   }, [searchQuery]);
 
   const { getTotalItems, openCart, setItems } = useCartStore();
+  const { getComparisonCount } = useComparisonStore();
   const { user, admin, isLoading, isAdmin, logoutMutation } = useAuth();
   const isAuthenticated = !!user || !!admin;
 
