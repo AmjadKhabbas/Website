@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +19,10 @@ import {
   Info
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useComparisonStore } from '@/lib/comparison';
+import { useCartStore } from '@/lib/cart';
+import { apiRequest, queryClient } from '@/lib/queryClient';
+import { useLocation } from 'wouter';
 
 interface Product {
   id: number;
@@ -132,10 +136,22 @@ const comparisonFeatures: ComparisonFeature[] = [
 ];
 
 export default function ProductComparison() {
-  const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showProductSelector, setShowProductSelector] = useState(false);
   const { toast } = useToast();
+  const [, navigate] = useLocation();
+
+  // Comparison store
+  const {
+    comparedProducts: selectedProducts,
+    addToComparison: addProductToComparison,
+    removeFromComparison: removeProductFromComparison,
+    clearComparison,
+    isInComparison
+  } = useComparisonStore();
+
+  // Cart store
+  const { addItem } = useCartStore();
 
   const { data: productsData } = useQuery({
     queryKey: ['/api/products'],
@@ -150,42 +166,50 @@ export default function ProductComparison() {
     (product.tags && product.tags.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  const addProductToComparison = (product: Product) => {
-    if (selectedProducts.length >= 4) {
+  // Add to cart mutation
+  const addToCartMutation = useMutation({
+    mutationFn: async ({ productId, quantity }: { productId: number; quantity: number }) => {
+      await apiRequest('POST', '/api/cart', { productId, quantity });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/cart'] });
       toast({
-        title: "Maximum Reached",
-        description: "You can compare up to 4 products at once.",
+        title: "Added to Cart",
+        description: "Product has been added to your cart.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to add product to cart.",
         variant: "destructive"
       });
-      return;
     }
+  });
 
-    if (selectedProducts.find(p => p.id === product.id)) {
-      toast({
-        title: "Already Added",
-        description: "This product is already in your comparison.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setSelectedProducts(prev => [...prev, product]);
+  const handleAddProductToComparison = (product: Product) => {
+    const result = addProductToComparison(product);
     toast({
-      title: "Product Added",
-      description: `${product.name} has been added to comparison.`,
+      title: result.success ? "Product Added" : "Cannot Add Product",
+      description: result.message,
+      variant: result.success ? "default" : "destructive"
     });
   };
 
-  const removeProductFromComparison = (productId: number) => {
-    setSelectedProducts(prev => prev.filter(p => p.id !== productId));
-  };
-
-  const clearComparison = () => {
-    setSelectedProducts([]);
+  const handleClearComparison = () => {
+    clearComparison();
     toast({
       title: "Comparison Cleared",
       description: "All products have been removed from comparison.",
     });
+  };
+
+  const handleAddToCart = (product: Product) => {
+    addToCartMutation.mutate({ productId: product.id, quantity: 1 });
+  };
+
+  const handleViewDetails = (productId: number) => {
+    navigate(`/product/${productId}`);
   };
 
   return (
@@ -214,7 +238,7 @@ export default function ProductComparison() {
           {selectedProducts.length > 0 && (
             <Button
               variant="outline"
-              onClick={clearComparison}
+              onClick={handleClearComparison}
               className="text-red-600 border-red-200 hover:bg-red-50"
             >
               <X className="h-4 w-4 mr-2" />
@@ -249,7 +273,7 @@ export default function ProductComparison() {
                   <div
                     key={product.id}
                     className="p-4 border border-gray-200 rounded-lg bg-white hover:shadow-md transition-shadow cursor-pointer"
-                    onClick={() => addProductToComparison(product)}
+                    onClick={() => handleAddProductToComparison(product)}
                   >
                     <div className="flex items-start gap-3">
                       <img
@@ -342,12 +366,17 @@ export default function ProductComparison() {
                           <div className="space-y-2">
                             <Button
                               className="w-full bg-green-600 hover:bg-green-700"
-                              disabled={!product.inStock}
+                              disabled={!product.inStock || addToCartMutation.isPending}
+                              onClick={() => handleAddToCart(product)}
                             >
                               <ShoppingCart className="h-4 w-4 mr-2" />
-                              Add to Cart
+                              {addToCartMutation.isPending ? "Adding..." : "Add to Cart"}
                             </Button>
-                            <Button variant="outline" className="w-full">
+                            <Button 
+                              variant="outline" 
+                              className="w-full"
+                              onClick={() => handleViewDetails(product.id)}
+                            >
                               <Info className="h-4 w-4 mr-2" />
                               View Details
                             </Button>

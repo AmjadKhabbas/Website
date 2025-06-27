@@ -11,6 +11,7 @@ import HomePage from "@/pages/home";
 import CategoryPage from "@/pages/category";
 import ProductPage from "@/pages/product";
 import ProductsPage from "@/pages/products";
+import ComparisonPage from "@/pages/comparison";
 import OrdersPage from "@/pages/orders";
 import ReferralsPage from "@/pages/referrals";
 import FAQPage from "@/pages/faq";
@@ -31,6 +32,7 @@ function Router() {
     <Switch>
       <Route path="/" component={HomePage} />
       <Route path="/products" component={ProductsPage} />
+      <Route path="/comparison" component={ComparisonPage} />
       <Route path="/category/:slug" component={CategoryPage} />
       <Route path="/product/:id" component={ProductPage} />
       <Route path="/orders" component={OrdersPage} />

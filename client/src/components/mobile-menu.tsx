@@ -53,6 +53,22 @@ export function MobileMenu({ isOpen, onClose, categories }: MobileMenuProps) {
                     Home
                   </Link>
                   
+                  <Link
+                    href="/products"
+                    onClick={onClose}
+                    className="block py-3 px-4 text-slate-700 hover:bg-slate-100 hover:text-blue-600 rounded-lg transition-colors duration-200 font-medium"
+                  >
+                    Products
+                  </Link>
+                  
+                  <Link
+                    href="/comparison"
+                    onClick={onClose}
+                    className="block py-3 px-4 text-slate-700 hover:bg-slate-100 hover:text-blue-600 rounded-lg transition-colors duration-200 font-medium"
+                  >
+                    Compare Products
+                  </Link>
+                  
                   <div className="space-y-2">
                     <h4 className="text-sm font-semibold text-slate-500 uppercase tracking-wider px-4">Categories</h4>
                     {categories.map((category) => (
