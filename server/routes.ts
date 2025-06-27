@@ -1323,7 +1323,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Send approval email to doctor
       const { emailService } = await import('./email');
-      await emailService.sendOrderApprovalEmail(order.doctorEmail, order.doctorName, order.orderNumber, true);
+      await emailService.sendApprovalEmail(order.doctorEmail, order.doctorName, true);
 
       res.json({
         message: "Order approved successfully",
@@ -1354,7 +1354,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Send decline email to doctor
       const { emailService } = await import('./email');
-      await emailService.sendOrderApprovalEmail(order.doctorEmail, order.doctorName, order.orderNumber, false, reason);
+      await emailService.sendApprovalEmail(order.doctorEmail, order.doctorName, false);
 
       res.json({
         message: "Order declined successfully",

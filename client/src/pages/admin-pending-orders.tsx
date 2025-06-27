@@ -187,11 +187,11 @@ export default function AdminPendingOrdersPage() {
           <p className="text-gray-600 text-sm mt-1">Review and manage doctor orders requiring approval</p>
         </div>
         <Badge variant="secondary" className="text-lg px-3 py-1">
-          {orders.filter((order: Order) => order.status === "pending").length} Pending
+          {Array.isArray(orders) ? orders.filter((order: Order) => order.status === "pending").length : 0} Pending
         </Badge>
       </div>
 
-      {orders.length === 0 ? (
+      {!Array.isArray(orders) || orders.length === 0 ? (
         <Card>
           <CardContent className="p-12 text-center">
             <Package className="w-16 h-16 mx-auto text-gray-400 mb-4" />
@@ -201,7 +201,7 @@ export default function AdminPendingOrdersPage() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {orders.map((order: Order) => (
+          {Array.isArray(orders) && orders.map((order: Order) => (
             <Card key={order.id} className="hover:shadow-lg transition-shadow">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
