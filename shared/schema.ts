@@ -94,10 +94,6 @@ export const users = pgTable("users", {
   approvedAt: timestamp("approved_at"),
   approvedBy: varchar("approved_by"),
   
-  // Saved Billing Information
-  savedBillingAddress: jsonb("saved_billing_address"),
-  savedBankDetails: text("saved_bank_details"), // Encrypted saved bank information
-  
   // Timestamps
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -183,7 +179,6 @@ export const carouselItems = pgTable("carousel_items", {
   textColor: varchar("text_color", { length: 50 }).default("#ffffff"),
   ctaText: varchar("cta_text", { length: 100 }).default("Shop Now").notNull(),
   ctaLink: varchar("cta_link", { length: 500 }),
-  linkedProductId: integer("linked_product_id"), // Link to specific product
   ctaButtonColor: varchar("cta_button_color", { length: 50 }).default("#10b981"),
   badgeText: varchar("badge_text", { length: 50 }),
   badgeColor: varchar("badge_color", { length: 50 }).default("#ef4444"),

@@ -33,12 +33,6 @@ interface OrderWithBankDetails {
   userId: string;
 }
 
-interface CustomerContact {
-  email: string;
-  orderId: number;
-  orderNumber: string;
-}
-
 interface PendingUser {
   id: number;
   email: string;
@@ -58,7 +52,6 @@ export default function AdminSimpleDashboard() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [visibleBankDetails, setVisibleBankDetails] = useState<Record<number, boolean>>({});
-  const [customerContact, setCustomerContact] = useState<CustomerContact | null>(null);
 
   const { data: pendingUsers, isLoading: usersLoading } = useQuery<PendingUser[]>({
     queryKey: ['/api/admin/pending-users'],
@@ -100,74 +93,13 @@ export default function AdminSimpleDashboard() {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/orders'] });
       toast({
         title: "Success",
-        description: "Order rejected and removed successfully",
+        description: "Order rejected successfully",
       });
     },
     onError: () => {
       toast({
         title: "Error",
         description: "Failed to reject order",
-        variant: "destructive",
-      });
-    }
-  });
-
-  const contactCustomerMutation = useMutation({
-    mutationFn: async (orderId: number): Promise<CustomerContact> => {
-      const response = await apiRequest('GET', `/api/admin/orders/${orderId}/customer-email`);
-      return await response.json();
-    },
-    onSuccess: (data) => {
-      setCustomerContact(data);
-      toast({
-        title: "Customer Contact Information",
-        description: `Customer email: ${data.email}`,
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to get customer contact information",
-        variant: "destructive",
-      });
-    }
-  });
-
-  const approveUserMutation = useMutation({
-    mutationFn: async (userId: number) => {
-      await apiRequest('POST', `/api/admin/approve-user/${userId}`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/pending-users'] });
-      toast({
-        title: "Success",
-        description: "User approved successfully",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to approve user",
-        variant: "destructive",
-      });
-    }
-  });
-
-  const rejectUserMutation = useMutation({
-    mutationFn: async (userId: number) => {
-      await apiRequest('DELETE', `/api/admin/reject-user/${userId}`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/pending-users'] });
-      toast({
-        title: "Success",
-        description: "User rejected successfully",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to reject user",
         variant: "destructive",
       });
     }
@@ -409,36 +341,24 @@ export default function AdminSimpleDashboard() {
                     <Separator className="my-4" />
 
                     {/* Action Buttons */}
-                    <div className="flex justify-between">
+                    <div className="flex justify-end space-x-3">
                       <Button
                         variant="outline"
-                        onClick={() => contactCustomerMutation.mutate(order.id)}
-                        disabled={contactCustomerMutation.isPending}
-                        className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                        onClick={() => rejectOrderMutation.mutate(order.id)}
+                        disabled={rejectOrderMutation.isPending}
+                        className="text-red-600 border-red-300 hover:bg-red-50"
                       >
-                        <Users className="h-4 w-4 mr-2" />
-                        Contact Customer
+                        <XCircle className="h-4 w-4 mr-2" />
+                        Reject Order
                       </Button>
-                      
-                      <div className="flex space-x-3">
-                        <Button
-                          variant="outline"
-                          onClick={() => rejectOrderMutation.mutate(order.id)}
-                          disabled={rejectOrderMutation.isPending}
-                          className="text-red-600 border-red-300 hover:bg-red-50"
-                        >
-                          <XCircle className="h-4 w-4 mr-2" />
-                          Cancel & Remove Order
-                        </Button>
-                        <Button
-                          onClick={() => approveOrderMutation.mutate(order.id)}
-                          disabled={approveOrderMutation.isPending}
-                          className="bg-green-600 hover:bg-green-700 text-white"
-                        >
-                          <CheckCircle className="h-4 w-4 mr-2" />
-                          Approve Order
-                        </Button>
-                      </div>
+                      <Button
+                        onClick={() => approveOrderMutation.mutate(order.id)}
+                        disabled={approveOrderMutation.isPending}
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                      >
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        Approve Order
+                      </Button>
                     </div>
                   </motion.div>
                 ))}
@@ -468,157 +388,6 @@ export default function AdminSimpleDashboard() {
             User Management
           </Button>
         </div>
-
-        {/* User Approvals Section */}
-        <div className="space-y-6">
-          <motion.h2
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="text-2xl font-bold text-gray-900"
-          >
-            User Approvals
-          </motion.h2>
-
-          {pendingUsers && pendingUsers.length > 0 ? (
-            <div className="space-y-4">
-              {pendingUsers.map((user, index) => (
-                <motion.div
-                  key={user.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.1 * index }}
-                >
-                  <Card className="shadow-lg border-0 bg-white hover:shadow-xl transition-shadow duration-300">
-                    <CardContent className="p-6">
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-3">
-                            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                              <Users className="h-5 w-5 text-blue-600" />
-                            </div>
-                            <div>
-                              <h3 className="font-semibold text-gray-900">{user.fullName}</h3>
-                              <p className="text-sm text-gray-600">{user.email}</p>
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                            <div>
-                              <span className="font-medium text-gray-700">License: </span>
-                              <span className="text-gray-600">{user.licenseNumber}</span>
-                            </div>
-                            <div>
-                              <span className="font-medium text-gray-700">College: </span>
-                              <span className="text-gray-600">{user.collegeName}</span>
-                            </div>
-                            <div>
-                              <span className="font-medium text-gray-700">Province/State: </span>
-                              <span className="text-gray-600">{user.provinceState}</span>
-                            </div>
-                            <div>
-                              <span className="font-medium text-gray-700">Practice: </span>
-                              <span className="text-gray-600">{user.practiceName}</span>
-                            </div>
-                          </div>
-
-                          <div className="mt-3">
-                            <span className="font-medium text-gray-700">Address: </span>
-                            <span className="text-gray-600">{user.practiceAddress}</span>
-                          </div>
-                        </div>
-
-                        <div className="flex space-x-3 ml-6">
-                          <Button
-                            variant="outline"
-                            onClick={() => rejectUserMutation.mutate(user.id)}
-                            disabled={rejectUserMutation.isPending}
-                            className="text-red-600 border-red-300 hover:bg-red-50"
-                          >
-                            <XCircle className="h-4 w-4 mr-2" />
-                            Reject
-                          </Button>
-                          <Button
-                            onClick={() => approveUserMutation.mutate(user.id)}
-                            disabled={approveUserMutation.isPending}
-                            className="bg-green-600 hover:bg-green-700 text-white"
-                          >
-                            <CheckCircle className="h-4 w-4 mr-2" />
-                            Approve
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-          ) : (
-            <Card className="shadow-lg border-0 bg-white">
-              <CardContent className="p-8 text-center">
-                <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600">No pending user approvals</p>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-
-        {/* Customer Contact Modal */}
-        {customerContact && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-            onClick={() => setCustomerContact(null)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="bg-white rounded-lg p-6 max-w-md w-full mx-4"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Customer Contact Information</h3>
-              <div className="space-y-3">
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Order Number:</label>
-                  <p className="text-gray-900">{customerContact.orderNumber}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Customer Email:</label>
-                  <p className="text-blue-600 font-medium">{customerContact.email}</p>
-                </div>
-                <div className="flex space-x-3 mt-6">
-                  <Button
-                    onClick={() => {
-                      window.open(`mailto:${customerContact.email}?subject=Regarding Order ${customerContact.orderNumber}`, '_blank');
-                    }}
-                    className="bg-blue-600 hover:bg-blue-700 text-white flex-1"
-                  >
-                    Send Email
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      navigator.clipboard.writeText(customerContact.email);
-                      toast({
-                        title: "Copied!",
-                        description: "Email address copied to clipboard",
-                      });
-                    }}
-                  >
-                    Copy Email
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => setCustomerContact(null)}
-                  >
-                    Close
-                  </Button>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
       </div>
     </div>
   );

@@ -72,9 +72,6 @@ export interface IStorage {
   getAdminById(id: number): Promise<AdminUser | undefined>;
   updateAdminLastLogin(id: number): Promise<void>;
   getAllOrdersWithBankDetails(): Promise<Order[]>;
-  saveBillingInfo(userId: number | string, billingAddress: any, encryptedBankDetails: string): Promise<void>;
-  deleteOrder(orderId: number): Promise<boolean>;
-  getCustomerEmailByUserId(userId: string): Promise<string | null>;
 
   // Admin product management
   updateProductPrice(productId: number, price: string): Promise<Product | undefined>;
@@ -483,16 +480,6 @@ export class DatabaseStorage implements IStorage {
     return result;
   }
 
-  async saveBillingInfo(userId: number | string, billingAddress: any, encryptedBankDetails: string): Promise<void> {
-    await db
-      .update(users)
-      .set({
-        savedBillingAddress: billingAddress,
-        savedBankDetails: encryptedBankDetails
-      })
-      .where(eq(users.id, Number(userId)));
-  }
-
   // Admin product management
   async updateProductPrice(productId: number, price: string): Promise<Product | undefined> {
     const [product] = await db
@@ -755,43 +742,6 @@ export class DatabaseStorage implements IStorage {
         .update(carouselItems)
         .set({ sortOrder: i })
         .where(eq(carouselItems.id, itemIds[i]));
-    }
-  }
-
-  async deleteOrder(orderId: number): Promise<boolean> {
-    try {
-      // Delete order items first (foreign key constraint)
-      await db.delete(orderItems).where(eq(orderItems.orderId, orderId));
-      
-      // Delete the order
-      const result = await db.delete(orders).where(eq(orders.id, orderId));
-      return result.rowCount > 0;
-    } catch (error) {
-      console.error('Error deleting order:', error);
-      return false;
-    }
-  }
-
-  async getCustomerEmailByUserId(userId: string): Promise<string | null> {
-    try {
-      const userIdNum = parseInt(userId);
-      
-      // Try to find in users table first
-      const [user] = await db.select({ email: users.email }).from(users).where(eq(users.id, userIdNum));
-      if (user) {
-        return user.email;
-      }
-      
-      // Try to find in admin_users table
-      const [admin] = await db.select({ email: adminUsers.email }).from(adminUsers).where(eq(adminUsers.id, userIdNum));
-      if (admin) {
-        return admin.email;
-      }
-      
-      return null;
-    } catch (error) {
-      console.error('Error getting customer email:', error);
-      return null;
     }
   }
 }

@@ -1527,7 +1527,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Bank payment order endpoint
   app.post('/api/orders/bank-payment', async (req, res) => {
     try {
-      const { items, shippingAddress, billingAddress, totalAmount, bankDetails, saveBillingInfo } = req.body;
+      const { items, shippingAddress, billingAddress, totalAmount, bankDetails } = req.body;
       
       // Check authentication
       const userId = req.session?.userId;
@@ -1571,12 +1571,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Create order in database
       const order = await storage.createOrder(orderData, orderItemsData);
-      
-      // Save billing information if requested with enhanced encryption
-      if (saveBillingInfo && (userId || adminId)) {
-        const encryptedBankDetails = Buffer.from(JSON.stringify(bankDetails)).toString('base64');
-        await storage.saveBillingInfo(String(userId || adminId), billingAddress, encryptedBankDetails);
-      }
       
       res.status(201).json({
         message: 'Order created successfully',
@@ -1651,7 +1645,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin endpoint to reject order (delete it completely)
+  // Admin endpoint to reject order
   app.patch('/api/admin/orders/:id/reject', requireAdminAuth, async (req, res) => {
     try {
       const orderId = parseInt(req.params.id);
@@ -1663,9 +1657,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const deleted = await storage.deleteOrder(orderId);
+      const updatedOrder = await storage.updateOrderStatus(orderId, 'rejected');
       
-      if (!deleted) {
+      if (!updatedOrder) {
         return res.status(404).json({
           message: 'Order not found',
           code: 'ORDER_NOT_FOUND'
@@ -1673,57 +1667,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       res.json({
-        message: 'Order rejected and removed successfully'
+        message: 'Order rejected successfully',
+        order: updatedOrder
       });
     } catch (error: any) {
       console.error('Order rejection error:', error);
       res.status(500).json({
         message: 'Failed to reject order: ' + error.message,
         code: 'REJECTION_ERROR'
-      });
-    }
-  });
-
-  // Admin endpoint to get customer email for contact
-  app.get('/api/admin/orders/:id/customer-email', requireAdminAuth, async (req, res) => {
-    try {
-      const orderId = parseInt(req.params.id);
-      
-      if (!orderId || isNaN(orderId)) {
-        return res.status(400).json({
-          message: 'Valid order ID is required',
-          code: 'INVALID_ORDER_ID'
-        });
-      }
-
-      // Get order to find userId
-      const order = await storage.getOrderById(orderId);
-      if (!order) {
-        return res.status(404).json({
-          message: 'Order not found',
-          code: 'ORDER_NOT_FOUND'
-        });
-      }
-
-      const customerEmail = await storage.getCustomerEmailByUserId(order.userId);
-      
-      if (!customerEmail) {
-        return res.status(404).json({
-          message: 'Customer email not found',
-          code: 'EMAIL_NOT_FOUND'
-        });
-      }
-
-      res.json({
-        email: customerEmail,
-        orderId: orderId,
-        orderNumber: order.orderNumber
-      });
-    } catch (error: any) {
-      console.error('Get customer email error:', error);
-      res.status(500).json({
-        message: 'Failed to get customer email: ' + error.message,
-        code: 'EMAIL_FETCH_ERROR'
       });
     }
   });

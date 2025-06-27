@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Search, ShoppingCart, User, Menu, ChevronDown, LogIn, LogOut, Package, UserPlus, HelpCircle, Loader2, Scale } from 'lucide-react';
+import { Search, ShoppingCart, User, Menu, ChevronDown, LogIn, LogOut, Package, UserPlus, HelpCircle, Loader2 } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
 import medsGoLogo from '@assets/image_1749025160394.png';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useCartStore } from '@/lib/cart';
-import { useComparisonStore } from '@/lib/comparison';
 import { MobileMenu } from '@/components/mobile-menu';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/use-auth';
@@ -60,7 +59,6 @@ export function Header() {
   }, [searchQuery]);
 
   const { getTotalItems, openCart, setItems } = useCartStore();
-  const { getComparisonCount } = useComparisonStore();
   const { user, admin, isLoading, isAdmin, logoutMutation } = useAuth();
   const isAuthenticated = !!user || !!admin;
 
@@ -208,16 +206,6 @@ export function Header() {
                       : 'text-slate-600 hover:text-teal-600 hover:bg-teal-50 border border-transparent hover:border-teal-200'
                   }`}>
                     Products
-                  </span>
-                </Link>
-
-                <Link href="/comparison">
-                  <span className={`px-4 py-2 text-sm font-medium transition-all duration-300 rounded-lg cursor-pointer ${
-                    location === '/comparison' 
-                      ? 'text-teal-600 bg-teal-50 border border-teal-200' 
-                      : 'text-slate-600 hover:text-teal-600 hover:bg-teal-50 border border-transparent hover:border-teal-200'
-                  }`}>
-                    Compare
                   </span>
                 </Link>
 
@@ -377,31 +365,6 @@ export function Header() {
 
             {/* Right Side Actions */}
             <div className="flex items-center space-x-3">
-              {/* Comparison Button */}
-              <Link href="/comparison">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="relative p-3 text-slate-600 hover:text-blue-600 bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-200 rounded-lg transition-all duration-300"
-                >
-                  <Scale className="w-6 h-6" />
-                  <AnimatePresence>
-                    {getComparisonCount() > 0 && (
-                      <motion.div
-                        initial={{ scale: 0, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0, opacity: 0 }}
-                        className="absolute -top-1 -right-1"
-                      >
-                        <Badge className="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-medium">
-                          {getComparisonCount()}
-                        </Badge>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </Button>
-              </Link>
-
               {/* Cart Button */}
               <Button
                 variant="ghost"
