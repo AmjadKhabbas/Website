@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ProductCard } from '@/components/product-card';
 import { ProductImageGallery } from '@/components/product-image-gallery';
-import { BulkDiscountDisplay } from '@/components/bulk-discount-display';
+import { ProductTierDisplay } from '@/components/product-tier-display';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/components/toast';
 import { useCartStore } from '@/lib/cart';
@@ -281,16 +281,16 @@ export default function ProductPage() {
                 {/* Price */}
                 <div className="flex items-center space-x-4 mb-6">
                   <span className="text-4xl font-bold text-blue-600">
-                    {formatPrice(product.price)}
+                    {formatPrice(displayPrice!)}
                   </span>
                   {hasDiscount && (
                     <span className="text-xl text-gray-500 line-through">
-                      {formatPrice(product.originalPrice!)}
+                      {formatPrice(product.price)}
                     </span>
                   )}
                   {hasDiscount && (
                     <Badge className="bg-red-100 text-red-800 text-sm">
-                      Save {formatPrice((parseFloat(product.originalPrice!) - parseFloat(product.price)).toString())}
+                      Save {formatPrice((parseFloat(product.price) - parseFloat(product.salePrice!)).toString())}
                     </Badge>
                   )}
                 </div>
