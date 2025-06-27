@@ -1,19 +1,18 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, Percent, DollarSign, Edit2, Save, X } from 'lucide-react';
+import { Plus, Trash2, Percent, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  BulkDiscountTier, 
-  calculateDiscountedPrice, 
-  formatQuantityRange, 
-  validateTier, 
-  sortTiersByQuantity 
-} from '@shared/bulk-discount-types';
+
+export interface BulkDiscountTier {
+  minQuantity: number;
+  maxQuantity: number | null; // null means "and above"
+  discountPercentage: number;
+  discountedPrice: number;
+}
 
 interface BulkDiscountManagerProps {
   basePrice: number;
@@ -22,97 +21,47 @@ interface BulkDiscountManagerProps {
 }
 
 export function BulkDiscountManager({ basePrice, discounts, onChange }: BulkDiscountManagerProps) {
-  const [newTier, setNewTier] = useState({
+  const [newTier, setNewTier] = useState<{
+    minQuantity: number;
+    maxQuantity: number | null;
+    discountPercentage: number;
+    discountedPrice: number;
+  }>({
     minQuantity: 1,
-    maxQuantity: null as number | null,
+    maxQuantity: null,
     discountPercentage: 0,
     discountedPrice: basePrice
   });
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editingTier, setEditingTier] = useState<BulkDiscountTier | null>(null);
-  const [errors, setErrors] = useState<string[]>([]);
 
-  const generateId = () => Math.random().toString(36).substr(2, 9);
+  const calculateDiscountedPrice = (discountPercentage: number) => {
+    return basePrice * (1 - discountPercentage / 100);
+  };
 
   const addTier = () => {
-    const tier: BulkDiscountTier = {
-      id: generateId(),
-      ...newTier
-    };
-    
-    const validationErrors = validateTier(tier, basePrice);
-    if (validationErrors.length > 0) {
-      setErrors(validationErrors);
-      return;
+    if (newTier.minQuantity && newTier.discountPercentage !== undefined) {
+      const tier: BulkDiscountTier = {
+        minQuantity: newTier.minQuantity,
+        maxQuantity: newTier.maxQuantity || null,
+        discountPercentage: newTier.discountPercentage,
+        discountedPrice: calculateDiscountedPrice(newTier.discountPercentage)
+      };
+      
+      const updatedDiscounts = [...discounts, tier].sort((a, b) => a.minQuantity - b.minQuantity);
+      onChange(updatedDiscounts);
+      
+      // Reset form
+      setNewTier({
+        minQuantity: (updatedDiscounts[updatedDiscounts.length - 1]?.maxQuantity || 0) + 1,
+        maxQuantity: null,
+        discountPercentage: 0,
+        discountedPrice: basePrice
+      });
     }
-    
-    setErrors([]);
-    const sortedDiscounts = sortTiersByQuantity([...discounts, tier]);
-    onChange(sortedDiscounts);
-    setNewTier({
-      minQuantity: 1,
-      maxQuantity: null,
-      discountPercentage: 0,
-      discountedPrice: basePrice
-    });
   };
 
-  const removeTier = (id: string) => {
-    const updatedDiscounts = discounts.filter(tier => tier.id !== id);
+  const removeTier = (index: number) => {
+    const updatedDiscounts = discounts.filter((_, i) => i !== index);
     onChange(updatedDiscounts);
-  };
-
-  const startEditing = (tier: BulkDiscountTier) => {
-    setEditingId(tier.id);
-    setEditingTier({ ...tier });
-    setErrors([]);
-  };
-
-  const saveEdit = () => {
-    if (!editingTier) return;
-    
-    const validationErrors = validateTier(editingTier, basePrice);
-    if (validationErrors.length > 0) {
-      setErrors(validationErrors);
-      return;
-    }
-    
-    setErrors([]);
-    const updatedDiscounts = discounts.map(tier => 
-      tier.id === editingId ? editingTier : tier
-    );
-    const sortedDiscounts = sortTiersByQuantity(updatedDiscounts);
-    onChange(sortedDiscounts);
-    setEditingId(null);
-    setEditingTier(null);
-  };
-
-  const cancelEdit = () => {
-    setEditingId(null);
-    setEditingTier(null);
-    setErrors([]);
-  };
-
-  const updateNewTierDiscountPercentage = (percentage: number) => {
-    const discountedPrice = calculateDiscountedPrice(basePrice, percentage);
-    setNewTier({ ...newTier, discountPercentage: percentage, discountedPrice });
-  };
-
-  const updateNewTierDiscountedPrice = (price: number) => {
-    const discountPercentage = ((basePrice - price) / basePrice) * 100;
-    setNewTier({ ...newTier, discountedPrice: price, discountPercentage });
-  };
-
-  const updateEditingTierDiscountPercentage = (percentage: number) => {
-    if (!editingTier) return;
-    const discountedPrice = calculateDiscountedPrice(basePrice, percentage);
-    setEditingTier({ ...editingTier, discountPercentage: percentage, discountedPrice });
-  };
-
-  const updateEditingTierDiscountedPrice = (price: number) => {
-    if (!editingTier) return;
-    const discountPercentage = ((basePrice - price) / basePrice) * 100;
-    setEditingTier({ ...editingTier, discountedPrice: price, discountPercentage });
   };
 
   const updateTier = (index: number, field: keyof BulkDiscountTier, value: number | null) => {
@@ -124,7 +73,7 @@ export function BulkDiscountManager({ basePrice, discounts, onChange }: BulkDisc
     
     // Recalculate discounted price if percentage changed
     if (field === 'discountPercentage') {
-      updatedDiscounts[index].discountedPrice = calculateDiscountedPrice(basePrice, value as number);
+      updatedDiscounts[index].discountedPrice = calculateDiscountedPrice(value as number);
     }
     
     onChange(updatedDiscounts.sort((a, b) => a.minQuantity - b.minQuantity));
@@ -215,7 +164,7 @@ export function BulkDiscountManager({ basePrice, discounts, onChange }: BulkDisc
                           <Button
                             variant="destructive"
                             size="sm"
-                            onClick={() => removeTier(tier.id)}
+                            onClick={() => removeTier(index)}
                             className="h-8 w-8 p-0"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -280,7 +229,7 @@ export function BulkDiscountManager({ basePrice, discounts, onChange }: BulkDisc
                     setNewTier(prev => ({ 
                       ...prev, 
                       discountPercentage: percentage,
-                      discountedPrice: calculateDiscountedPrice(basePrice, percentage)
+                      discountedPrice: calculateDiscountedPrice(percentage)
                     }));
                   }}
                   min="0"

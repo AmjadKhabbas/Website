@@ -1,6 +1,5 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import Stripe from "stripe";
 import { storage } from "./storage";
 import { setupAuth, requireAuth, requireApprovedUser, hashPassword, comparePasswords } from "./auth";
 import { adminAuthService, requireAdminAuth, checkAdminStatus } from "./adminAuth";
@@ -8,14 +7,6 @@ import { setupUploadRoutes } from "./upload";
 import { insertCartItemSchema, insertOrderSchema, insertOrderItemSchema, insertReferralSchema } from "@shared/schema";
 import session from "express-session";
 import "./types";
-
-// Initialize Stripe
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
-}
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2024-06-20",
-});
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication system with Passport.js
@@ -1293,11 +1284,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Check user approval status for checkout eligibility
   app.get("/api/checkout/eligibility", async (req, res) => {
     try {
-      // Check if user is authenticated (either regular user or admin)
-      const userId = req.session?.userId;
-      const adminId = req.session?.adminId;
-      
-      if (!userId && !adminId) {
+      if (!req.session?.userId) {
         return res.json({
           eligible: false,
           reason: "LOGIN_REQUIRED",
@@ -1305,16 +1292,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // If admin is logged in, they can always checkout
-      if (adminId) {
-        return res.json({
-          eligible: true,
-          message: "You can proceed with checkout (Admin)"
-        });
-      }
-      
-      // For regular users, check approval status
-      const user = await storage.getUserById(userId);
+      const user = await storage.getUserById(req.session.userId);
       
       if (!user) {
         return res.json({
@@ -1488,231 +1466,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Setup file upload routes
   setupUploadRoutes(app);
-
-  // Stripe payment routes
-  app.post("/api/create-payment-intent", async (req, res) => {
-    try {
-      const { amount, currency = 'usd', metadata = {} } = req.body;
-
-      // Validate amount
-      if (!amount || amount <= 0) {
-        return res.status(400).json({
-          message: "Invalid amount",
-          code: "INVALID_AMOUNT"
-        });
-      }
-
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount: Math.round(amount * 100), // Convert to cents
-        currency,
-        metadata,
-        automatic_payment_methods: {
-          enabled: true,
-        },
-      });
-
-      res.json({ 
-        clientSecret: paymentIntent.client_secret,
-        paymentIntentId: paymentIntent.id
-      });
-    } catch (error: any) {
-      console.error('Stripe PaymentIntent error:', error);
-      res.status(500).json({ 
-        message: "Error creating payment intent: " + error.message,
-        code: "STRIPE_ERROR"
-      });
-    }
-  });
-
-  // Bank payment order endpoint
-  app.post('/api/orders/bank-payment', async (req, res) => {
-    try {
-      const { items, shippingAddress, billingAddress, totalAmount, bankDetails } = req.body;
-      
-      // Check authentication
-      const userId = req.session?.userId;
-      const adminId = req.session?.adminId;
-      
-      if (!userId && !adminId) {
-        return res.status(401).json({
-          message: 'Authentication required',
-          code: 'AUTH_REQUIRED'
-        });
-      }
-      
-      // Generate unique order number
-      const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-      
-      // Encrypt bank details (simple encryption for demo - use proper encryption in production)
-      const encryptedBankDetails = Buffer.from(JSON.stringify(bankDetails)).toString('base64');
-      
-      // Create order data
-      const orderData = {
-        userId: userId || adminId?.toString() || 'guest',
-        orderNumber,
-        status: 'pending_manual_processing',
-        totalAmount: totalAmount.toString(),
-        shippingAddress: JSON.stringify(shippingAddress),
-        billingAddress: JSON.stringify(billingAddress),
-        paymentMethod: 'bank_transfer',
-        paymentStatus: 'pending_manual_verification',
-        bankDetails: encryptedBankDetails
-      };
-
-      // Create order items data
-      const orderItemsData = items.map((item: any) => ({
-        productId: item.productId,
-        quantity: item.quantity,
-        unitPrice: item.price.toString(),
-        totalPrice: (item.price * item.quantity).toString(),
-        productName: `Product ${item.productId}`, // Will be updated in storage
-        productImageUrl: '' // Will be updated in storage
-      }));
-
-      // Create order in database
-      const order = await storage.createOrder(orderData, orderItemsData);
-      
-      res.status(201).json({
-        message: 'Order created successfully',
-        order: {
-          id: order.id,
-          orderNumber: order.orderNumber,
-          status: order.status,
-          totalAmount: order.totalAmount
-        }
-      });
-    } catch (error: any) {
-      console.error('Order creation error:', error);
-      res.status(500).json({
-        message: 'Failed to create order: ' + error.message,
-        code: 'ORDER_CREATION_ERROR'
-      });
-    }
-  });
-
-  // Admin endpoint to view orders with bank details
-  app.get('/api/admin/orders', requireAdminAuth, async (req, res) => {
-    try {
-      const orders = await storage.getAllOrdersWithBankDetails();
-      
-      // Decrypt bank details for admin view
-      const ordersWithDecryptedDetails = orders.map(order => ({
-        ...order,
-        bankDetails: order.bankDetails ? JSON.parse(Buffer.from(order.bankDetails, 'base64').toString()) : null
-      }));
-      
-      res.json(ordersWithDecryptedDetails);
-    } catch (error: any) {
-      console.error('Admin orders fetch error:', error);
-      res.status(500).json({
-        message: 'Failed to fetch orders: ' + error.message,
-        code: 'ORDERS_FETCH_ERROR'
-      });
-    }
-  });
-
-  // Admin endpoint to approve order
-  app.patch('/api/admin/orders/:id/approve', requireAdminAuth, async (req, res) => {
-    try {
-      const orderId = parseInt(req.params.id);
-      
-      if (!orderId || isNaN(orderId)) {
-        return res.status(400).json({
-          message: 'Valid order ID is required',
-          code: 'INVALID_ORDER_ID'
-        });
-      }
-
-      const updatedOrder = await storage.updateOrderStatus(orderId, 'approved');
-      
-      if (!updatedOrder) {
-        return res.status(404).json({
-          message: 'Order not found',
-          code: 'ORDER_NOT_FOUND'
-        });
-      }
-
-      res.json({
-        message: 'Order approved successfully',
-        order: updatedOrder
-      });
-    } catch (error: any) {
-      console.error('Order approval error:', error);
-      res.status(500).json({
-        message: 'Failed to approve order: ' + error.message,
-        code: 'APPROVAL_ERROR'
-      });
-    }
-  });
-
-  // Admin endpoint to reject order
-  app.patch('/api/admin/orders/:id/reject', requireAdminAuth, async (req, res) => {
-    try {
-      const orderId = parseInt(req.params.id);
-      
-      if (!orderId || isNaN(orderId)) {
-        return res.status(400).json({
-          message: 'Valid order ID is required',
-          code: 'INVALID_ORDER_ID'
-        });
-      }
-
-      const updatedOrder = await storage.updateOrderStatus(orderId, 'rejected');
-      
-      if (!updatedOrder) {
-        return res.status(404).json({
-          message: 'Order not found',
-          code: 'ORDER_NOT_FOUND'
-        });
-      }
-
-      res.json({
-        message: 'Order rejected successfully',
-        order: updatedOrder
-      });
-    } catch (error: any) {
-      console.error('Order rejection error:', error);
-      res.status(500).json({
-        message: 'Failed to reject order: ' + error.message,
-        code: 'REJECTION_ERROR'
-      });
-    }
-  });
-
-  // Admin carousel management endpoints
-  app.patch('/api/admin/carousel/:id', requireAdminAuth, async (req, res) => {
-    try {
-      const itemId = parseInt(req.params.id);
-      const updates = req.body;
-      
-      if (!itemId || isNaN(itemId)) {
-        return res.status(400).json({
-          message: 'Valid carousel item ID is required',
-          code: 'INVALID_ITEM_ID'
-        });
-      }
-
-      const updatedItem = await storage.updateCarouselItem(itemId, updates);
-      
-      if (!updatedItem) {
-        return res.status(404).json({
-          message: 'Carousel item not found',
-          code: 'ITEM_NOT_FOUND'
-        });
-      }
-
-      res.json({
-        message: 'Carousel item updated successfully',
-        item: updatedItem
-      });
-    } catch (error: any) {
-      console.error('Carousel update error:', error);
-      res.status(500).json({
-        message: 'Failed to update carousel item: ' + error.message,
-        code: 'CAROUSEL_UPDATE_ERROR'
-      });
-    }
-  });
 
   const httpServer = createServer(app);
   return httpServer;

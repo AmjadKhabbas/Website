@@ -21,7 +21,7 @@ export function CartSidebar() {
   // Check checkout eligibility
   const { data: eligibility } = useQuery({
     queryKey: ['/api/checkout/eligibility'],
-    enabled: items.length > 0 && isAuthenticated,
+    enabled: items.length > 0,
   });
 
   const updateQuantityMutation = useMutation({
@@ -229,23 +229,23 @@ export function CartSidebar() {
                     </Link>
                   </div>
                 ) : admin ? (
-                  <Link href="/checkout">
-                    <Button
-                      className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl text-lg font-semibold"
-                      onClick={() => closeCart()}
-                    >
-                      Proceed to Checkout (Admin)
-                    </Button>
-                  </Link>
+                  <Button
+                    className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl text-lg font-semibold"
+                    onClick={() => {
+                      success('Admin checkout functionality coming soon!');
+                    }}
+                  >
+                    Proceed to Checkout (Admin)
+                  </Button>
                 ) : eligibility?.eligible ? (
-                  <Link href="/checkout">
-                    <Button
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl text-lg font-semibold"
-                      onClick={() => closeCart()}
-                    >
-                      Proceed to Checkout
-                    </Button>
-                  </Link>
+                  <Button
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl text-lg font-semibold"
+                    onClick={() => {
+                      success('Checkout functionality coming soon!');
+                    }}
+                  >
+                    Proceed to Checkout
+                  </Button>
                 ) : eligibility?.reason === 'APPROVAL_PENDING' ? (
                   <div className="space-y-3">
                     <Alert className="border-orange-200 bg-orange-50">

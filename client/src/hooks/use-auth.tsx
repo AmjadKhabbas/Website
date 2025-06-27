@@ -35,9 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   } = useQuery<{user?: User, admin?: AdminUser} | null>({
     queryKey: ["/api/auth/user"],
     queryFn: async () => {
-      const response = await fetch("/api/auth/user", {
-        credentials: 'include'
-      });
+      const response = await fetch("/api/auth/user");
       if (response.status === 401) {
         return null;
       }
@@ -46,8 +44,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       return response.json();
     },
-    retry: 1,
-    staleTime: 5 * 60 * 1000 // 5 minutes
   });
 
   const user = authData?.user || null;
@@ -61,7 +57,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: 'include',
         body: JSON.stringify(credentials),
       });
       
@@ -74,8 +69,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     onSuccess: (data: {user?: User, admin?: AdminUser}) => {
       queryClient.setQueryData(["/api/auth/user"], data);
-      queryClient.invalidateQueries({ queryKey: ["/api/checkout/eligibility"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/cart"] });
       const displayName = data.admin?.name || data.user?.fullName || "User";
       const role = data.admin ? "Admin" : "Doctor";
       toast({

@@ -16,14 +16,9 @@ import ReferralsPage from "@/pages/referrals";
 import FAQPage from "@/pages/faq";
 import ContactPage from "@/pages/contact";
 import LoginPage from "@/pages/login";
-import CheckoutPage from "@/pages/checkout";
-import BankCheckoutPage from "@/pages/bank-checkout";
-import OrderConfirmationPage from "@/pages/order-confirmation";
 
 import AdminDashboard from "@/pages/admin-dashboard";
-import AdminSimpleDashboard from "@/pages/admin-simple-dashboard";
 import AdminProductsPage from "@/pages/admin-products";
-import AdminOrdersPage from "@/pages/admin-orders";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -38,12 +33,9 @@ function Router() {
       <Route path="/faq" component={FAQPage} />
       <Route path="/contact" component={ContactPage} />
       <Route path="/login" component={LoginPage} />
-      <Route path="/checkout" component={BankCheckoutPage} />
-      <Route path="/order-confirmation" component={OrderConfirmationPage} />
-      <Route path="/admin" component={AdminSimpleDashboard} />
-      <Route path="/admin/dashboard" component={AdminSimpleDashboard} />
+      <Route path="/admin" component={AdminDashboard} />
+      <Route path="/admin/dashboard" component={AdminDashboard} />
       <Route path="/admin/products" component={AdminProductsPage} />
-      <Route path="/admin/orders" component={AdminOrdersPage} />
 
       <Route component={NotFound} />
     </Switch>

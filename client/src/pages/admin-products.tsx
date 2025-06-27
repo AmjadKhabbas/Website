@@ -27,15 +27,16 @@ import {
   Check
 } from "lucide-react";
 import type { Category } from "@shared/schema";
-import { BulkDiscountManager } from "@/components/bulk-discount-manager";
-import type { BulkDiscountTier } from "@shared/bulk-discount-types";
+import { BulkDiscountManager, type BulkDiscountTier } from "@/components/bulk-discount-manager";
 
 const productUploadSchema = z.object({
   name: z.string().min(1, "Product name is required").max(100, "Name must be less than 100 characters"),
   description: z.string().min(10, "Description must be at least 10 characters").max(1000, "Description must be less than 1000 characters"),
   price: z.string().min(1, "Price is required").regex(/^\d+(\.\d{1,2})?$/, "Price must be a valid number"),
   categoryId: z.string().min(1, "Category is required"),
+  featured: z.boolean().default(false),
   inStock: z.boolean().default(true),
+  tags: z.string().optional(),
 });
 
 type ProductUploadFormData = z.infer<typeof productUploadSchema>;
@@ -53,7 +54,9 @@ export default function AdminProductsPage() {
       description: "",
       price: "",
       categoryId: "",
+      featured: false,
       inStock: true,
+      tags: "",
     },
   });
 
@@ -167,21 +170,17 @@ export default function AdminProductsPage() {
         price: data.price,
         categoryId: parseInt(data.categoryId),
         imageUrl: uploadedImages[0] || "/api/placeholder/300/300",
-        imageUrls: uploadedImages,
+        imageUrls: uploadedImages.slice(1),
+        featured: data.featured,
         inStock: data.inStock,
+        tags: data.tags ? data.tags.split(',').map(tag => tag.trim()) : [],
         bulkDiscounts: bulkDiscounts,
       };
 
       await createProductMutation.mutateAsync(productData);
       
       // Reset form and state after successful creation
-      form.reset({
-        name: "",
-        description: "",
-        price: "",
-        categoryId: "",
-        inStock: true,
-      });
+      form.reset();
       setUploadedImages([]);
       setBulkDiscounts([]);
     } catch (error) {
@@ -360,75 +359,113 @@ export default function AdminProductsPage() {
                   )}
                 />
 
-
-
-                {/* Product Options */}
                 <FormField
                   control={form.control}
-                  name="inStock"
+                  name="tags"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-base font-medium">
-                          In Stock
-                        </FormLabel>
-                        <p className="text-sm text-gray-500">
-                          Product is available for purchase
-                        </p>
-                      </div>
+                    <FormItem>
+                      <FormLabel className="text-gray-700 font-medium">Tags (comma-separated)</FormLabel>
                       <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
+                        <Input
+                          placeholder="botox, aesthetic, medical, treatment"
+                          {...field}
+                          className="h-12"
                         />
                       </FormControl>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
 
-                {/* Bulk Discount Pricing - Outside of form to prevent form submission */}
+                {/* Product Options */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="featured"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-base font-medium">
+                            Featured Product
+                          </FormLabel>
+                          <p className="text-sm text-gray-500">
+                            Display this product prominently on the homepage
+                          </p>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="inStock"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-base font-medium">
+                            In Stock
+                          </FormLabel>
+                          <p className="text-sm text-gray-500">
+                            Product is available for purchase
+                          </p>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* Bulk Discount Pricing */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="h-5 w-5 text-blue-600" />
+                    <h3 className="text-lg font-semibold text-gray-900">Bulk Discount Pricing</h3>
+                  </div>
+                  <div className="border border-gray-200 rounded-lg p-6 bg-gray-50">
+                    <BulkDiscountManager
+                      basePrice={parseFloat(form.watch("price") || "0")}
+                      discounts={bulkDiscounts}
+                      onChange={setBulkDiscounts}
+                    />
+                  </div>
+                </div>
+
+                {/* Submit Button */}
+                <div className="flex justify-end pt-6">
+                  <Button
+                    type="submit"
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium text-lg px-8 py-3 h-auto"
+                    disabled={createProductMutation.isPending}
+                  >
+                    {createProductMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        Creating Product...
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="mr-2 h-5 w-5" />
+                        Create Product
+                      </>
+                    )}
+                  </Button>
+                </div>
               </form>
             </Form>
-
-            {/* Bulk Discount Pricing Section - Separate from form */}
-            <div className="space-y-4 mt-8">
-              <div className="flex items-center gap-2">
-                <DollarSign className="h-5 w-5 text-blue-600" />
-                <h3 className="text-lg font-semibold text-gray-900">Bulk Discount Pricing</h3>
-              </div>
-              <div className="border border-gray-200 rounded-lg p-6 bg-gray-50">
-                <BulkDiscountManager
-                  basePrice={parseFloat(form.watch("price") || "0")}
-                  discounts={bulkDiscounts}
-                  onChange={setBulkDiscounts}
-                />
-              </div>
-            </div>
-
-            {/* Submit Button - Also outside form */}
-            <div className="flex justify-end pt-6">
-              <Button
-                onClick={form.handleSubmit(onSubmit)}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium text-lg px-8 py-3 h-auto"
-                disabled={createProductMutation.isPending}
-              >
-                {createProductMutation.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Creating Product...
-                  </>
-                ) : (
-                  <>
-                    <Plus className="mr-2 h-5 w-5" />
-                    Create Product
-                  </>
-                )}
-              </Button>
-            </div>
           </CardContent>
         </Card>
       </div>
     </div>
   );
 }
-
