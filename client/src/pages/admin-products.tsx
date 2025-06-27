@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
@@ -24,7 +25,8 @@ import {
   Camera,
   X,
   Loader2,
-  Check
+  Check,
+  Percent
 } from "lucide-react";
 import type { Category } from "@shared/schema";
 import { BulkDiscountManager, type BulkDiscountTier } from "@/components/bulk-discount-manager";
@@ -46,6 +48,7 @@ export default function AdminProductsPage() {
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [imageUploadLoading, setImageUploadLoading] = useState(false);
   const [bulkDiscounts, setBulkDiscounts] = useState<BulkDiscountTier[]>([]);
+  const [activeTab, setActiveTab] = useState("product");
 
   const form = useForm<ProductUploadFormData>({
     resolver: zodResolver(productUploadSchema),
@@ -205,241 +208,261 @@ export default function AdminProductsPage() {
           <CardContent className="p-8">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                {/* Product Images Section */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <Camera className="h-5 w-5 text-blue-600" />
-                    <h3 className="text-lg font-semibold text-gray-900">Product Images</h3>
-                  </div>
-                  
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
-                    <input
-                      type="file"
-                      multiple
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      className="hidden"
-                      id="image-upload"
-                      disabled={imageUploadLoading}
-                    />
-                    <label
-                      htmlFor="image-upload"
-                      className="cursor-pointer flex flex-col items-center gap-2"
-                    >
-                      {imageUploadLoading ? (
-                        <Loader2 className="h-12 w-12 text-blue-600 animate-spin" />
-                      ) : (
-                        <Upload className="h-12 w-12 text-blue-600" />
-                      )}
-                      <p className="text-lg font-medium text-gray-700">
-                        {imageUploadLoading ? "Uploading..." : "Click to upload product images"}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        Support: JPG, PNG, GIF up to 5MB each
-                      </p>
-                    </label>
-                  </div>
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="product" className="flex items-center gap-2">
+                      <Package className="h-4 w-4" />
+                      Product Information
+                    </TabsTrigger>
+                    <TabsTrigger value="bulk" className="flex items-center gap-2">
+                      <Percent className="h-4 w-4" />
+                      Bulk Pricing
+                    </TabsTrigger>
+                  </TabsList>
 
-                  {/* Image Preview Grid */}
-                  {uploadedImages.length > 0 && (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {uploadedImages.map((imageUrl, index) => (
-                        <div key={index} className="relative group">
-                          <img
-                            src={imageUrl}
-                            alt={`Product ${index + 1}`}
-                            className="w-full h-32 object-cover rounded-lg border border-gray-200"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => removeImage(index)}
-                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
-                          {index === 0 && (
-                            <Badge className="absolute bottom-2 left-2 bg-blue-600">
-                              Primary
-                            </Badge>
+                  <TabsContent value="product" className="space-y-8 mt-6">
+                    {/* Product Images Section */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2">
+                        <Camera className="h-5 w-5 text-blue-600" />
+                        <h3 className="text-lg font-semibold text-gray-900">Product Images</h3>
+                      </div>
+                      
+                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
+                        <input
+                          type="file"
+                          multiple
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          className="hidden"
+                          id="image-upload"
+                          disabled={imageUploadLoading}
+                        />
+                        <label
+                          htmlFor="image-upload"
+                          className="cursor-pointer flex flex-col items-center gap-2"
+                        >
+                          {imageUploadLoading ? (
+                            <Loader2 className="h-12 w-12 text-blue-600 animate-spin" />
+                          ) : (
+                            <Upload className="h-12 w-12 text-blue-600" />
                           )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                          <p className="text-lg font-medium text-gray-700">
+                            {imageUploadLoading ? "Uploading..." : "Click to upload product images"}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            Support: JPG, PNG, GIF up to 5MB each
+                          </p>
+                        </label>
+                      </div>
 
-                {/* Product Information */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-gray-700 font-medium flex items-center gap-2">
-                          <Tag className="h-4 w-4" />
-                          Product Name
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="e.g., Botox 200U (Allergan)"
-                            {...field}
-                            className="h-12"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="price"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-gray-700 font-medium flex items-center gap-2">
-                          <DollarSign className="h-4 w-4" />
-                          Price (CAD)
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="215.00"
-                            {...field}
-                            className="h-12"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="categoryId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-gray-700 font-medium">Category</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger className="h-12">
-                            <SelectValue placeholder="Select a category" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {categories.map((category) => (
-                            <SelectItem key={category.id} value={category.id.toString()}>
-                              {category.name}
-                            </SelectItem>
+                      {/* Image Preview Grid */}
+                      {uploadedImages.length > 0 && (
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          {uploadedImages.map((imageUrl, index) => (
+                            <div key={index} className="relative group">
+                              <img
+                                src={imageUrl}
+                                alt={`Product ${index + 1}`}
+                                className="w-full h-32 object-cover rounded-lg border border-gray-200"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => removeImage(index)}
+                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                <X className="h-4 w-4" />
+                              </button>
+                              {index === 0 && (
+                                <Badge className="absolute bottom-2 left-2 bg-blue-600">
+                                  Primary
+                                </Badge>
+                              )}
+                            </div>
                           ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-gray-700 font-medium flex items-center gap-2">
-                        <FileText className="h-4 w-4" />
-                        Product Description
-                      </FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Detailed description of the medical product, its uses, benefits, and specifications..."
-                          className="min-h-32 resize-none"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="tags"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-gray-700 font-medium">Tags (comma-separated)</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="botox, aesthetic, medical, treatment"
-                          {...field}
-                          className="h-12"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Product Options */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField
-                    control={form.control}
-                    name="featured"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                        <div className="space-y-0.5">
-                          <FormLabel className="text-base font-medium">
-                            Featured Product
-                          </FormLabel>
-                          <p className="text-sm text-gray-500">
-                            Display this product prominently on the homepage
-                          </p>
                         </div>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
+                      )}
+                    </div>
 
-                  <FormField
-                    control={form.control}
-                    name="inStock"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                        <div className="space-y-0.5">
-                          <FormLabel className="text-base font-medium">
-                            In Stock
-                          </FormLabel>
-                          <p className="text-sm text-gray-500">
-                            Product is available for purchase
-                          </p>
-                        </div>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                    {/* Product Information */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <FormField
+                        control={form.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-gray-700 font-medium flex items-center gap-2">
+                              <Tag className="h-4 w-4" />
+                              Product Name
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="e.g., Botox 200U (Allergan)"
+                                {...field}
+                                className="h-12"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                {/* Bulk Discount Pricing */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="h-5 w-5 text-blue-600" />
-                    <h3 className="text-lg font-semibold text-gray-900">Bulk Discount Pricing</h3>
-                  </div>
-                  <div className="border border-gray-200 rounded-lg p-6 bg-gray-50">
-                    <BulkDiscountManager
-                      basePrice={parseFloat(form.watch("price") || "0")}
-                      discounts={bulkDiscounts}
-                      onChange={setBulkDiscounts}
+                      <FormField
+                        control={form.control}
+                        name="price"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-gray-700 font-medium flex items-center gap-2">
+                              <DollarSign className="h-4 w-4" />
+                              Price (CAD)
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="215.00"
+                                {...field}
+                                className="h-12"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <FormField
+                      control={form.control}
+                      name="categoryId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-700 font-medium">Category</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="h-12">
+                                <SelectValue placeholder="Select a category" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {categories.map((category) => (
+                                <SelectItem key={category.id} value={category.id.toString()}>
+                                  {category.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </div>
-                </div>
+
+                    <FormField
+                      control={form.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-700 font-medium flex items-center gap-2">
+                            <FileText className="h-4 w-4" />
+                            Product Description
+                          </FormLabel>
+                          <FormControl>
+                            <Textarea
+                              placeholder="Detailed description of the medical product, its uses, benefits, and specifications..."
+                              className="min-h-32 resize-none"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="tags"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-700 font-medium">Tags (comma-separated)</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="botox, aesthetic, medical, treatment"
+                              {...field}
+                              className="h-12"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Product Options */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <FormField
+                        control={form.control}
+                        name="featured"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                            <div className="space-y-0.5">
+                              <FormLabel className="text-base font-medium">
+                                Featured Product
+                              </FormLabel>
+                              <p className="text-sm text-gray-500">
+                                Display this product prominently on the homepage
+                              </p>
+                            </div>
+                            <FormControl>
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="inStock"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                            <div className="space-y-0.5">
+                              <FormLabel className="text-base font-medium">
+                                In Stock
+                              </FormLabel>
+                              <p className="text-sm text-gray-500">
+                                Product is available for purchase
+                              </p>
+                            </div>
+                            <FormControl>
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                  </TabsContent>
+
+                  <TabsContent value="bulk" className="space-y-6 mt-6">
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2">
+                        <Percent className="h-5 w-5 text-blue-600" />
+                        <h3 className="text-lg font-semibold text-gray-900">Bulk Discount Pricing</h3>
+                      </div>
+                      <p className="text-sm text-gray-600">
+                        Set up quantity-based discounts. Base price: ${form.watch("price") || "0.00"}
+                      </p>
+                      <div className="border border-gray-200 rounded-lg p-6 bg-gray-50">
+                        <BulkDiscountManager
+                          basePrice={parseFloat(form.watch("price") || "0")}
+                          discounts={bulkDiscounts}
+                          onChange={setBulkDiscounts}
+                        />
+                      </div>
+                    </div>
+                  </TabsContent>
+                </Tabs>
 
                 {/* Submit Button */}
                 <div className="flex justify-end pt-6">
