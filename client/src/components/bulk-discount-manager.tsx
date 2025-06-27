@@ -22,42 +22,97 @@ interface BulkDiscountManagerProps {
 }
 
 export function BulkDiscountManager({ basePrice, discounts, onChange }: BulkDiscountManagerProps) {
-  const [newTier, setNewTier] = useState<{
-    minQuantity: number;
-    maxQuantity: number | null;
-    discountPercentage: number;
-    discountedPrice: number;
-  }>({
+  const [newTier, setNewTier] = useState({
     minQuantity: 1,
-    maxQuantity: null,
+    maxQuantity: null as number | null,
     discountPercentage: 0,
     discountedPrice: basePrice
   });
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingTier, setEditingTier] = useState<BulkDiscountTier | null>(null);
+  const [errors, setErrors] = useState<string[]>([]);
 
-  const calculateDiscountedPrice = (discountPercentage: number) => {
-    return basePrice * (1 - discountPercentage / 100);
-  };
+  const generateId = () => Math.random().toString(36).substr(2, 9);
 
   const addTier = () => {
-    if (newTier.minQuantity && newTier.discountPercentage !== undefined) {
-      const tier: BulkDiscountTier = {
-        minQuantity: newTier.minQuantity,
-        maxQuantity: newTier.maxQuantity || null,
-        discountPercentage: newTier.discountPercentage,
-        discountedPrice: calculateDiscountedPrice(newTier.discountPercentage)
-      };
-      
-      const updatedDiscounts = [...discounts, tier].sort((a, b) => a.minQuantity - b.minQuantity);
-      onChange(updatedDiscounts);
-      
-      // Reset form
-      setNewTier({
-        minQuantity: (updatedDiscounts[updatedDiscounts.length - 1]?.maxQuantity || 0) + 1,
-        maxQuantity: null,
-        discountPercentage: 0,
-        discountedPrice: basePrice
-      });
+    const tier: BulkDiscountTier = {
+      id: generateId(),
+      ...newTier
+    };
+    
+    const validationErrors = validateTier(tier, basePrice);
+    if (validationErrors.length > 0) {
+      setErrors(validationErrors);
+      return;
     }
+    
+    setErrors([]);
+    const sortedDiscounts = sortTiersByQuantity([...discounts, tier]);
+    onChange(sortedDiscounts);
+    setNewTier({
+      minQuantity: 1,
+      maxQuantity: null,
+      discountPercentage: 0,
+      discountedPrice: basePrice
+    });
+  };
+
+  const removeTier = (id: string) => {
+    const updatedDiscounts = discounts.filter(tier => tier.id !== id);
+    onChange(updatedDiscounts);
+  };
+
+  const startEditing = (tier: BulkDiscountTier) => {
+    setEditingId(tier.id);
+    setEditingTier({ ...tier });
+    setErrors([]);
+  };
+
+  const saveEdit = () => {
+    if (!editingTier) return;
+    
+    const validationErrors = validateTier(editingTier, basePrice);
+    if (validationErrors.length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+    
+    setErrors([]);
+    const updatedDiscounts = discounts.map(tier => 
+      tier.id === editingId ? editingTier : tier
+    );
+    const sortedDiscounts = sortTiersByQuantity(updatedDiscounts);
+    onChange(sortedDiscounts);
+    setEditingId(null);
+    setEditingTier(null);
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditingTier(null);
+    setErrors([]);
+  };
+
+  const updateNewTierDiscountPercentage = (percentage: number) => {
+    const discountedPrice = calculateDiscountedPrice(basePrice, percentage);
+    setNewTier({ ...newTier, discountPercentage: percentage, discountedPrice });
+  };
+
+  const updateNewTierDiscountedPrice = (price: number) => {
+    const discountPercentage = ((basePrice - price) / basePrice) * 100;
+    setNewTier({ ...newTier, discountedPrice: price, discountPercentage });
+  };
+
+  const updateEditingTierDiscountPercentage = (percentage: number) => {
+    if (!editingTier) return;
+    const discountedPrice = calculateDiscountedPrice(basePrice, percentage);
+    setEditingTier({ ...editingTier, discountPercentage: percentage, discountedPrice });
+  };
+
+  const updateEditingTierDiscountedPrice = (price: number) => {
+    if (!editingTier) return;
+    const discountPercentage = ((basePrice - price) / basePrice) * 100;
+    setEditingTier({ ...editingTier, discountedPrice: price, discountPercentage });
   };
 
   const removeTier = (index: number) => {

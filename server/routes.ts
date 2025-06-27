@@ -1679,6 +1679,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin carousel management endpoints
+  app.patch('/api/admin/carousel/:id', requireAdminAuth, async (req, res) => {
+    try {
+      const itemId = parseInt(req.params.id);
+      const updates = req.body;
+      
+      if (!itemId || isNaN(itemId)) {
+        return res.status(400).json({
+          message: 'Valid carousel item ID is required',
+          code: 'INVALID_ITEM_ID'
+        });
+      }
+
+      const updatedItem = await storage.updateCarouselItem(itemId, updates);
+      
+      if (!updatedItem) {
+        return res.status(404).json({
+          message: 'Carousel item not found',
+          code: 'ITEM_NOT_FOUND'
+        });
+      }
+
+      res.json({
+        message: 'Carousel item updated successfully',
+        item: updatedItem
+      });
+    } catch (error: any) {
+      console.error('Carousel update error:', error);
+      res.status(500).json({
+        message: 'Failed to update carousel item: ' + error.message,
+        code: 'CAROUSEL_UPDATE_ERROR'
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
