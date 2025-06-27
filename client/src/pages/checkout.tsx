@@ -15,7 +15,7 @@ import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useCart } from "@/lib/cart";
 
 // Validation schema for checkout form
 const checkoutSchema = z.object({
@@ -76,7 +76,7 @@ type CheckoutFormData = z.infer<typeof checkoutSchema>;
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCart();
   const { toast } = useToast();
-  const [, navigate] = useNavigate();
+  const [location, navigate] = useLocation();
   const [sameAsShipping, setSameAsShipping] = useState(true);
 
   const form = useForm<CheckoutFormData>({
@@ -121,10 +121,19 @@ export default function CheckoutPage() {
         notes: data.notes,
       };
 
-      return apiRequest("/api/orders", {
+      const response = await fetch("/api/orders", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(orderData),
       });
+
+      if (!response.ok) {
+        throw new Error("Failed to create order");
+      }
+
+      return response.json();
     },
     onSuccess: (data) => {
       toast({

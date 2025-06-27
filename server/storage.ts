@@ -62,6 +62,11 @@ export interface IStorage {
   getUserOrders(userId: string): Promise<OrderWithItems[]>;
   getOrderById(orderId: number, userId?: string): Promise<OrderWithItems | undefined>;
   updateOrderStatus(orderId: number, status: string): Promise<Order | undefined>;
+  
+  // Admin order management
+  getPendingOrders(): Promise<OrderWithItems[]>;
+  approveOrder(orderId: number, adminEmail: string): Promise<Order | undefined>;
+  declineOrder(orderId: number, adminEmail: string, reason: string): Promise<Order | undefined>;
 
   // Referrals
   createReferral(referral: InsertReferral): Promise<Referral>;

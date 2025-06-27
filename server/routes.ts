@@ -1225,59 +1225,144 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Checkout endpoint - requires approved user authentication
-  app.post("/api/checkout", requireApprovedUser, async (req, res) => {
+  // Order creation endpoint for doctor information collection
+  app.post("/api/orders", async (req, res) => {
     try {
-      const userId = req.user!.id;
-      const sessionId = req.session.id;
-      
-      // Get cart items for this session
-      const cartItems = await storage.getCartItems(sessionId);
-      
-      if (cartItems.length === 0) {
+      const {
+        items,
+        totalAmount,
+        doctorName,
+        doctorEmail,
+        doctorPhone,
+        institutionNumber,
+        shippingAddress,
+        billingAddress,
+        doctorBankingInfo,
+        cardInfo,
+        paymentMethod,
+        notes
+      } = req.body;
+
+      if (!items || items.length === 0) {
         return res.status(400).json({ 
-          message: "Cart is empty",
-          code: "EMPTY_CART"
+          message: "Order must contain at least one item",
+          code: "EMPTY_ORDER"
         });
       }
-      
-      // Calculate total
-      const total = cartItems.reduce((sum, item) => {
-        return sum + (parseFloat(item.product.price) * item.quantity);
-      }, 0);
-      
-      // Create order
-      const orderData = insertOrderSchema.parse({
-        userId: userId.toString(),
-        total: total.toString(),
+
+      // Generate unique order number
+      const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+
+      // Create order with doctor information
+      const orderData = {
+        userId: doctorEmail, // Using email as user identifier for non-authenticated orders
+        orderNumber,
         status: "pending",
-        orderNumber: `ORD-${Date.now()}`
-      });
-      
-      const orderItems = cartItems.map(item => 
-        insertOrderItemSchema.parse({
-          productId: item.productId,
-          quantity: item.quantity,
-          price: item.product.price
-        })
-      );
-      
+        totalAmount,
+        shippingAddress,
+        billingAddress,
+        doctorBankingInfo,
+        institutionNumber,
+        cardInfo,
+        paymentMethod: paymentMethod || "credit_card",
+        paymentStatus: "pending",
+        doctorEmail,
+        doctorName,
+        doctorPhone,
+        notes
+      };
+
+      // Create order items
+      const orderItems = items.map((item: any) => ({
+        productId: item.product.id,
+        quantity: item.quantity,
+        unitPrice: item.product.price,
+        totalPrice: (parseFloat(item.product.price) * item.quantity).toString(),
+        productName: item.product.name,
+        productImageUrl: item.product.imageUrl
+      }));
+
       const order = await storage.createOrder(orderData, orderItems);
-      
-      // Clear cart after successful order
-      await storage.clearCart(sessionId);
-      
+
       res.json({
-        message: "Order placed successfully",
+        message: "Order submitted successfully for admin approval",
         order,
-        orderNumber: orderData.orderNumber
+        orderNumber
       });
     } catch (error) {
-      console.error("Checkout error:", error);
+      console.error("Order creation error:", error);
       res.status(500).json({ 
-        message: "Failed to process checkout",
-        code: "CHECKOUT_FAILED"
+        message: "Failed to create order",
+        code: "ORDER_CREATION_FAILED"
       });
+    }
+  });
+
+  // Admin: Get pending orders
+  app.get("/api/admin/pending-orders", requireAdminAuth, async (req, res) => {
+    try {
+      const orders = await storage.getPendingOrders();
+      res.json(orders);
+    } catch (error) {
+      console.error("Error fetching pending orders:", error);
+      res.status(500).json({ message: "Failed to fetch pending orders" });
+    }
+  });
+
+  // Admin: Approve order
+  app.post("/api/admin/orders/:id/approve", requireAdminAuth, async (req, res) => {
+    try {
+      const orderId = parseInt(req.params.id);
+      const adminEmail = req.admin?.email || "admin@system.com";
+      
+      const order = await storage.approveOrder(orderId, adminEmail);
+      
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+
+      // Send approval email to doctor
+      const { emailService } = await import('./email');
+      await emailService.sendOrderApprovalEmail(order.doctorEmail, order.doctorName, order.orderNumber, true);
+
+      res.json({
+        message: "Order approved successfully",
+        order
+      });
+    } catch (error) {
+      console.error("Error approving order:", error);
+      res.status(500).json({ message: "Failed to approve order" });
+    }
+  });
+
+  // Admin: Decline order
+  app.post("/api/admin/orders/:id/decline", requireAdminAuth, async (req, res) => {
+    try {
+      const orderId = parseInt(req.params.id);
+      const { reason } = req.body;
+      const adminEmail = req.admin?.email || "admin@system.com";
+      
+      if (!reason || reason.trim().length === 0) {
+        return res.status(400).json({ message: "Decline reason is required" });
+      }
+
+      const order = await storage.declineOrder(orderId, adminEmail, reason);
+      
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+
+      // Send decline email to doctor
+      const { emailService } = await import('./email');
+      await emailService.sendOrderApprovalEmail(order.doctorEmail, order.doctorName, order.orderNumber, false, reason);
+
+      res.json({
+        message: "Order declined successfully",
+        order
+      });
+    } catch (error) {
+      console.error("Error declining order:", error);
+      res.status(500).json({ message: "Failed to decline order" });
     }
   });
 
