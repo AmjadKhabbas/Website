@@ -306,9 +306,15 @@ export default function ProductPage() {
 
 
 
-                {/* Bulk Discount Display */}
+                {/* Bulk Pricing Indicator */}
                 {product.bulkDiscounts && Array.isArray(product.bulkDiscounts) && product.bulkDiscounts.length > 0 && (
                   <div className="mb-6">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Badge className="bg-green-500 text-white font-semibold px-3 py-1">
+                        💰 Bulk Pricing Available
+                      </Badge>
+                      <span className="text-sm text-gray-600">Save more when you buy in larger quantities</span>
+                    </div>
                     <BulkDiscountDisplay
                       basePrice={parseFloat(product.price)}
                       discounts={product.bulkDiscounts}
