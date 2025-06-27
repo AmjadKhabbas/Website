@@ -27,7 +27,8 @@ import {
   Check
 } from "lucide-react";
 import type { Category } from "@shared/schema";
-import { BulkDiscountManager, type BulkDiscountTier } from "@/components/bulk-discount-manager";
+import { BulkDiscountManager } from "@/components/bulk-discount-manager";
+import type { BulkDiscountTier } from "@shared/bulk-discount-types";
 
 const productUploadSchema = z.object({
   name: z.string().min(1, "Product name is required").max(100, "Name must be less than 100 characters"),
@@ -166,10 +167,8 @@ export default function AdminProductsPage() {
         price: data.price,
         categoryId: parseInt(data.categoryId),
         imageUrl: uploadedImages[0] || "/api/placeholder/300/300",
-        imageUrls: uploadedImages.slice(1),
-        featured: data.featured,
+        imageUrls: uploadedImages,
         inStock: data.inStock,
-        tags: data.tags ? data.tags.split(',').map(tag => tag.trim()) : [],
         bulkDiscounts: bulkDiscounts,
       };
 
