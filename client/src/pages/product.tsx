@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ProductCard } from '@/components/product-card';
 import { ProductImageGallery } from '@/components/product-image-gallery';
-import { BulkDiscountDisplay } from '@/components/bulk-discount-display';
+import { BulkPricingDisplay } from '@/components/bulk-pricing-display';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/components/toast';
 import { useCartStore } from '@/lib/cart';
@@ -310,16 +310,13 @@ export default function ProductPage() {
                   </div>
                 )}
 
-                {/* Bulk Discount Display */}
-                {product.bulkDiscounts && Array.isArray(product.bulkDiscounts) && product.bulkDiscounts.length > 0 && (
-                  <div className="mb-6">
-                    <BulkDiscountDisplay
-                      basePrice={parseFloat(product.price)}
-                      discounts={product.bulkDiscounts}
-                      selectedQuantity={selectedQuantity}
-                    />
-                  </div>
-                )}
+                {/* Bulk Pricing Display */}
+                <div className="mb-6">
+                  <BulkPricingDisplay
+                    basePrice={parseFloat(product.price)}
+                    quantity={selectedQuantity}
+                  />
+                </div>
               </div>
 
               <Separator className="bg-gray-200" />
