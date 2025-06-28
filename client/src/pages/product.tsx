@@ -315,7 +315,12 @@ export default function ProductPage() {
                   <BulkPricingDisplay
                     basePrice={parseFloat(product.price)}
                     quantity={selectedQuantity}
-                    bulkDiscounts={product.bulkDiscounts}
+                    bulkDiscounts={product.bulkDiscounts as Array<{
+                      minQuantity: number;
+                      maxQuantity: number | null;
+                      discountPercentage: number;
+                      discountedPrice: number;
+                    }> || []}
                   />
                 </div>
               </div>

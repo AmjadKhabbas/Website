@@ -162,6 +162,7 @@ export function BulkDiscountManager({ basePrice, discounts, onChange }: BulkDisc
                         </td>
                         <td className="px-4 py-3 text-center">
                           <Button
+                            type="button"
                             variant="destructive"
                             size="sm"
                             onClick={() => removeTier(index)}
@@ -262,6 +263,7 @@ export function BulkDiscountManager({ basePrice, discounts, onChange }: BulkDisc
               )}
             </div>
             <Button
+              type="button"
               onClick={addTier}
               disabled={!newTier.minQuantity || newTier.discountPercentage === undefined}
               size="sm"
