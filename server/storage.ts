@@ -247,9 +247,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createProduct(productData: InsertProduct): Promise<Product> {
+    // Ensure bulkDiscounts is properly formatted for database storage
+    const productWithDiscounts = {
+      ...productData,
+      bulkDiscounts: productData.bulkDiscounts || []
+    };
+    
     const [product] = await db
       .insert(products)
-      .values(productData)
+      .values(productWithDiscounts)
       .returning();
     return product;
   }
