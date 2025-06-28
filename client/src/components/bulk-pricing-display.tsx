@@ -12,16 +12,27 @@ interface BulkPricingDisplayProps {
   basePrice: number;
   quantity: number;
   className?: string;
+  bulkDiscounts?: Array<{
+    minQuantity: number;
+    maxQuantity: number | null;
+    discountPercentage: number;
+    discountedPrice: number;
+  }>;
 }
 
-export function BulkPricingDisplay({ basePrice, quantity, className = "" }: BulkPricingDisplayProps) {
-  // Standard bulk pricing tiers
-  const tiers: BulkPricingTier[] = [
-    { minQty: 1, maxQty: 5, discountPercent: 0, price: basePrice },
-    { minQty: 6, maxQty: 10, discountPercent: 2.64, price: basePrice * 0.9736 },
-    { minQty: 11, maxQty: 20, discountPercent: 3.96, price: basePrice * 0.9604 },
-    { minQty: 21, maxQty: null, discountPercent: 5.28, price: basePrice * 0.9472 }
-  ];
+export function BulkPricingDisplay({ basePrice, quantity, className = "", bulkDiscounts = [] }: BulkPricingDisplayProps) {
+  // Use product-specific bulk discounts if available, otherwise show no bulk pricing
+  if (!bulkDiscounts || bulkDiscounts.length === 0) {
+    return null;
+  }
+
+  // Convert product bulk discounts to display format
+  const tiers: BulkPricingTier[] = bulkDiscounts.map(discount => ({
+    minQty: discount.minQuantity,
+    maxQty: discount.maxQuantity,
+    discountPercent: discount.discountPercentage,
+    price: discount.discountedPrice
+  }));
 
   // Find current tier based on quantity
   const currentTier = tiers.find(tier => 
