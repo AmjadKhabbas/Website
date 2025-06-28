@@ -529,7 +529,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin Product Management Routes
   app.post('/api/admin/products', requireAdminAuth, async (req, res) => {
     try {
-      const { name, description, price, categoryId, imageUrl, featured = false, inStock = true, tags = [] } = req.body;
+      const { name, description, price, categoryId, imageUrl, featured = false, inStock = true, tags = [], bulkDiscounts = [] } = req.body;
       
       if (!name || !description || !price || !categoryId) {
         return res.status(400).json({
@@ -557,7 +557,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         imageUrl: imageUrl || '/api/placeholder/300/300',
         featured: Boolean(featured),
         inStock: Boolean(inStock),
-        tags: Array.isArray(tags) ? tags.join(', ') : (tags || null)
+        tags: Array.isArray(tags) ? tags.join(', ') : (tags || null),
+        bulkDiscounts: Array.isArray(bulkDiscounts) ? bulkDiscounts : []
       };
       
       const newProduct = await storage.createProduct(productData);
