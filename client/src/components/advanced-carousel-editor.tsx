@@ -305,24 +305,7 @@ export const AdvancedCarouselEditor = ({
                             />
                           </div>
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="ctaButtonColor">Button Color</Label>
-                          <div className="flex gap-2">
-                            <Input
-                              id="ctaButtonColor"
-                              type="color"
-                              value={formData.ctaButtonColor}
-                              onChange={(e) => setFormData(prev => ({ ...prev, ctaButtonColor: e.target.value }))}
-                              className="w-12 h-10 p-1"
-                            />
-                            <Input
-                              value={formData.ctaButtonColor}
-                              onChange={(e) => setFormData(prev => ({ ...prev, ctaButtonColor: e.target.value }))}
-                              placeholder="#10b981"
-                              className="flex-1"
-                            />
-                          </div>
-                        </div>
+
                         <div className="space-y-2">
                           <Label htmlFor="badgeColor">Badge Color</Label>
                           <div className="flex gap-2">
@@ -467,13 +450,14 @@ export const AdvancedCarouselEditor = ({
                       )}
                     </div>
                     
-                    <Button 
-                      size="sm" 
-                      style={{ backgroundColor: formData.ctaButtonColor }}
-                      className="text-white"
-                    >
-                      {formData.ctaText || 'Shop Now'}
-                    </Button>
+                    {formData.onSale && (
+                      <Badge 
+                        className="bg-red-500 text-white"
+                        style={{ backgroundColor: formData.badgeColor }}
+                      >
+                        On Sale
+                      </Badge>
+                    )}
                   </div>
                 </div>
               </CardContent>

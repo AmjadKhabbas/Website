@@ -36,8 +36,7 @@ const HeroSlideshow = () => {
       originalPrice: "899.99",
       discount: "22%",
       imageUrl: "/api/placeholder/400/300",
-      ctaText: "Shop Now",
-      ctaLink: null,
+      onSale: true,
       isActive: true,
       sortOrder: 0
     },
@@ -49,8 +48,7 @@ const HeroSlideshow = () => {
       originalPrice: "749.99",
       discount: "27%",
       imageUrl: "/api/placeholder/400/300",
-      ctaText: "Shop Now",
-      ctaLink: null,
+      onSale: false,
       isActive: true,
       sortOrder: 1
     },
@@ -62,8 +60,7 @@ const HeroSlideshow = () => {
       originalPrice: "1199.99",
       discount: "25%",
       imageUrl: "/api/placeholder/400/300",
-      ctaText: "Shop Now",
-      ctaLink: null,
+      onSale: true,
       isActive: true,
       sortOrder: 2
     }
@@ -109,9 +106,16 @@ const HeroSlideshow = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
                   >
-                    <Badge className="bg-green-100 text-green-800 mb-4">
-                      Save {item.discount}
-                    </Badge>
+                    {item.onSale && (
+                      <Badge className="bg-red-500 text-white mb-4">
+                        On Sale
+                      </Badge>
+                    )}
+                    {item.discount && (
+                      <Badge className="bg-green-100 text-green-800 mb-4 ml-2">
+                        Save {item.discount}
+                      </Badge>
+                    )}
                     <h1 className="text-5xl lg:text-6xl font-bold text-slate-800 leading-tight mb-6">
                       {item.title}
                     </h1>
@@ -124,10 +128,7 @@ const HeroSlideshow = () => {
                         <span className="text-2xl text-slate-400 line-through">${item.originalPrice}</span>
                       )}
                     </div>
-                    <Button className="btn-fox text-lg px-8 py-4">
-                      Shop Now
-                      <ArrowRight className="w-5 h-5 ml-2" />
-                    </Button>
+
                   </motion.div>
                 </div>
                 
