@@ -39,9 +39,7 @@ export const AdvancedCarouselEditor = ({
     imageUrl: item?.imageUrl || '',
     backgroundGradient: item?.backgroundGradient || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
     textColor: item?.textColor || '#ffffff',
-    ctaText: item?.ctaText || 'Shop Now',
-    ctaLink: item?.ctaLink || '',
-    ctaButtonColor: item?.ctaButtonColor || '#10b981',
+    onSale: item?.onSale ?? false,
     badgeText: item?.badgeText || '',
     badgeColor: item?.badgeColor || '#ef4444',
     animationType: item?.animationType || 'fade',
@@ -139,25 +137,13 @@ export const AdvancedCarouselEditor = ({
                         />
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="ctaText">Button Text</Label>
-                          <Input
-                            id="ctaText"
-                            value={formData.ctaText}
-                            onChange={(e) => setFormData(prev => ({ ...prev, ctaText: e.target.value }))}
-                            placeholder="Shop Now"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="ctaLink">Button Link</Label>
-                          <Input
-                            id="ctaLink"
-                            value={formData.ctaLink}
-                            onChange={(e) => setFormData(prev => ({ ...prev, ctaLink: e.target.value }))}
-                            placeholder="/products"
-                          />
-                        </div>
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          id="onSale"
+                          checked={formData.onSale}
+                          onCheckedChange={(checked) => setFormData(prev => ({ ...prev, onSale: checked }))}
+                        />
+                        <Label htmlFor="onSale">Show "On Sale" Badge</Label>
                       </div>
 
                       <div className="space-y-2">
