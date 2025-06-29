@@ -529,7 +529,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin Product Management Routes
   app.post('/api/admin/products', requireAdminAuth, async (req, res) => {
     try {
-      const { name, description, price, categoryId, imageUrl, featured = false, inStock = true, tags = [], bulkDiscounts = [] } = req.body;
+      const { name, description, price, categoryId, imageUrl, imageUrls = [], featured = false, inStock = true, tags = [], bulkDiscounts = [] } = req.body;
       
       if (!name || !description || !price || !categoryId) {
         return res.status(400).json({
@@ -555,6 +555,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         price: parseFloat(price).toFixed(2),
         categoryId: parseInt(categoryId),
         imageUrl: imageUrl || '/api/placeholder/300/300',
+        imageUrls: Array.isArray(imageUrls) ? imageUrls : [],
         featured: Boolean(featured),
         inStock: Boolean(inStock),
         tags: Array.isArray(tags) ? tags.join(', ') : (tags || null),

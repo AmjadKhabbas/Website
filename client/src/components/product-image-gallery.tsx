@@ -41,7 +41,7 @@ export function ProductImageGallery({
     <div className={`space-y-4 ${className}`}>
       {/* Main Image Display */}
       <div className="relative group">
-        <div className="aspect-square bg-gray-800 rounded-2xl overflow-hidden border border-gray-700 relative">
+        <div className="aspect-square bg-white rounded-2xl overflow-hidden border border-gray-200 relative">
           <motion.img
             key={currentImageIndex}
             src={allImages[currentImageIndex]}
