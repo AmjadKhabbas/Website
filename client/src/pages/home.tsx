@@ -487,40 +487,6 @@ export default function HomePage() {
               className="mb-8"
             />
           </motion.div>
-
-          {/* Medical Category Pills */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.8 }}
-            className="flex flex-wrap justify-center gap-4"
-          >
-            <Link href="/products?category=botulinum-toxins">
-              <button className="pill-medical">
-                Botulinum Toxins
-              </button>
-            </Link>
-            <Link href="/products?category=dermal-fillers">
-              <button className="pill-medical">
-                Dermal Fillers
-              </button>
-            </Link>
-            <Link href="/products?category=orthopedic">
-              <button className="pill-medical">
-                Orthopedic
-              </button>
-            </Link>
-            <Link href="/products?category=rheumatology">
-              <button className="pill-medical">
-                Rheumatology
-              </button>
-            </Link>
-            <Link href="/products?category=weightloss-gynecology">
-              <button className="pill-medical">
-                Weightloss & Gynecology
-              </button>
-            </Link>
-          </motion.div>
         </div>
       </section>
 
