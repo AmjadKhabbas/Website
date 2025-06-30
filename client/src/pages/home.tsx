@@ -622,8 +622,8 @@ export default function HomePage() {
       <section className="py-20 bg-slate-50 scroll-reveal">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16 scroll-reveal">
-            <h2 className="text-4xl font-bold text-slate-800 mb-6">OUR BRANDS</h2>
-            <p className="text-xl text-slate-600">Discover our range of top brands at amazing prices</p>
+            <h2 className="text-4xl font-bold text-slate-800 mb-6">OUR PRODUCTS</h2>
+            <p className="text-xl text-slate-600">Discover our range of top products at amazing prices</p>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 mb-12">
