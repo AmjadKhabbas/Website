@@ -1,17 +1,17 @@
 <?php
 /**
  * Database Configuration for Meds-Go Medical Marketplace
- * Configure your MySQL database connection here
+ * cPanel MySQL Connection Configuration
  */
 
-// Database configuration - Update these values for your hosting environment
-define('DB_HOST', 'localhost');        // Usually 'localhost' for cPanel hosting
-define('DB_NAME', 'your_database_name'); // Your MySQL database name
-define('DB_USER', 'your_username');     // Your MySQL username
-define('DB_PASS', 'your_password');     // Your MySQL password
+// cPanel Database configuration
+define('DB_HOST', 'localhost');
+define('DB_NAME', 'medsgo_NPDB');
+define('DB_USER', 'medsgo_AK');
+define('DB_PASS', '28hZV72o1zU[');
 define('DB_CHARSET', 'utf8mb4');
 
-// Database connection class
+// Database connection class using both PDO and MySQLi
 class Database {
     private $host = DB_HOST;
     private $db_name = DB_NAME;
@@ -19,9 +19,10 @@ class Database {
     private $password = DB_PASS;
     private $charset = DB_CHARSET;
     private $pdo;
+    private $mysqli;
 
     /**
-     * Get database connection
+     * Get PDO database connection (preferred for prepared statements)
      */
     public function getConnection() {
         $this->pdo = null;
@@ -41,6 +42,23 @@ class Database {
         }
 
         return $this->pdo;
+    }
+
+    /**
+     * Get MySQLi connection (alternative method)
+     */
+    public function getMySQLiConnection() {
+        $this->mysqli = new mysqli($this->host, $this->username, $this->password, $this->db_name);
+        
+        if ($this->mysqli->connect_error) {
+            error_log("MySQLi connection failed: " . $this->mysqli->connect_error);
+            die("Database connection failed: " . $this->mysqli->connect_error);
+        }
+        
+        // Set charset
+        $this->mysqli->set_charset($this->charset);
+        
+        return $this->mysqli;
     }
 
     /**
