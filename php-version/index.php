@@ -1,4 +1,65 @@
 <?php
+/**
+ * Smart Hybrid Homepage - Serves React SPA for modern experience
+ * with PHP fallback for maximum compatibility
+ */
+
+// Check if user wants PHP version explicitly or if this is an API/admin request
+$requestUri = $_SERVER['REQUEST_URI'];
+$userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+$usePhpVersion = isset($_GET['php']) || 
+                 strpos($requestUri, '/api/') !== false ||
+                 strpos($requestUri, '/admin/') !== false ||
+                 strpos($userAgent, 'bot') !== false; // Serve PHP for SEO bots
+
+// If not explicitly requesting PHP, serve the React SPA
+if (!$usePhpVersion && ($requestUri === '/' || $requestUri === '/index.php')) {
+    // Include database config for session handling
+    require_once 'config/database.php';
+    session_start();
+    ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Meds-Go Medical Marketplace</title>
+    <meta name="description" content="Premium medical products for healthcare professionals. Botulinum toxins, dermal fillers, and medical equipment with bulk pricing discounts.">
+    
+    <!-- SEO Meta Tags -->
+    <meta name="keywords" content="medical supplies, botulinum toxin, dermal fillers, medical equipment, healthcare products">
+    <meta name="author" content="Meds-Go">
+    
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Meds-Go Medical Marketplace">
+    <meta property="og:description" content="Premium medical products for healthcare professionals with bulk pricing discounts.">
+    
+    <!-- Load production React app -->
+    <script type="module" crossorigin src="/assets/index-CHq3CkF6.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-VsBLE9zj.css">
+</head>
+<body>
+    <div id="root"></div>
+    
+    <!-- Fallback for no JavaScript -->
+    <noscript>
+        <div style="text-align: center; padding: 2rem; font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h1 style="color: #1E40AF;">Meds-Go Medical Marketplace</h1>
+            <p style="margin: 1rem 0;">This application works best with JavaScript enabled.</p>
+            <a href="/?php=1" style="display: inline-block; background: #3B82F6; color: white; padding: 0.75rem 1.5rem; text-decoration: none; border-radius: 0.5rem; margin: 1rem;">
+                Continue with Basic Version
+            </a>
+        </div>
+    </noscript>
+</body>
+</html>
+    <?php
+    exit;
+}
+
+// Continue with PHP version for fallback, bots, or explicit requests
 $pageTitle = "Professional Medical Marketplace";
 $pageDescription = "Premium medical products for healthcare professionals. Botulinum toxins, dermal fillers, and medical equipment with bulk pricing discounts.";
 
