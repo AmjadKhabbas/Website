@@ -104,18 +104,13 @@ export function CategorySections({
 
   const updateCategoryMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: CategoryFormData }) => {
-      const response = await fetch(`/api/admin/categories/${id}`, {
+      return apiRequest(`/api/admin/categories/${id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           ...data,
           slug: data.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
         }),
       });
-      if (!response.ok) throw new Error('Failed to update category');
-      return response.json();
     },
     onSuccess: () => {
       success('Category updated successfully');
@@ -130,11 +125,9 @@ export function CategorySections({
 
   const deleteCategoryMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await fetch(`/api/admin/categories/${id}`, {
+      return apiRequest(`/api/admin/categories/${id}`, {
         method: 'DELETE',
       });
-      if (!response.ok) throw new Error('Failed to delete category');
-      return response.json();
     },
     onSuccess: () => {
       success('Category deleted successfully');
