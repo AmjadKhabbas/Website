@@ -6,6 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ProductCard } from '@/components/product-card';
+import { CategorySections } from '@/components/category-sections';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/use-auth';
@@ -472,148 +473,19 @@ export default function HomePage() {
           className="absolute inset-0 bg-gradient-to-r from-teal-500/5 via-transparent to-cyan-500/5 parallax-fast"
         />
         
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-[600px]">
-          <div className="float-animation">
-            <HeroSlideshow />
-          </div>
-          
-          {/* Enhanced Search with Live Suggestions */}
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-[400px]">
+          {/* Category Sections with Search */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            className="max-w-3xl mx-auto mb-12"
-            ref={searchRef}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="pt-16"
           >
-            <div className="relative">
-              <form onSubmit={handleSearch} className="relative">
-                <Input
-                  type="text"
-                  placeholder="Search"
-                  value={searchQuery}
-                  onChange={handleInputChange}
-                  onFocus={() => searchQuery.trim().length > 1 && setShowSuggestions(true)}
-                  className="w-full pl-16 pr-24 py-6 text-lg bg-white border-2 border-slate-300 rounded-lg text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-300 shadow-lg"
-                />
-                <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 text-slate-400 w-6 h-6" />
-                <Button
-                  type="submit"
-                  disabled={isSearchLoading}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 btn-medical-secondary"
-                >
-                  {isSearchLoading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    "Search"
-                  )}
-                </Button>
-              </form>
-
-              {/* Live Search Suggestions Dropdown */}
-              <AnimatePresence>
-                {showSuggestions && searchSuggestions.length > 0 && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto"
-                  >
-                    {/* Search Results Header */}
-                    <div className="px-4 py-3 border-b border-slate-200 bg-slate-50">
-                      <p className="text-sm font-medium text-slate-700">
-                        {searchSuggestions.length} product{searchSuggestions.length !== 1 ? 's' : ''} found
-                      </p>
-                    </div>
-
-                    {/* Product Suggestions */}
-                    <div className="py-2">
-                      {searchSuggestions.map((product, index) => (
-                        <motion.div
-                          key={product.id}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.05 }}
-                          onClick={() => handleSuggestionClick(product)}
-                          className="px-4 py-3 hover:bg-slate-50 cursor-pointer transition-colors duration-200 flex items-center space-x-3"
-                        >
-                          <img
-                            src={product.imageUrl}
-                            alt={product.name}
-                            className="w-12 h-12 object-cover rounded-md border border-slate-200"
-                          />
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-medium text-slate-800 truncate">
-                              {product.name}
-                            </h4>
-                            <p className="text-sm text-slate-600 truncate">
-                              {product.description}
-                            </p>
-                            <div className="flex items-center justify-between mt-1">
-                              <span className="text-sm font-semibold text-teal-600">
-                                ${product.price}
-                              </span>
-                              {product.category && (
-                                <Badge variant="secondary" className="text-xs">
-                                  {product.category.name}
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
-
-                    {/* View All Results Footer */}
-                    <div className="px-4 py-3 border-t border-slate-200 bg-slate-50">
-                      <Button
-                        onClick={handleViewAllResults}
-                        variant="outline"
-                        size="sm"
-                        className="w-full text-teal-600 border-teal-600 hover:bg-teal-50"
-                      >
-                        View all results for "{searchQuery}"
-                        <ArrowRight className="w-4 h-4 ml-2" />
-                      </Button>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </motion.div>
-
-          {/* Medical Category Pills */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.8 }}
-            className="flex flex-wrap justify-center gap-4"
-          >
-            <Link href="/products?category=botulinum-toxins">
-              <button className="pill-medical">
-                Botulinum Toxins
-              </button>
-            </Link>
-            <Link href="/products?category=dermal-fillers">
-              <button className="pill-medical">
-                Dermal Fillers
-              </button>
-            </Link>
-            <Link href="/products?category=orthopedic">
-              <button className="pill-medical">
-                Orthopedic
-              </button>
-            </Link>
-            <Link href="/products?category=rheumatology">
-              <button className="pill-medical">
-                Rheumatology
-              </button>
-            </Link>
-            <Link href="/products?category=weightloss-gynecology">
-              <button className="pill-medical">
-                Weightloss & Gynecology
-              </button>
-            </Link>
+            <CategorySections 
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              className="mb-8"
+            />
           </motion.div>
         </div>
       </section>
@@ -622,8 +494,8 @@ export default function HomePage() {
       <section className="py-20 bg-slate-50 scroll-reveal">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16 scroll-reveal">
-            <h2 className="text-4xl font-bold text-slate-800 mb-6">OUR PRODUCTS</h2>
-            <p className="text-xl text-slate-600">Discover our range of top products at amazing prices</p>
+            <h2 className="text-4xl font-bold text-slate-800 mb-6">OUR BRANDS</h2>
+            <p className="text-xl text-slate-600">Discover our range of top brands at amazing prices</p>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 mb-12">
