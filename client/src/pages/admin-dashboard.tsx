@@ -228,28 +228,22 @@ export default function AdminDashboard() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Redirect if not admin or admin is null
-  if (!isAdmin || !admin) {
-    setLocation('/login');
-    return null;
-  }
-
   // Fetch pending users
   const { data: pendingUsers = [], isLoading, error } = useQuery<PendingUser[]>({
     queryKey: ['/api/admin/pending-users'],
-    enabled: isAdmin === true && !!admin
+    enabled: isAdmin === true
   });
 
   // Fetch all products for management
   const { data: productsData, isLoading: productsLoading } = useQuery<{products: Product[]}>({
     queryKey: ['/api/products'],
-    enabled: isAdmin === true && !!admin
+    enabled: isAdmin === true
   });
 
   // Fetch categories for the edit form
   const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ['/api/categories'],
-    enabled: isAdmin === true && !!admin
+    enabled: isAdmin === true
   });
 
   const products = productsData?.products || [];
@@ -322,7 +316,10 @@ export default function AdminDashboard() {
     },
   });
 
-  
+  if (!isAdmin) {
+    setLocation('/login');
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -631,7 +628,6 @@ const CarouselManagement = () => {
       if (!response.ok) throw new Error('Failed to fetch carousel items');
       return response.json();
     },
-    enabled: !!admin,
   });
 
   // Create carousel item mutation
