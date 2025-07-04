@@ -247,6 +247,7 @@ export class DatabaseStorage implements IStorage {
     limit?: number;
     search?: string;
   } = {}): Promise<Product[]> {
+    // Use simple query and replace imageUrl in results to prevent 64MB response limit
     let query = db.select().from(products);
 
     if (options.categoryId) {
@@ -270,7 +271,12 @@ export class DatabaseStorage implements IStorage {
       query = query.limit(options.limit);
     }
 
-    return await query;
+    const results = await query;
+    // Replace imageUrl with empty string to prevent large response
+    return results.map(product => ({
+      ...product,
+      imageUrl: ''
+    }));
   }
 
   async getProduct(id: number): Promise<Product | undefined> {
@@ -311,6 +317,7 @@ export class DatabaseStorage implements IStorage {
     limit?: number;
     search?: string;
   } = {}): Promise<ProductWithCategory[]> {
+    // Use simple query and replace imageUrl in results to prevent 64MB response limit
     let query = db
       .select()
       .from(products)
@@ -344,7 +351,8 @@ export class DatabaseStorage implements IStorage {
     const results = await query;
     return results.map(result => ({
       ...result.products,
-      category: result.categories!
+      imageUrl: '', // Replace with empty string to prevent large response
+      category: result.categories
     }));
   }
 

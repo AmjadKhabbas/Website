@@ -519,7 +519,7 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
         </div>
         
         {/* Price */}
-        <div className="mb-4">
+        <div className="mb-2">
           <div className="flex items-center space-x-3">
             <span className="text-2xl font-bold text-blue-600">
               {formatPrice(product.price)}

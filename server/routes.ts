@@ -977,12 +977,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         limit
       });
       
-      // Replace large base64 images with individual image URLs to prevent 64MB response limit
+      // Set image URLs to individual image endpoints since we excluded them from the query
       const optimizedProducts = products.map(product => ({
         ...product,
-        imageUrl: product.imageUrl && product.imageUrl.length > 1000 
-          ? `/api/products/${product.id}/image` 
-          : product.imageUrl
+        imageUrl: `/api/products/${product.id}/image`
       }));
       
       // Include admin status in response
