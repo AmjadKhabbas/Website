@@ -6,7 +6,7 @@ import {
   type ProductWithCategory, type CartItemWithProduct, type OrderWithItems
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc, ilike, or } from "drizzle-orm";
+import { eq, and, desc, ilike, or, sql } from "drizzle-orm";
 
 export interface IStorage {
   // Ehri Account operations

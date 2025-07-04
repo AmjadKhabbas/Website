@@ -967,7 +967,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const categorySlug = req.query.categorySlug as string;
       const featured = req.query.featured === 'true';
       const search = req.query.search as string;
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : 20;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 8;
       
       const products = await storage.getProductsWithCategory({
         categoryId,
@@ -977,9 +977,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         limit
       });
       
+      // Replace large base64 images with placeholders to prevent 64MB response limit
+      const optimizedProducts = products.map(product => ({
+        ...product,
+        imageUrl: product.imageUrl && product.imageUrl.length > 1000 
+          ? '/api/placeholder/300/200' 
+          : product.imageUrl
+      }));
+      
       // Include admin status in response
       res.json({
-        products,
+        products: optimizedProducts,
         isAdmin: req.isAdmin || false
       });
     } catch (error) {
