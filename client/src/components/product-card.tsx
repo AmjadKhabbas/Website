@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { ProductInfoSidebar } from '@/components/product-info-sidebar';
 import type { ProductWithCategory } from '@shared/schema';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
@@ -283,15 +284,28 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
         {/* Content - List View */}
         <div className="flex-1 flex flex-col justify-between min-h-[8rem]">
           <div>
-            <Link href={`/product/${product.id}`}>
-              <h3 className="font-semibold text-slate-800 mb-2 group-hover:text-blue-600 transition-colors duration-300 cursor-pointer text-xl">
-                {product.name}
-              </h3>
-            </Link>
-            
-            <p className="text-sm text-slate-600 mb-3 line-clamp-2">
-              {product.description}
-            </p>
+            <div className="flex items-center gap-2 mb-2">
+              <Link href={`/product/${product.id}`}>
+                <h3 className="font-semibold text-slate-800 group-hover:text-blue-600 transition-colors duration-300 cursor-pointer text-xl">
+                  {product.name}
+                </h3>
+              </Link>
+              
+              {/* Info Icon for product details */}
+              <ProductInfoSidebar
+                productName={product.name}
+                description={product.description}
+                price={product.price}
+                bulkDiscounts={
+                  product.bulkDiscounts && Array.isArray(product.bulkDiscounts) 
+                    ? product.bulkDiscounts.map((discount: any) => ({
+                        quantity: discount.minQuantity,
+                        discount: discount.discountPercentage
+                      }))
+                    : []
+                }
+              />
+            </div>
             
             {/* Price */}
             <div className="flex items-center space-x-3 mb-4">
@@ -390,11 +404,7 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
               -{discountPercentage}%
             </Badge>
           )}
-          {product.bulkDiscounts && Array.isArray(product.bulkDiscounts) && product.bulkDiscounts.length > 0 && (
-            <Badge className="bg-green-500 text-white font-semibold text-xs">
-              Bulk Pricing
-            </Badge>
-          )}
+
         </div>
 
         {/* Admin Controls - Grid View */}
@@ -484,15 +494,28 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
       
       {/* Content */}
       <div className="p-6 flex flex-col h-full">
-        <Link href={`/product/${product.id}`}>
-          <h3 className="font-semibold text-slate-800 mb-2 group-hover:text-blue-600 transition-colors duration-300 cursor-pointer text-lg">
-            {product.name}
-          </h3>
-        </Link>
-        
-        <p className="text-sm text-slate-600 mb-3 line-clamp-2 flex-grow">
-          {product.description}
-        </p>
+        <div className="flex items-center gap-2 mb-4">
+          <Link href={`/product/${product.id}`}>
+            <h3 className="font-semibold text-slate-800 group-hover:text-blue-600 transition-colors duration-300 cursor-pointer text-lg">
+              {product.name}
+            </h3>
+          </Link>
+          
+          {/* Info Icon for product details */}
+          <ProductInfoSidebar
+            productName={product.name}
+            description={product.description}
+            price={product.price}
+            bulkDiscounts={
+              product.bulkDiscounts && Array.isArray(product.bulkDiscounts) 
+                ? product.bulkDiscounts.map((discount: any) => ({
+                    quantity: discount.minQuantity,
+                    discount: discount.discountPercentage
+                  }))
+                : []
+            }
+          />
+        </div>
         
         {/* Price */}
         <div className="mb-4">

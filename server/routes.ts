@@ -967,7 +967,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const categorySlug = req.query.categorySlug as string;
       const featured = req.query.featured === 'true';
       const search = req.query.search as string;
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 20;
       
       const products = await storage.getProductsWithCategory({
         categoryId,
