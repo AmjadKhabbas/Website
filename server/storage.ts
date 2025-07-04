@@ -282,9 +282,11 @@ export class DatabaseStorage implements IStorage {
       );
     }
 
-    // Apply a small default limit to prevent massive responses
-    const limit = options.limit || 10;
-    query = query.limit(limit);
+    // Apply a reasonable limit to show products from all categories
+    const limit = options.limit || 100;
+    
+    // Order by category to ensure variety across categories
+    query = query.orderBy(products.categoryId, products.id).limit(limit);
 
     const results = await query;
     return results as Product[];
