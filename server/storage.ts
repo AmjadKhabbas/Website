@@ -317,57 +317,65 @@ export class DatabaseStorage implements IStorage {
     limit?: number;
     search?: string;
   } = {}): Promise<ProductWithCategory[]> {
-    try {
-      // Create a limited query that excludes large fields completely
-      const query = `
-        SELECT 
-          p.id, p.name, p.price, p.description, p.category_id,
-          p.image_urls, p.featured, p.in_stock, p.tags, p.bulk_discounts,
-          p.original_price, p.rating, p.review_count,
-          c.id as cat_id, c.name as cat_name, c.slug as cat_slug,
-          c.description as cat_description, c.icon as cat_icon, 
-          c.color as cat_color, c.item_count as cat_item_count
-        FROM products p
-        LEFT JOIN categories c ON p.category_id = c.id
-        WHERE 1=1
-        ${options.categoryId ? `AND p.category_id = ${options.categoryId}` : ''}
-        ${options.categorySlug ? `AND c.slug = '${options.categorySlug}'` : ''}
-        ${options.featured ? `AND p.featured = true` : ''}
-        ${options.search ? `AND (p.name ILIKE '%${options.search}%' OR p.description ILIKE '%${options.search}%')` : ''}
-        ${options.limit ? `LIMIT ${options.limit}` : ''}
-      `;
+    // Completely minimal query excluding all large fields
+    let query = db
+      .select({
+        id: products.id,
+        name: products.name,
+        price: products.price,
+        description: products.description,
+        categoryId: products.categoryId,
+        featured: products.featured,
+        inStock: products.inStock,
+        originalPrice: products.originalPrice,
+        rating: products.rating,
+        reviewCount: products.reviewCount,
+        category: {
+          id: categories.id,
+          name: categories.name,
+          slug: categories.slug,
+          description: categories.description,
+          icon: categories.icon,
+          color: categories.color,
+          itemCount: categories.itemCount
+        }
+      })
+      .from(products)
+      .leftJoin(categories, eq(products.categoryId, categories.id));
 
-      const results = await db.execute(sql.raw(query));
-      
-      return results.map((row: any) => ({
-        id: row.id,
-        name: row.name,
-        price: row.price,
-        description: row.description,
-        categoryId: row.category_id,
-        imageUrl: '', // Will be set to endpoint URL in routes
-        imageUrls: row.image_urls,
-        featured: row.featured,
-        inStock: row.in_stock,
-        tags: row.tags,
-        bulkDiscounts: row.bulk_discounts,
-        originalPrice: row.original_price,
-        rating: row.rating,
-        reviewCount: row.review_count,
-        category: row.cat_id ? {
-          id: row.cat_id,
-          name: row.cat_name,
-          slug: row.cat_slug,
-          description: row.cat_description,
-          icon: row.cat_icon,
-          color: row.cat_color,
-          itemCount: row.cat_item_count
-        } : null
-      }));
-    } catch (error) {
-      console.error('Error in getProductsWithCategory:', error);
-      throw error;
+    if (options.categoryId) {
+      query = query.where(eq(products.categoryId, options.categoryId));
     }
+
+    if (options.categorySlug) {
+      query = query.where(eq(categories.slug, options.categorySlug));
+    }
+
+    if (options.featured) {
+      query = query.where(eq(products.featured, true));
+    }
+
+    if (options.search) {
+      query = query.where(
+        or(
+          ilike(products.name, `%${options.search}%`),
+          ilike(products.description, `%${options.search}%`)
+        )
+      );
+    }
+
+    // Apply default limit of 20 to prevent large responses
+    const limit = options.limit || 20;
+    query = query.limit(limit);
+
+    const results = await query;
+    return results.map(result => ({
+      ...result,
+      imageUrl: `/api/products/${result.id}/image`, // Use endpoint URL
+      imageUrls: null, // Not loaded in list view
+      tags: null, // Not loaded in list view  
+      bulkDiscounts: null, // Will be loaded individually when needed
+    }));
   }
 
   async getCartItems(sessionId: string): Promise<CartItemWithProduct[]> {

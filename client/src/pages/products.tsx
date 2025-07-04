@@ -193,14 +193,9 @@ export default function ProductsPage() {
                         }`}
                       >
                         <span className="font-medium">{category.name}</span>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="secondary" className="text-xs">
-                            {category.count}
-                          </Badge>
-                          <ChevronRight className={`w-4 h-4 transition-transform duration-300 ${
-                            selectedCategory === category.slug ? 'rotate-90 text-blue-600' : 'group-hover:translate-x-1'
-                          }`} />
-                        </div>
+                        <ChevronRight className={`w-4 h-4 transition-transform duration-300 ${
+                          selectedCategory === category.slug ? 'rotate-90 text-blue-600' : 'group-hover:translate-x-1'
+                        }`} />
                       </button>
                     ))}
                   </motion.div>
