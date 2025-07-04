@@ -967,7 +967,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const categorySlug = req.query.categorySlug as string;
       const featured = req.query.featured === 'true';
       const search = req.query.search as string;
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : 8;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 20;
       
       const products = await storage.getProductsWithCategory({
         categoryId,
@@ -977,11 +977,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         limit
       });
       
-      // Replace large base64 images with placeholders to prevent 64MB response limit
+      // Replace large base64 images with individual image URLs to prevent 64MB response limit
       const optimizedProducts = products.map(product => ({
         ...product,
         imageUrl: product.imageUrl && product.imageUrl.length > 1000 
-          ? '/api/placeholder/300/200' 
+          ? `/api/products/${product.id}/image` 
           : product.imageUrl
       }));
       
@@ -993,6 +993,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching products:", error);
       res.status(500).json({ message: "Failed to fetch products" });
+    }
+  });
+
+  // Serve individual product images
+  app.get("/api/products/:id/image", async (req, res) => {
+    try {
+      const productId = parseInt(req.params.id);
+      const product = await storage.getProduct(productId);
+      
+      if (!product || !product.imageUrl) {
+        return res.status(404).json({ message: "Product image not found" });
+      }
+
+      // Check if it's a base64 image
+      if (product.imageUrl.startsWith('data:image/')) {
+        const [header, base64Data] = product.imageUrl.split(',');
+        const mimeType = header.match(/data:([^;]+)/)?.[1] || 'image/png';
+        
+        const imageBuffer = Buffer.from(base64Data, 'base64');
+        
+        res.setHeader('Content-Type', mimeType);
+        res.setHeader('Cache-Control', 'public, max-age=86400'); // Cache for 24 hours
+        res.send(imageBuffer);
+      } else {
+        // If it's a regular URL, redirect to it
+        res.redirect(product.imageUrl);
+      }
+    } catch (error) {
+      console.error("Error serving product image:", error);
+      res.status(500).json({ message: "Failed to serve image" });
     }
   });
 
