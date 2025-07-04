@@ -967,15 +967,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const categorySlug = req.query.categorySlug as string;
       const featured = req.query.featured === 'true';
       const search = req.query.search as string;
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : 20;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10; // Reduced default limit
       
-      const products = await storage.getProductsWithCategory({
-        categoryId,
-        categorySlug,
-        featured,
-        search,
-        limit
-      });
+      // Use simple getProducts for "All Products" (no category filters) to avoid database response size limit
+      // Use getProductsWithCategory only when category filtering is needed
+      let products;
+      
+      if (categoryId || categorySlug) {
+        // Category-specific query with joins
+        products = await storage.getProductsWithCategory({
+          categoryId,
+          categorySlug,
+          featured,
+          search,
+          limit
+        });
+      } else {
+        // Simple query for "All Products" - no joins to prevent large response
+        const simpleProducts = await storage.getProducts({
+          featured,
+          search,
+          limit
+        });
+        
+        // Convert to ProductWithCategory format but without actual category data
+        products = simpleProducts.map(product => ({
+          ...product,
+          category: null // No category data for "All Products" view
+        }));
+      }
       
       // Set image URLs to individual image endpoints since we excluded them from the query
       const optimizedProducts = products.map(product => ({

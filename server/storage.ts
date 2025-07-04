@@ -282,8 +282,8 @@ export class DatabaseStorage implements IStorage {
       );
     }
 
-    // Apply a reasonable limit to prevent massive responses
-    const limit = options.limit || 20;
+    // Apply a small default limit to prevent massive responses
+    const limit = options.limit || 10;
     query = query.limit(limit);
 
     const results = await query;
