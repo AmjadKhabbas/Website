@@ -506,6 +506,7 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
             productName={product.name}
             description={product.description}
             price={product.price}
+            imageUrl={product.imageUrl}
             bulkDiscounts={
               product.bulkDiscounts && Array.isArray(product.bulkDiscounts) 
                 ? product.bulkDiscounts.map((discount: any) => ({
@@ -531,8 +532,18 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
           </div>
         </div>
         
-        {/* Quantity Controls - Always at bottom */}
-        <div className="mt-auto">
+        {/* Action Buttons - Always at bottom */}
+        <div className="mt-auto space-y-2">
+          {/* Buy Now Button */}
+          {product.inStock && (
+            <Link href={`/checkout?product=${product.id}&quantity=1`}>
+              <Button className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg transition-all duration-300 font-semibold transform hover:scale-[1.02]">
+                Buy Now
+              </Button>
+            </Link>
+          )}
+          
+          {/* Cart Controls */}
           {!product.inStock ? (
             <Button disabled className="w-full py-3 rounded-lg font-semibold">
               Out of Stock

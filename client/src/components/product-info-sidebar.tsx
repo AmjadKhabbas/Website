@@ -16,6 +16,7 @@ interface ProductInfoSidebarProps {
   description: string;
   bulkDiscounts?: BulkDiscount[];
   price: string;
+  imageUrl?: string;
   className?: string;
 }
 
@@ -24,6 +25,7 @@ export function ProductInfoSidebar({
   description, 
   bulkDiscounts = [], 
   price,
+  imageUrl,
   className = "" 
 }: ProductInfoSidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -88,6 +90,17 @@ export function ProductInfoSidebar({
                     Starting at {price}
                   </Badge>
                 </div>
+
+                {/* Product Image */}
+                {imageUrl && (
+                  <div className="mb-4">
+                    <img 
+                      src={imageUrl} 
+                      alt={productName}
+                      className="w-full h-48 object-cover rounded-lg border border-gray-200"
+                    />
+                  </div>
+                )}
 
                 <Separator className="my-4" />
 

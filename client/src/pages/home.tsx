@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { ProductCard } from '@/components/product-card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { CategorySections } from '@/components/category-sections';
+
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/components/toast';
 import type { Category, ProductWithCategory, Brand } from '@shared/schema';
@@ -475,11 +475,7 @@ export default function HomePage() {
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-[600px]">
           <div className="float-animation">
-            <CategorySections 
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              className="mb-8"
-            />
+            <HeroSlideshow />
           </div>
           
           {/* Enhanced Search with Live Suggestions */}

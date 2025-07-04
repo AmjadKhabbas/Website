@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -11,11 +11,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { ShoppingCart, CreditCard, MapPin, Building, Phone, Mail, User, DollarSign } from "lucide-react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { useCart } from "@/lib/cart";
+import type { ProductWithCategory } from "@shared/schema";
 
 // Validation schema for checkout form
 const checkoutSchema = z.object({
@@ -78,6 +79,45 @@ export default function CheckoutPage() {
   const { toast } = useToast();
   const [location, navigate] = useLocation();
   const [sameAsShipping, setSameAsShipping] = useState(true);
+  const [directProduct, setDirectProduct] = useState<{id: number, quantity: number} | null>(null);
+
+  // Parse URL parameters for direct product purchase
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('product');
+    const quantity = urlParams.get('quantity');
+    
+    if (productId && quantity) {
+      setDirectProduct({
+        id: parseInt(productId),
+        quantity: parseInt(quantity)
+      });
+    }
+  }, [location]);
+
+  // Fetch product details for direct purchase
+  const { data: productDetails } = useQuery<ProductWithCategory>({
+    queryKey: ['/api/products', directProduct?.id],
+    queryFn: async () => {
+      const response = await fetch(`/api/products/${directProduct!.id}`);
+      if (!response.ok) throw new Error('Failed to fetch product');
+      return response.json();
+    },
+    enabled: !!directProduct?.id,
+  });
+
+  // Calculate items and total based on cart or direct purchase
+  const checkoutItems = directProduct && productDetails 
+    ? [{
+        product: productDetails,
+        quantity: directProduct.quantity,
+        price: parseFloat(productDetails.price)
+      }]
+    : items;
+
+  const checkoutTotal = directProduct && productDetails
+    ? parseFloat(productDetails.price) * directProduct.quantity
+    : total;
 
   const form = useForm<CheckoutFormData>({
     resolver: zodResolver(checkoutSchema),
@@ -104,8 +144,8 @@ export default function CheckoutPage() {
       };
 
       const orderData = {
-        items,
-        totalAmount: total.toString(),
+        items: checkoutItems,
+        totalAmount: checkoutTotal.toString(),
         doctorName: data.doctorName,
         doctorEmail: data.doctorEmail,
         doctorPhone: data.doctorPhone,
@@ -140,7 +180,10 @@ export default function CheckoutPage() {
         title: "Order Submitted Successfully",
         description: `Your order #${data.orderNumber} has been submitted for admin approval. You will receive an email confirmation shortly.`,
       });
-      clearCart();
+      // Only clear cart if it's not a direct purchase
+      if (!directProduct) {
+        clearCart();
+      }
       navigate(`/order-confirmation/${data.orderNumber}`);
     },
     onError: (error: any) => {
@@ -164,7 +207,7 @@ export default function CheckoutPage() {
     return "Unknown";
   };
 
-  if (items.length === 0) {
+  if (checkoutItems.length === 0) {
     return (
       <div className="min-h-screen pt-16 bg-gradient-to-br from-slate-50 to-blue-50">
         <div className="max-w-4xl mx-auto px-4 py-12 text-center">
@@ -509,8 +552,8 @@ export default function CheckoutPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">
-                  {items.map((item) => (
-                    <div key={item.id} className="flex justify-between items-start text-sm">
+                  {checkoutItems.map((item, index) => (
+                    <div key={item.product?.id || index} className="flex justify-between items-start text-sm">
                       <div className="flex-1">
                         <p className="font-medium text-gray-900">{item.product.name}</p>
                         <p className="text-gray-500">Qty: {item.quantity}</p>
@@ -522,7 +565,7 @@ export default function CheckoutPage() {
                 <Separator />
                 <div className="flex justify-between items-center text-lg font-bold">
                   <span>Total</span>
-                  <span className="text-blue-600">${total.toFixed(2)}</span>
+                  <span className="text-blue-600">${checkoutTotal.toFixed(2)}</span>
                 </div>
                 <div className="bg-blue-50 p-3 rounded-lg">
                   <p className="text-sm text-blue-800">
