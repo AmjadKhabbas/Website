@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { Link } from 'wouter';
 
 interface BulkDiscount {
   quantity: number;
@@ -12,6 +13,7 @@ interface BulkDiscount {
 }
 
 interface ProductInfoSidebarProps {
+  productId: number;
   productName: string;
   description: string;
   bulkDiscounts?: BulkDiscount[];
@@ -21,6 +23,7 @@ interface ProductInfoSidebarProps {
 }
 
 export function ProductInfoSidebar({ 
+  productId,
   productName, 
   description, 
   bulkDiscounts = [], 
@@ -153,12 +156,14 @@ export function ProductInfoSidebar({
 
                 {/* Call to Action */}
                 <div className="mt-6 pt-4 border-t">
-                  <Button 
-                    className="w-full bg-blue-600 hover:bg-blue-700"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    View Full Product Details
-                  </Button>
+                  <Link href={`/product/${productId}`}>
+                    <Button 
+                      className="w-full bg-blue-600 hover:bg-blue-700"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      View Full Product Details
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </motion.div>

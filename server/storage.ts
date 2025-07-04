@@ -247,8 +247,23 @@ export class DatabaseStorage implements IStorage {
     limit?: number;
     search?: string;
   } = {}): Promise<Product[]> {
-    // Use simple query and replace imageUrl in results to prevent 64MB response limit
-    let query = db.select().from(products);
+    // Select only essential fields to prevent 64MB response limit
+    let query = db.select({
+      id: products.id,
+      name: products.name,
+      description: products.description,
+      price: products.price,
+      originalPrice: products.originalPrice,
+      categoryId: products.categoryId,
+      featured: products.featured,
+      inStock: products.inStock,
+      rating: products.rating,
+      reviewCount: products.reviewCount,
+      imageUrl: sql<string>`''`.as('imageUrl'), // Empty string for list view
+      imageUrls: sql<string[] | null>`NULL`.as('imageUrls'),
+      tags: sql<string | null>`NULL`.as('tags'),
+      bulkDiscounts: sql<unknown>`NULL`.as('bulkDiscounts')
+    }).from(products);
 
     if (options.categoryId) {
       query = query.where(eq(products.categoryId, options.categoryId));
@@ -267,16 +282,12 @@ export class DatabaseStorage implements IStorage {
       );
     }
 
-    if (options.limit) {
-      query = query.limit(options.limit);
-    }
+    // Apply a reasonable limit to prevent massive responses
+    const limit = options.limit || 20;
+    query = query.limit(limit);
 
     const results = await query;
-    // Replace imageUrl with empty string to prevent large response
-    return results.map(product => ({
-      ...product,
-      imageUrl: ''
-    }));
+    return results as Product[];
   }
 
   async getProduct(id: number): Promise<Product | undefined> {

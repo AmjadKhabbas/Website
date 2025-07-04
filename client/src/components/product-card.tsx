@@ -293,6 +293,7 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
               
               {/* Info Icon for product details */}
               <ProductInfoSidebar
+                productId={product.id}
                 productName={product.name}
                 description={product.description}
                 price={product.price}
@@ -494,7 +495,7 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
       
       {/* Content */}
       <div className="p-6 flex flex-col h-full">
-        <div className="flex items-center gap-2 mb-4">
+        <div className="flex items-center gap-2 mb-2">
           <Link href={`/product/${product.id}`}>
             <h3 className="font-semibold text-slate-800 group-hover:text-blue-600 transition-colors duration-300 cursor-pointer text-lg">
               {product.name}
@@ -503,6 +504,7 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
           
           {/* Info Icon for product details */}
           <ProductInfoSidebar
+            productId={product.id}
             productName={product.name}
             description={product.description}
             price={product.price}
