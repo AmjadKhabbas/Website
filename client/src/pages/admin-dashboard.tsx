@@ -523,7 +523,7 @@ export default function AdminDashboard() {
                                   <Badge variant={product.inStock ? "default" : "secondary"}>
                                     {product.inStock ? "In Stock" : "Out of Stock"}
                                   </Badge>
-                                  <Badge variant="outline">{product.category.name}</Badge>
+                                  <Badge variant="outline">{product.category?.name || 'Unknown Category'}</Badge>
                                   {product.featured && <Badge variant="destructive">Featured</Badge>}
                                 </div>
                               </div>
