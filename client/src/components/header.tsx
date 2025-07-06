@@ -11,6 +11,7 @@ import { MobileMenu } from '@/components/mobile-menu';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/use-auth';
 import { useAdmin } from '@/hooks/use-admin';
+import { ThemeToggle } from '@/components/theme-toggle';
 import type { Category, ProductWithCategory } from '@shared/schema';
 
 export function Header() {
@@ -365,12 +366,15 @@ export function Header() {
 
             {/* Right Side Actions */}
             <div className="flex items-center space-x-3">
+              {/* Theme Toggle */}
+              <ThemeToggle />
+              
               {/* Cart Button */}
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={openCart}
-                className="relative p-3 text-slate-600 hover:text-teal-600 bg-white hover:bg-teal-50 border border-slate-200 hover:border-teal-200 rounded-lg transition-all duration-300"
+                className="relative p-3 text-slate-600 dark:text-slate-300 hover:text-teal-600 dark:hover:text-teal-400 bg-white dark:bg-slate-800 hover:bg-teal-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-600 hover:border-teal-200 dark:hover:border-teal-500 rounded-lg transition-all duration-300"
               >
                 <ShoppingCart className="w-6 h-6" />
                 <AnimatePresence>

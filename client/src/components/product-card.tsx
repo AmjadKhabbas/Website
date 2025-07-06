@@ -383,7 +383,7 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: index * 0.1 }}
-      className="group bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col h-full"
+      className="group bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col h-full"
     >
       {/* Image Container */}
       <div className="relative aspect-square bg-gradient-to-br from-blue-50 to-slate-50 overflow-hidden">
@@ -497,7 +497,7 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
       <div className="p-6 flex flex-col h-full">
         <div className="flex items-center gap-2 mb-2">
           <Link href={`/product/${product.id}`}>
-            <h3 className="font-semibold text-slate-800 group-hover:text-blue-600 transition-colors duration-300 cursor-pointer text-lg">
+            <h3 className="font-semibold text-slate-800 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300 cursor-pointer text-lg">
               {product.name}
             </h3>
           </Link>
@@ -521,7 +521,7 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
         </div>
         
         {/* Price */}
-        <div className="mb-2">
+        <div className="mb-4">
           <div className="flex items-center space-x-3">
             <span className="text-2xl font-bold text-blue-600">
               {formatPrice(product.price)}
@@ -534,8 +534,8 @@ export function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCa
           </div>
         </div>
         
-        {/* Action Buttons - Always at bottom */}
-        <div className="mt-auto space-y-2">
+        {/* Action Buttons - Directly under price */}
+        <div className="space-y-2">
           {/* Buy Now Button */}
           {product.inStock && (
             <Link href={`/checkout?product=${product.id}&quantity=1`}>

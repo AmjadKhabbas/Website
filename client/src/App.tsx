@@ -7,6 +7,7 @@ import { Header } from "@/components/header";
 import { CartSidebar } from "@/components/cart-sidebar";
 import { ToastContainer, useToast } from "@/components/toast";
 import { AuthProvider } from "@/hooks/use-auth";
+import { ThemeProvider } from "@/components/theme-provider";
 import HomePage from "@/pages/home";
 import CategoryPage from "@/pages/category";
 import ProductPage from "@/pages/product";
@@ -51,19 +52,21 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TooltipProvider>
-          <div className="min-h-screen bg-slate-50">
-            <Header />
-            <main>
-              <Router />
-            </main>
-            <CartSidebar />
-            <ToastContainer toasts={toasts} onDismiss={dismissToast} />
-            <Toaster />
-          </div>
-        </TooltipProvider>
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <TooltipProvider>
+            <div className="min-h-screen bg-background">
+              <Header />
+              <main>
+                <Router />
+              </main>
+              <CartSidebar />
+              <ToastContainer toasts={toasts} onDismiss={dismissToast} />
+              <Toaster />
+            </div>
+          </TooltipProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
