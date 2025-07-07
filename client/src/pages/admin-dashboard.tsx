@@ -15,6 +15,7 @@ import { Switch } from '@/components/ui/switch';
 import { CheckCircle, XCircle, User, Mail, FileText, Building, MapPin, LogOut, Loader2, Package, Plus, Trash2, Edit, Search, Palette } from 'lucide-react';
 import { AdvancedCarouselEditor } from '@/components/advanced-carousel-editor';
 import { ProductImageManager } from '@/components/product-image-manager';
+import { AdminNewsletterManagement } from '@/components/admin-newsletter-management';
 import { Link } from 'wouter';
 import { useToast } from '@/components/toast';
 import { apiRequest } from '@/lib/queryClient';
@@ -360,6 +361,10 @@ export default function AdminDashboard() {
               <FileText className="h-4 w-4" />
               Carousel Management
             </TabsTrigger>
+            <TabsTrigger value="newsletter" className="flex items-center gap-2">
+              <Mail className="h-4 w-4" />
+              Newsletter
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="users">
@@ -565,6 +570,10 @@ export default function AdminDashboard() {
 
           <TabsContent value="carousel">
             <CarouselManagement />
+          </TabsContent>
+
+          <TabsContent value="newsletter">
+            <AdminNewsletterManagement />
           </TabsContent>
         </Tabs>
 

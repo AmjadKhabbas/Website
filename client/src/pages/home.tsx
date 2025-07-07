@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { ProductCard } from '@/components/product-card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { NewsletterSubscription } from '@/components/newsletter-subscription';
 
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/components/toast';
@@ -702,16 +703,7 @@ export default function HomePage() {
           </div>
           
           <div className="max-w-lg mx-auto">
-            <div className="flex gap-3">
-              <Input
-                type="email"
-                placeholder="Enter your email..."
-                className="flex-1 px-6 py-4 bg-white border-2 border-slate-300 rounded-lg text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-300"
-              />
-              <Button className="btn-medical px-8 py-4">
-                Subscribe
-              </Button>
-            </div>
+            <NewsletterSubscription />
             <p className="text-sm text-slate-500 mt-4">Secure • No spam • Unsubscribe anytime</p>
           </div>
         </div>

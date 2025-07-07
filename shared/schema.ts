@@ -156,11 +156,6 @@ export const referrals = pgTable("referrals", {
   lastName: varchar("last_name").notNull(),
   email: varchar("email").notNull(),
   phone: varchar("phone").notNull(),
-  clinicName: varchar("clinic_name").notNull(),
-  address: varchar("address"),
-  city: varchar("city"),
-  state: varchar("state"),
-  zipCode: varchar("zip_code"),
   specialty: varchar("specialty").notNull(),
   licenseNumber: varchar("license_number").notNull(),
   yearsOfExperience: varchar("years_of_experience"),
@@ -170,6 +165,14 @@ export const referrals = pgTable("referrals", {
   status: varchar("status").default("pending"), // pending, approved, rejected
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Newsletter subscription table
+export const newsletters = pgTable("newsletters", {
+  id: serial("id").primaryKey(),
+  email: varchar("email").notNull().unique(),
+  subscribedAt: timestamp("subscribed_at").defaultNow().notNull(),
+  isActive: boolean("is_active").notNull().default(true),
 });
 
 // Admin users table for secure admin access
@@ -273,6 +276,11 @@ export const insertCarouselItemSchema = createInsertSchema(carouselItems).omit({
   updatedAt: true,
 });
 
+export const insertNewsletterSchema = createInsertSchema(newsletters).omit({
+  id: true,
+  subscribedAt: true,
+});
+
 // Database relations
 export const usersRelations = relations(users, ({ many }) => ({
   orders: many(orders),
@@ -342,6 +350,9 @@ export type AdminUser = typeof adminUsers.$inferSelect;
 
 export type InsertCarouselItem = z.infer<typeof insertCarouselItemSchema>;
 export type CarouselItem = typeof carouselItems.$inferSelect;
+
+export type InsertNewsletter = z.infer<typeof insertNewsletterSchema>;
+export type Newsletter = typeof newsletters.$inferSelect;
 
 export type ProductWithCategory = Product & { category: Category };
 export type CartItemWithProduct = CartItem & { product: Product };

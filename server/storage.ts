@@ -1,8 +1,8 @@
 import { 
-  ehriAccounts, categories, brands, products, cartItems, users, orders, orderItems, referrals, adminUsers, carouselItems,
+  ehriAccounts, categories, brands, products, cartItems, users, orders, orderItems, referrals, adminUsers, carouselItems, newsletters,
   type EhriAccount, type InsertEhriAccount, type Category, type Brand, type InsertBrand, type Product, type CartItem, type User, type Order, type OrderItem, type Referral, type AdminUser, type InsertAdminUser,
   type InsertCategory, type InsertProduct, type InsertCartItem, type InsertUser, type InsertOrder, type InsertOrderItem, type InsertReferral,
-  type CarouselItem, type InsertCarouselItem,
+  type CarouselItem, type InsertCarouselItem, type Newsletter, type InsertNewsletter,
   type ProductWithCategory, type CartItemWithProduct, type OrderWithItems
 } from "@shared/schema";
 import { db } from "./db";
@@ -73,6 +73,14 @@ export interface IStorage {
 
   // Referrals
   createReferral(referral: InsertReferral): Promise<Referral>;
+
+  // Newsletter subscriptions
+  subscribeToNewsletter(email: string): Promise<Newsletter>;
+  getNewsletterSubscriptions(): Promise<Newsletter[]>;
+  unsubscribeFromNewsletter(email: string): Promise<boolean>;
+
+  // Order cancellation
+  cancelOrder(orderId: number, userId: string): Promise<Order | undefined>;
 
   // Admin operations
   createAdminUser(admin: InsertAdminUser): Promise<AdminUser>;
@@ -592,6 +600,40 @@ export class DatabaseStorage implements IStorage {
   async createReferral(referralData: InsertReferral): Promise<Referral> {
     const [referral] = await db.insert(referrals).values(referralData).returning();
     return referral;
+  }
+
+  async subscribeToNewsletter(email: string): Promise<Newsletter> {
+    try {
+      const [subscription] = await db.insert(newsletters).values({ email }).returning();
+      return subscription;
+    } catch (error: any) {
+      // If duplicate email, return existing subscription
+      if (error.code === '23505') {
+        const existing = await db.select().from(newsletters).where(eq(newsletters.email, email)).limit(1);
+        if (existing.length > 0) {
+          return existing[0];
+        }
+      }
+      throw error;
+    }
+  }
+
+  async getNewsletterSubscriptions(): Promise<Newsletter[]> {
+    return await db.select().from(newsletters).where(eq(newsletters.isActive, true)).orderBy(desc(newsletters.subscribedAt));
+  }
+
+  async unsubscribeFromNewsletter(email: string): Promise<boolean> {
+    const result = await db.update(newsletters).set({ isActive: false }).where(eq(newsletters.email, email));
+    return result.rowCount > 0;
+  }
+
+  async cancelOrder(orderId: number, userId: string): Promise<Order | undefined> {
+    const [updatedOrder] = await db
+      .update(orders)
+      .set({ status: 'cancelled' })
+      .where(and(eq(orders.id, orderId), eq(orders.userId, userId), ne(orders.status, 'delivered')))
+      .returning();
+    return updatedOrder;
   }
 
   // Admin operations

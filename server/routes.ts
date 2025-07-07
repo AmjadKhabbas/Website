@@ -1204,6 +1204,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Newsletter subscription
+  app.post("/api/newsletter/subscribe", async (req, res) => {
+    try {
+      const { email } = req.body;
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+      
+      const subscription = await storage.subscribeToNewsletter(email);
+      res.json({ success: true, message: "Successfully subscribed to newsletter" });
+    } catch (error: any) {
+      console.error("Error subscribing to newsletter:", error);
+      res.status(500).json({ message: "Failed to subscribe to newsletter", error: error.message });
+    }
+  });
+
+  // Get newsletter subscriptions (admin only)
+  app.get("/api/newsletter/subscriptions", requireAdminAuth, async (req, res) => {
+    try {
+      const subscriptions = await storage.getNewsletterSubscriptions();
+      res.json(subscriptions);
+    } catch (error: any) {
+      console.error("Error getting newsletter subscriptions:", error);
+      res.status(500).json({ message: "Failed to get newsletter subscriptions", error: error.message });
+    }
+  });
+
+  // Cancel order
+  app.post("/api/orders/:orderId/cancel", requireAuth, async (req, res) => {
+    try {
+      const orderId = parseInt(req.params.orderId);
+      const userId = req.session.userId;
+      
+      if (!userId) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
+      const cancelledOrder = await storage.cancelOrder(orderId, userId);
+      if (!cancelledOrder) {
+        return res.status(404).json({ message: "Order not found or cannot be cancelled" });
+      }
+      
+      res.json({ success: true, order: cancelledOrder });
+    } catch (error: any) {
+      console.error("Error cancelling order:", error);
+      res.status(500).json({ message: "Failed to cancel order", error: error.message });
+    }
+  });
+
   // Categories
   app.get("/api/categories", async (req, res) => {
     try {

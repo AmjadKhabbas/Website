@@ -17,11 +17,6 @@ interface ReferralFormData {
   lastName: string;
   email: string;
   phone: string;
-  clinicName: string;
-  address: string;
-  city: string;
-  state: string;
-  zipCode: string;
   specialty: string;
   licenseNumber: string;
   yearsOfExperience: string;
@@ -37,11 +32,6 @@ export default function ReferralsPage() {
     lastName: '',
     email: '',
     phone: '',
-    clinicName: '',
-    address: '',
-    city: '',
-    state: '',
-    zipCode: '',
     specialty: '',
     licenseNumber: '',
     yearsOfExperience: '',
@@ -234,61 +224,7 @@ export default function ReferralsPage() {
                     </div>
                   </div>
 
-                  {/* Practice Information */}
-                  <div>
-                    <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
-                      <Building className="w-5 h-5 mr-2 text-blue-600" />
-                      Practice Information
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="md:col-span-2">
-                        <Label htmlFor="clinicName">Clinic/Practice Name *</Label>
-                        <Input
-                          id="clinicName"
-                          value={formData.clinicName}
-                          onChange={(e) => handleInputChange('clinicName', e.target.value)}
-                          placeholder="Enter clinic or practice name"
-                          required
-                        />
-                      </div>
-                      <div className="md:col-span-2">
-                        <Label htmlFor="address">Address</Label>
-                        <Input
-                          id="address"
-                          value={formData.address}
-                          onChange={(e) => handleInputChange('address', e.target.value)}
-                          placeholder="Street address"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="city">City</Label>
-                        <Input
-                          id="city"
-                          value={formData.city}
-                          onChange={(e) => handleInputChange('city', e.target.value)}
-                          placeholder="City"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="state">State</Label>
-                        <Input
-                          id="state"
-                          value={formData.state}
-                          onChange={(e) => handleInputChange('state', e.target.value)}
-                          placeholder="State"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="zipCode">ZIP Code</Label>
-                        <Input
-                          id="zipCode"
-                          value={formData.zipCode}
-                          onChange={(e) => handleInputChange('zipCode', e.target.value)}
-                          placeholder="12345"
-                        />
-                      </div>
-                    </div>
-                  </div>
+
 
                   {/* Professional Information */}
                   <div>

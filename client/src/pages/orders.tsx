@@ -6,14 +6,43 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import { isUnauthorizedError } from '@/lib/authUtils';
+import { apiRequest } from '@/lib/queryClient';
 import type { OrderWithItems } from '@shared/schema';
 
 export default function OrdersPage() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
+  const queryClient = useQueryClient();
+
+  // Cancel order mutation
+  const cancelOrderMutation = useMutation({
+    mutationFn: async (orderId: number) => {
+      return await apiRequest('POST', `/api/orders/${orderId}/cancel`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Order Cancelled",
+        description: "Your order has been successfully cancelled.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to cancel order. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleCancelOrder = (orderId: number) => {
+    if (confirm('Are you sure you want to cancel this order?')) {
+      cancelOrderMutation.mutate(orderId);
+    }
+  };
 
   // Redirect to home if not authenticated
   useEffect(() => {
@@ -198,9 +227,21 @@ export default function OrdersPage() {
                               {order.items.length} item{order.items.length !== 1 ? 's' : ''}
                             </div>
                           </div>
-                          <Link href={`/orders/${order.id}`}>
-                            <Button variant="outline" size="sm">View Details</Button>
-                          </Link>
+                          <div className="flex space-x-2">
+                            {(order.status === 'pending' || order.status === 'approved') && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleCancelOrder(order.id)}
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                Cancel Order
+                              </Button>
+                            )}
+                            <Link href={`/orders/${order.id}`}>
+                              <Button variant="outline" size="sm">View Details</Button>
+                            </Link>
+                          </div>
                         </div>
                       </div>
                     </CardContent>
