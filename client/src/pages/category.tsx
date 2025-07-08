@@ -26,16 +26,25 @@ export default function CategoryPage() {
     },
   });
 
-  const { data: products = [], isLoading } = useQuery<ProductWithCategory[]>({
-    queryKey: ['/api/products', category?.id, searchQuery],
+  const { data: productsResponse, isLoading } = useQuery({
+    queryKey: ['/api/products', category?.id, searchQuery, currentPage],
     queryFn: async () => {
-      if (!category) return [];
+      if (!category) return { products: [] };
       const searchParam = searchQuery ? `&search=${encodeURIComponent(searchQuery)}` : '';
-      const response = await fetch(`/api/products?categoryId=${category.id}${searchParam}`);
+      const offset = (currentPage - 1) * itemsPerPage;
+      const response = await fetch(`/api/products?categoryId=${category.id}&limit=${itemsPerPage}&offset=${offset}${searchParam}`);
+      if (!response.ok) throw new Error('Failed to fetch products');
       return response.json();
     },
     enabled: !!category,
   });
+  
+  // Reset page when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+  
+  const products = productsResponse?.products || [];
 
   const sortedProducts = [...products].sort((a, b) => {
     switch (sortBy) {

@@ -44,13 +44,13 @@ export default function ProductsPage() {
     queryKey: ['/api/products', { 
       categorySlug: selectedCategory,
       search: searchQuery,
-      limit: 1000 // Get all products for client-side pagination
+      limit: 500 // Reasonable limit to prevent database overflow
     }],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (selectedCategory) params.append('categorySlug', selectedCategory);
       if (searchQuery) params.append('search', searchQuery);
-      params.append('limit', '1000'); // Get all products
+      params.append('limit', '100'); // Smaller limit to prevent issues
       
       const response = await fetch(`/api/products?${params.toString()}`);
       if (!response.ok) throw new Error('Failed to fetch products');
