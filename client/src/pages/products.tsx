@@ -19,7 +19,7 @@ export default function ProductsPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [isScrolled, setIsScrolled] = useState(false);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 2000]);
-  const [selectedConcentration, setSelectedConcentration] = useState<string | null>(null);
+  
   const [inStockOnly, setInStockOnly] = useState(false);
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -275,24 +275,7 @@ export default function ProductsPage() {
                     </div>
                   </div>
 
-                  {/* Concentration */}
-                  <div className="space-y-3">
-                    <label className="text-sm font-medium text-slate-700">Concentration</label>
-                    <Select value={selectedConcentration || undefined} onValueChange={(value) => setSelectedConcentration(value || null)}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="All Concentrations" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all-concentrations">All Concentrations</SelectItem>
-                        <SelectItem value="50-units">50 Units</SelectItem>
-                        <SelectItem value="100-units">100 Units</SelectItem>
-                        <SelectItem value="200-units">200 Units</SelectItem>
-                        <SelectItem value="300-units">300 Units</SelectItem>
-                        <SelectItem value="20mg">20mg/ml</SelectItem>
-                        <SelectItem value="24mg">24mg/ml</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  
 
                   {/* Stock Filter */}
                   <div className="flex items-center space-x-2">
@@ -311,7 +294,6 @@ export default function ProductsPage() {
                     variant="outline" 
                     onClick={() => {
                       setPriceRange([0, 2000]);
-                      setSelectedConcentration(null);
                       setInStockOnly(false);
                     }}
                     className="w-full text-slate-600 hover:text-slate-800"
