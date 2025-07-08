@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Search, Filter, Grid, List, ChevronRight, Package, Check } from 'lucide-react';
+import { Search, Filter, Grid, List, ChevronRight, Package, Check, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -22,6 +22,8 @@ export default function ProductsPage() {
   const [selectedConcentration, setSelectedConcentration] = useState<string | null>(null);
   const [inStockOnly, setInStockOnly] = useState(false);
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
 
   // Parse URL search parameters
   useEffect(() => {
@@ -41,12 +43,14 @@ export default function ProductsPage() {
   const { data: productsResponse, isLoading } = useQuery({
     queryKey: ['/api/products', { 
       categorySlug: selectedCategory,
-      search: searchQuery 
+      search: searchQuery,
+      limit: 1000 // Get all products for client-side pagination
     }],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (selectedCategory) params.append('categorySlug', selectedCategory);
       if (searchQuery) params.append('search', searchQuery);
+      params.append('limit', '1000'); // Get all products
       
       const response = await fetch(`/api/products?${params.toString()}`);
       if (!response.ok) throw new Error('Failed to fetch products');
@@ -93,6 +97,22 @@ export default function ProductsPage() {
     
     return matchesSearch && matchesPrice && matchesStock;
   });
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentProducts = filteredProducts.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory, searchQuery, priceRange, inStockOnly]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 pt-20">
@@ -399,7 +419,7 @@ export default function ProductsPage() {
                   ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4'
                   : 'space-y-3'
                 }>
-                  {filteredProducts.map((product: ProductWithCategory, index: number) => (
+                  {currentProducts.map((product: ProductWithCategory, index: number) => (
                     <motion.div
                       key={product.id}
                       initial={{ opacity: 0, y: 20 }}
@@ -411,6 +431,120 @@ export default function ProductsPage() {
                     </motion.div>
                   ))}
                 </div>
+              )}
+
+              {/* Pagination Controls */}
+              {filteredProducts.length > itemsPerPage && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  className="mt-8 flex items-center justify-between bg-white rounded-xl p-4 shadow-sm border border-slate-200"
+                >
+                  <div className="flex items-center gap-2 text-sm text-slate-600">
+                    <span>
+                      Showing {startIndex + 1}-{Math.min(endIndex, filteredProducts.length)} of {filteredProducts.length} products
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    {/* Previous Button */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="flex items-center gap-1"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                      Previous
+                    </Button>
+
+                    {/* Page Numbers */}
+                    <div className="flex items-center gap-1">
+                      {totalPages <= 7 ? (
+                        // Show all pages if 7 or fewer
+                        Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                          <Button
+                            key={page}
+                            variant={currentPage === page ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => handlePageChange(page)}
+                            className={`min-w-[36px] ${
+                              currentPage === page 
+                                ? "bg-blue-600 text-white hover:bg-blue-700" 
+                                : "text-slate-600 hover:text-slate-800"
+                            }`}
+                          >
+                            {page}
+                          </Button>
+                        ))
+                      ) : (
+                        // Show truncated pagination for more than 7 pages
+                        <>
+                          {currentPage > 3 && (
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handlePageChange(1)}
+                                className="min-w-[36px] text-slate-600 hover:text-slate-800"
+                              >
+                                1
+                              </Button>
+                              {currentPage > 4 && <span className="px-2 text-slate-400">...</span>}
+                            </>
+                          )}
+                          
+                          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                            const page = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
+                            return page <= totalPages ? (
+                              <Button
+                                key={page}
+                                variant={currentPage === page ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => handlePageChange(page)}
+                                className={`min-w-[36px] ${
+                                  currentPage === page 
+                                    ? "bg-blue-600 text-white hover:bg-blue-700" 
+                                    : "text-slate-600 hover:text-slate-800"
+                                }`}
+                              >
+                                {page}
+                              </Button>
+                            ) : null;
+                          })}
+
+                          {currentPage < totalPages - 2 && (
+                            <>
+                              {currentPage < totalPages - 3 && <span className="px-2 text-slate-400">...</span>}
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handlePageChange(totalPages)}
+                                className="min-w-[36px] text-slate-600 hover:text-slate-800"
+                              >
+                                {totalPages}
+                              </Button>
+                            </>
+                          )}
+                        </>
+                      )}
+                    </div>
+
+                    {/* Next Button */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="flex items-center gap-1"
+                    >
+                      Next
+                      <ChevronRight className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </motion.div>
               )}
             </motion.main>
           </div>

@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Filter, Grid, List, SortAsc } from 'lucide-react';
+import { Filter, Grid, List, SortAsc, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useParams } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,8 @@ export default function CategoryPage() {
   const [sortBy, setSortBy] = useState('name');
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
 
   const { data: category } = useQuery<Category>({
     queryKey: ['/api/categories', slug],
@@ -48,6 +50,22 @@ export default function CategoryPage() {
         return a.name.localeCompare(b.name);
     }
   });
+
+  // Calculate pagination
+  const totalPages = Math.ceil(sortedProducts.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentProducts = sortedProducts.slice(startIndex, endIndex);
+
+  // Reset to page 1 when search query changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, sortBy]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   if (!category) {
     return (
@@ -141,7 +159,7 @@ export default function CategoryPage() {
                 <div key={i} className="bg-slate-200 animate-pulse rounded-2xl h-96" />
               ))}
             </div>
-          ) : sortedProducts.length === 0 ? (
+          ) : currentProducts.length === 0 ? (
             <div className="text-center py-16">
               <h3 className="text-xl font-semibold text-slate-900 mb-4">No products found</h3>
               <p className="text-slate-600">Try adjusting your search criteria.</p>
@@ -151,10 +169,124 @@ export default function CategoryPage() {
               ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8'
               : 'space-y-6'
             }>
-              {sortedProducts.map((product, index) => (
+              {currentProducts.map((product, index) => (
                 <ProductCard key={product.id} product={product} index={index} />
               ))}
             </div>
+          )}
+
+          {/* Pagination Controls */}
+          {sortedProducts.length > itemsPerPage && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="mt-8 flex items-center justify-between bg-white rounded-xl p-4 shadow-sm border border-slate-200"
+            >
+              <div className="flex items-center gap-2 text-sm text-slate-600">
+                <span>
+                  Showing {startIndex + 1}-{Math.min(endIndex, sortedProducts.length)} of {sortedProducts.length} products
+                </span>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                {/* Previous Button */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="flex items-center gap-1"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  Previous
+                </Button>
+
+                {/* Page Numbers */}
+                <div className="flex items-center gap-1">
+                  {totalPages <= 7 ? (
+                    // Show all pages if 7 or fewer
+                    Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      <Button
+                        key={page}
+                        variant={currentPage === page ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handlePageChange(page)}
+                        className={`min-w-[36px] ${
+                          currentPage === page 
+                            ? "bg-blue-600 text-white hover:bg-blue-700" 
+                            : "text-slate-600 hover:text-slate-800"
+                        }`}
+                      >
+                        {page}
+                      </Button>
+                    ))
+                  ) : (
+                    // Show truncated pagination for more than 7 pages
+                    <>
+                      {currentPage > 3 && (
+                        <>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handlePageChange(1)}
+                            className="min-w-[36px] text-slate-600 hover:text-slate-800"
+                          >
+                            1
+                          </Button>
+                          {currentPage > 4 && <span className="px-2 text-slate-400">...</span>}
+                        </>
+                      )}
+                      
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        const page = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
+                        return page <= totalPages ? (
+                          <Button
+                            key={page}
+                            variant={currentPage === page ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => handlePageChange(page)}
+                            className={`min-w-[36px] ${
+                              currentPage === page 
+                                ? "bg-blue-600 text-white hover:bg-blue-700" 
+                                : "text-slate-600 hover:text-slate-800"
+                            }`}
+                          >
+                            {page}
+                          </Button>
+                        ) : null;
+                      })}
+
+                      {currentPage < totalPages - 2 && (
+                        <>
+                          {currentPage < totalPages - 3 && <span className="px-2 text-slate-400">...</span>}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handlePageChange(totalPages)}
+                            className="min-w-[36px] text-slate-600 hover:text-slate-800"
+                          >
+                            {totalPages}
+                          </Button>
+                        </>
+                      )}
+                    </>
+                  )}
+                </div>
+
+                {/* Next Button */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="flex items-center gap-1"
+                >
+                  Next
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              </div>
+            </motion.div>
           )}
         </div>
       </section>
