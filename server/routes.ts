@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { setupAuth, requireAuth, requireApprovedUser, hashPassword, comparePasswords } from "./auth";
 import { adminAuthService, requireAdminAuth, checkAdminStatus } from "./adminAuth";
 import { setupUploadRoutes } from "./upload";
+import { emailService } from "./email";
 import { insertCartItemSchema, insertOrderSchema, insertOrderItemSchema, insertReferralSchema } from "@shared/schema";
 import session from "express-session";
 import "./types";
@@ -1775,6 +1776,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Reorder carousel items error:", error);
       res.status(500).json({ message: "Failed to reorder carousel items" });
+    }
+  });
+
+  // Contact form submission endpoint
+  app.post('/api/contact', async (req, res) => {
+    try {
+      const { firstName, lastName, email, phone, company, subject, message } = req.body;
+      
+      if (!firstName || !lastName || !email || !phone || !subject || !message) {
+        return res.status(400).json({ message: 'All required fields must be filled' });
+      }
+
+      // Email content for info@meds-go.com
+      const emailHtml = `
+        <h2>New Contact Form Submission</h2>
+        <p><strong>From:</strong> ${firstName} ${lastName}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Phone:</strong> ${phone}</p>
+        ${company ? `<p><strong>Company:</strong> ${company}</p>` : ''}
+        <p><strong>Subject:</strong> ${subject}</p>
+        <hr>
+        <h3>Message:</h3>
+        <p>${message.replace(/\n/g, '<br>')}</p>
+      `;
+
+      const emailText = `
+        New Contact Form Submission
+        
+        From: ${firstName} ${lastName}
+        Email: ${email}
+        Phone: ${phone}
+        ${company ? `Company: ${company}` : ''}
+        Subject: ${subject}
+        
+        Message:
+        ${message}
+      `;
+
+      // Send email to info@meds-go.com
+      const emailSent = await emailService.sendEmail({
+        to: 'info@meds-go.com',
+        subject: `Contact Form: ${subject}`,
+        html: emailHtml,
+        text: emailText
+      });
+
+      if (emailSent) {
+        res.json({ message: 'Message sent successfully' });
+      } else {
+        console.error('Failed to send contact form email');
+        res.status(500).json({ message: 'Failed to send message' });
+      }
+    } catch (error) {
+      console.error('Contact form error:', error);
+      res.status(500).json({ message: 'Internal server error' });
     }
   });
 

@@ -38,12 +38,23 @@ export default function ContactPage() {
   const onSubmit = async (data: ContactFormData) => {
     setIsSubmitting(true);
     try {
-      // Simulate form submission
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send message');
+      }
+
       setIsSubmitted(true);
       reset();
     } catch (error) {
       console.error('Error submitting form:', error);
+      alert('Failed to send message. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -315,20 +326,7 @@ export default function ContactPage() {
                 </div>
               </div>
 
-              <Card className="border border-slate-200 bg-blue-50">
-                <CardContent className="p-6">
-                  <div className="flex items-center space-x-3 mb-4">
-                    <MessageCircle className="w-6 h-6 text-blue-600" />
-                    <h4 className="font-semibold text-slate-800">Speak with Meds-Go AI</h4>
-                  </div>
-                  <p className="text-slate-600 text-sm mb-4">
-                    Get instant answers to your questions with our intelligent AI assistant, available to help with product information and support.
-                  </p>
-                  <Button variant="outline" className="w-full border-blue-200 text-blue-700 hover:bg-blue-100">
-                    Chat with Meds-Go AI
-                  </Button>
-                </CardContent>
-              </Card>
+
             </motion.div>
           </div>
         </div>
