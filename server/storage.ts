@@ -76,6 +76,7 @@ export interface IStorage {
   updateOrderStatus(orderId: number, status: string): Promise<Order | undefined>;
   
   // Admin order management
+  getAllOrders(): Promise<OrderWithItems[]>; // Admin function to view all orders
   getPendingOrders(): Promise<OrderWithItems[]>;
   approveOrder(orderId: number, adminEmail: string): Promise<Order | undefined>;
   declineOrder(orderId: number, adminEmail: string, reason: string): Promise<Order | undefined>;
@@ -573,6 +574,35 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(orders)
       .where(eq(orders.userId, userId))
+      .orderBy(desc(orders.createdAt));
+
+    const ordersWithItems = await Promise.all(
+      ordersResult.map(async (order) => {
+        const itemsResult = await db
+          .select()
+          .from(orderItems)
+          .leftJoin(products, eq(orderItems.productId, products.id))
+          .where(eq(orderItems.orderId, order.id));
+
+        const items = itemsResult.map(result => ({
+          ...result.order_items,
+          product: result.products!
+        }));
+
+        return {
+          ...order,
+          items
+        };
+      })
+    );
+
+    return ordersWithItems;
+  }
+
+  async getAllOrders(): Promise<OrderWithItems[]> {
+    const ordersResult = await db
+      .select()
+      .from(orders)
       .orderBy(desc(orders.createdAt));
 
     const ordersWithItems = await Promise.all(

@@ -1834,6 +1834,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin order management routes
+  app.get('/api/admin/orders', requireAdminAuth, async (req, res) => {
+    try {
+      const orders = await storage.getAllOrders();
+      res.json(orders);
+    } catch (error) {
+      console.error('Error fetching admin orders:', error);
+      res.status(500).json({ message: 'Failed to fetch orders' });
+    }
+  });
+
+  app.patch('/api/admin/orders/:id/status', requireAdminAuth, async (req: any, res) => {
+    try {
+      const orderId = parseInt(req.params.id);
+      const { status, declineReason } = req.body;
+      const adminEmail = req.admin?.email || 'admin@meds-go.com';
+
+      if (status === 'approved') {
+        const updatedOrder = await storage.approveOrder(orderId, adminEmail);
+        if (updatedOrder) {
+          res.json({ message: 'Order approved successfully', order: updatedOrder });
+        } else {
+          res.status(404).json({ message: 'Order not found' });
+        }
+      } else if (status === 'declined') {
+        const updatedOrder = await storage.declineOrder(orderId, adminEmail, declineReason || 'No reason provided');
+        if (updatedOrder) {
+          res.json({ message: 'Order declined successfully', order: updatedOrder });
+        } else {
+          res.status(404).json({ message: 'Order not found' });
+        }
+      } else {
+        const updatedOrder = await storage.updateOrderStatus(orderId, status);
+        if (updatedOrder) {
+          res.json({ message: 'Order status updated successfully', order: updatedOrder });
+        } else {
+          res.status(404).json({ message: 'Order not found' });
+        }
+      }
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      res.status(500).json({ message: 'Failed to update order status' });
+    }
+  });
+
   // Setup file upload routes
   setupUploadRoutes(app);
 

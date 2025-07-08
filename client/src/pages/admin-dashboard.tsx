@@ -252,6 +252,12 @@ export default function AdminDashboard() {
     enabled: isAdmin === true
   });
 
+  // Fetch all orders for admin management
+  const { data: adminOrders = [], isLoading: ordersLoading } = useQuery<any[]>({
+    queryKey: ['/api/admin/orders'],
+    enabled: isAdmin === true
+  });
+
   const products = productsData?.products || [];
   
   // Filter products based on search term
@@ -322,6 +328,23 @@ export default function AdminDashboard() {
     },
   });
 
+  // Update order status mutation
+  const updateOrderStatusMutation = useMutation({
+    mutationFn: async ({ orderId, status, declineReason }: { orderId: number; status: string; declineReason?: string }) => {
+      return await apiRequest('PATCH', `/api/admin/orders/${orderId}/status`, {
+        status,
+        declineReason
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/orders'] });
+      addToast('Order status updated successfully', 'success');
+    },
+    onError: (error: any) => {
+      addToast(error.message || 'Failed to update order status', 'error');
+    },
+  });
+
   if (!isAdmin) {
     setLocation('/login');
     return null;
@@ -353,7 +376,7 @@ export default function AdminDashboard() {
 
         {/* Admin Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="users" className="flex items-center gap-2">
               <User className="h-4 w-4" />
               Doctor Registrations ({pendingUsers.length})
@@ -361,6 +384,10 @@ export default function AdminDashboard() {
             <TabsTrigger value="products" className="flex items-center gap-2">
               <Package className="h-4 w-4" />
               Product Management ({products.length})
+            </TabsTrigger>
+            <TabsTrigger value="orders" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Order Management ({adminOrders.length})
             </TabsTrigger>
             <TabsTrigger value="carousel" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
@@ -473,6 +500,168 @@ export default function AdminDashboard() {
                     </CardContent>
                   </Card>
                 ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="orders">
+            {/* Order Management */}
+            {ordersLoading ? (
+              <div className="flex justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin" />
+              </div>
+            ) : adminOrders.length === 0 ? (
+              <Card>
+                <CardContent className="py-12 text-center">
+                  <p className="text-gray-600 dark:text-gray-400">
+                    No orders found.
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    Order Management
+                  </h2>
+                  <Badge variant="outline">
+                    {adminOrders.length} Total Orders
+                  </Badge>
+                </div>
+
+                <div className="grid gap-4">
+                  {adminOrders.map((order: any) => (
+                    <Card key={order.id} className="border-l-4 border-l-blue-500">
+                      <CardContent className="p-6">
+                        <div className="space-y-4">
+                          {/* Order Header */}
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                Order #{order.orderNumber}
+                              </h3>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                                {new Date(order.createdAt).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-lg font-bold text-green-600">
+                                ${order.totalAmount}
+                              </p>
+                              <Badge variant={
+                                order.status === 'pending' ? 'secondary' :
+                                order.status === 'approved' ? 'default' :
+                                order.status === 'declined' ? 'destructive' : 'outline'
+                              }>
+                                {order.status}
+                              </Badge>
+                            </div>
+                          </div>
+
+                          {/* Doctor Information */}
+                          <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                            <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
+                              Doctor Information
+                            </h4>
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                              <div>
+                                <span className="font-medium">Name:</span> {order.doctorName}
+                              </div>
+                              <div>
+                                <span className="font-medium">Email:</span> {order.doctorEmail}
+                              </div>
+                              {order.doctorPhone && (
+                                <div>
+                                  <span className="font-medium">Phone:</span> {order.doctorPhone}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Payment Information (Admin Only) */}
+                          {order.cardInfo && (
+                            <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg">
+                              <h4 className="font-semibold text-red-900 dark:text-red-100 mb-2">
+                                Payment Information (Confidential)
+                              </h4>
+                              <div className="grid grid-cols-2 gap-4 text-sm text-red-800 dark:text-red-200">
+                                <div>
+                                  <span className="font-medium">Card:</span> ****{order.cardInfo.last4}
+                                </div>
+                                <div>
+                                  <span className="font-medium">Expires:</span> {order.cardInfo.expiryMonth}/{order.cardInfo.expiryYear}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Order Items */}
+                          <div>
+                            <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
+                              Order Items ({order.items?.length || 0})
+                            </h4>
+                            <div className="space-y-2">
+                              {order.items?.map((item: any) => (
+                                <div key={item.id} className="flex justify-between items-center bg-gray-50 dark:bg-gray-800 p-3 rounded">
+                                  <div>
+                                    <span className="font-medium">{item.productName}</span>
+                                    <span className="text-gray-600 dark:text-gray-400 ml-2">x{item.quantity}</span>
+                                  </div>
+                                  <span className="font-medium">${item.totalPrice}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Order Actions */}
+                          <div className="flex gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
+                            {order.status === 'pending' && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  onClick={() => updateOrderStatusMutation.mutate({ 
+                                    orderId: order.id, 
+                                    status: 'approved' 
+                                  })}
+                                  disabled={updateOrderStatusMutation.isPending}
+                                >
+                                  <CheckCircle className="h-4 w-4 mr-2" />
+                                  Approve
+                                </Button>
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={() => updateOrderStatusMutation.mutate({ 
+                                    orderId: order.id, 
+                                    status: 'declined',
+                                    declineReason: 'Declined by admin'
+                                  })}
+                                  disabled={updateOrderStatusMutation.isPending}
+                                >
+                                  <XCircle className="h-4 w-4 mr-2" />
+                                  Decline
+                                </Button>
+                              </>
+                            )}
+                            {order.status === 'approved' && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => updateOrderStatusMutation.mutate({ 
+                                  orderId: order.id, 
+                                  status: 'shipped' 
+                                })}
+                                disabled={updateOrderStatusMutation.isPending}
+                              >
+                                Ship Order
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               </div>
             )}
           </TabsContent>

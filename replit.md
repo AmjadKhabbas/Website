@@ -131,6 +131,12 @@ Meds-Go is a specialized medical marketplace web application that connects healt
 
 ```
 Changelog:
+- July 8, 2025. Added comprehensive admin order management system
+  - Implemented admin order viewing with complete purchase history
+  - Added order status management (pending, approved, declined, shipped)
+  - Created secure banking/payment information display for admin users
+  - Added comprehensive doctor information display for each order
+  - Integrated order approval/decline workflow with admin controls
 - July 8, 2025. Implemented server-side pagination to handle large product categories
   - Fixed 64MB database response limit issue for Dermal Fillers category (49 products)
   - Added pagination with 15 items per page for regular users, 50 for admin users

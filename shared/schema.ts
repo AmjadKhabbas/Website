@@ -94,6 +94,9 @@ export const users = pgTable("users", {
   approvedAt: timestamp("approved_at"),
   approvedBy: varchar("approved_by"),
   
+  // Saved payment information (encrypted for convenience)
+  savedCardInfo: jsonb("saved_card_info"), // { last4, expiryMonth, expiryYear, cardType, billingAddress }
+  
   // Timestamps
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
