@@ -290,8 +290,8 @@ export class DatabaseStorage implements IStorage {
       );
     }
 
-    // Apply a reasonable limit to show products from all categories
-    const limit = options.limit || 100;
+    // Optimized limit to prevent database response size issues while showing enough products
+    const limit = Math.min(options.limit || 12, 20); // Maximum 20 items per request
     
     // Order by category to ensure variety across categories
     query = query.orderBy(products.categoryId, products.id).limit(limit);
@@ -385,8 +385,8 @@ export class DatabaseStorage implements IStorage {
       );
     }
 
-    // Apply default limit of 20 to prevent large responses
-    const limit = options.limit || 20;
+    // Optimized limit to prevent database response size issues while showing enough products
+    const limit = Math.min(options.limit || 12, 20); // Maximum 20 items per request
     query = query.limit(limit);
 
     const results = await query;
@@ -396,6 +396,7 @@ export class DatabaseStorage implements IStorage {
       imageUrls: null, // Not loaded in list view
       tags: null, // Not loaded in list view  
       bulkDiscounts: null, // Will be loaded individually when needed
+      description: result.description?.substring(0, 150) + (result.description?.length > 150 ? '...' : '') || '', // Truncate descriptions
     }));
   }
 

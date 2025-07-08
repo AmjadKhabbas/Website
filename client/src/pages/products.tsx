@@ -22,6 +22,8 @@ export default function ProductsPage() {
   const [selectedConcentration, setSelectedConcentration] = useState<string | null>(null);
   const [inStockOnly, setInStockOnly] = useState(false);
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [allProducts, setAllProducts] = useState<ProductWithCategory[]>([]);
 
   // Parse URL search parameters
   useEffect(() => {
@@ -41,12 +43,14 @@ export default function ProductsPage() {
   const { data: productsResponse, isLoading } = useQuery({
     queryKey: ['/api/products', { 
       categorySlug: selectedCategory,
-      search: searchQuery 
+      search: searchQuery,
+      limit: 12 // Increased page size to show more products initially
     }],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (selectedCategory) params.append('categorySlug', selectedCategory);
       if (searchQuery) params.append('search', searchQuery);
+      params.append('limit', '12'); // Request 12 products at a time
       
       const response = await fetch(`/api/products?${params.toString()}`);
       if (!response.ok) throw new Error('Failed to fetch products');
@@ -65,12 +69,12 @@ export default function ProductsPage() {
   const { data: allProductsResponse } = useQuery({
     queryKey: ['/api/products'],
   });
-  const allProducts = (allProductsResponse as any)?.products || [];
+  const allProductsData = (allProductsResponse as any)?.products || [];
 
   // Calculate product counts for each category based on all products
   const categoriesWithCounts = categories.map(category => ({
     ...category,
-    count: allProducts.filter((product: ProductWithCategory) => product.categoryId === category.id).length
+    count: allProductsData.filter((product: ProductWithCategory) => product.categoryId === category.id).length
   }));
 
   useEffect(() => {
