@@ -41,6 +41,7 @@ export interface IStorage {
     categoryId?: number;
     featured?: boolean;
     limit?: number;
+    offset?: number;
     search?: string;
   }): Promise<Product[]>;
   getProduct(id: number): Promise<Product | undefined>;
@@ -261,6 +262,7 @@ export class DatabaseStorage implements IStorage {
     categoryId?: number;
     featured?: boolean;
     limit?: number;
+    offset?: number;
     search?: string;
   } = {}): Promise<Product[]> {
     // Select only essential fields to prevent 64MB response limit
@@ -298,11 +300,12 @@ export class DatabaseStorage implements IStorage {
       );
     }
 
-    // Apply a reasonable limit to show products from all categories
+    // Apply limit and offset for pagination
     const limit = options.limit || 100;
+    const offset = options.offset || 0;
     
     // Order by category to ensure variety across categories
-    query = query.orderBy(products.categoryId, products.id).limit(limit);
+    query = query.orderBy(products.categoryId, products.id).limit(limit).offset(offset);
 
     const results = await query;
     return results as Product[];
@@ -363,8 +366,10 @@ export class DatabaseStorage implements IStorage {
       })
       .from(products);
 
+    let whereConditions: any[] = [];
+
     if (options.categoryId) {
-      query = query.where(eq(products.categoryId, options.categoryId));
+      whereConditions.push(eq(products.categoryId, options.categoryId));
     }
 
     // Handle category filtering without joins to avoid large responses
@@ -376,7 +381,7 @@ export class DatabaseStorage implements IStorage {
         .where(eq(categories.slug, options.categorySlug));
       
       if (category) {
-        query = query.where(eq(products.categoryId, category.id));
+        whereConditions.push(eq(products.categoryId, category.id));
       } else {
         // Category not found, return empty result
         return [];
@@ -384,16 +389,21 @@ export class DatabaseStorage implements IStorage {
     }
 
     if (options.featured) {
-      query = query.where(eq(products.featured, true));
+      whereConditions.push(eq(products.featured, true));
     }
 
     if (options.search) {
-      query = query.where(
+      whereConditions.push(
         or(
           ilike(products.name, `%${options.search}%`),
           ilike(products.description, `%${options.search}%`)
         )
       );
+    }
+
+    // Apply all where conditions
+    if (whereConditions.length > 0) {
+      query = query.where(whereConditions.length === 1 ? whereConditions[0] : and(...whereConditions));
     }
 
     // Apply default limit and offset for pagination

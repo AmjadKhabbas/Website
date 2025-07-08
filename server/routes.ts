@@ -996,7 +996,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const simpleProducts = await storage.getProducts({
           featured,
           search,
-          limit
+          limit,
+          offset
         });
         
         // Convert to ProductWithCategory format but without actual category data
@@ -1004,7 +1005,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ...product,
           category: null // No category data for "All Products" view
         }));
-        totalCount = simpleProducts.length; // For simple products, we don't have exact count
+        
+        // Get actual total count for "All Products"
+        const allProductsCount = await storage.getProductsCount({
+          featured,
+          search
+        });
+        totalCount = allProductsCount;
       }
       
       // Set image URLs to individual image endpoints since we excluded them from the query
