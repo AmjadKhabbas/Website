@@ -22,10 +22,6 @@ export default function ProductsPage() {
   const [selectedConcentration, setSelectedConcentration] = useState<string | null>(null);
   const [inStockOnly, setInStockOnly] = useState(false);
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(true);
-  const [currentPage, setCurrentPage] = useState(0);
-  const [allLoadedProducts, setAllLoadedProducts] = useState<ProductWithCategory[]>([]);
-  const [hasMore, setHasMore] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   // Parse URL search parameters
   useEffect(() => {
@@ -42,49 +38,23 @@ export default function ProductsPage() {
     }
   }, [location]);
 
-  // Reset pagination when search or category changes
-  useEffect(() => {
-    setCurrentPage(0);
-    setAllLoadedProducts([]);
-    setHasMore(true);
-  }, [selectedCategory, searchQuery]);
-
-  const loadMoreProducts = async () => {
-    if (isLoadingMore || !hasMore) return;
-    
-    setIsLoadingMore(true);
-    setCurrentPage(prev => prev + 1);
-    setIsLoadingMore(false);
-  };
-
   const { data: productsResponse, isLoading } = useQuery({
     queryKey: ['/api/products', { 
       categorySlug: selectedCategory,
-      search: searchQuery,
-      page: currentPage 
+      search: searchQuery 
     }],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (selectedCategory) params.append('categorySlug', selectedCategory);
       if (searchQuery) params.append('search', searchQuery);
-      params.append('limit', '12');
-      params.append('offset', (currentPage * 12).toString());
       
       const response = await fetch(`/api/products?${params.toString()}`);
       if (!response.ok) throw new Error('Failed to fetch products');
       return response.json();
-    },
-    onSuccess: (data) => {
-      if (currentPage === 0) {
-        setAllLoadedProducts(data.products || []);
-      } else {
-        setAllLoadedProducts(prev => [...prev, ...(data.products || [])]);
-      }
-      setHasMore((data.products || []).length === 12);
     }
   });
   
-  const products = allLoadedProducts;
+  const products = productsResponse?.products || [];
   const isAdmin = productsResponse?.isAdmin || false;
 
   const { data: categories = [] } = useQuery<Category[]>({
@@ -440,29 +410,6 @@ export default function ProductsPage() {
                       <ProductCard product={product} index={index} viewMode={viewMode} />
                     </motion.div>
                   ))}
-                </div>
-              )}
-
-              {/* Load More Button */}
-              {!isLoading && filteredProducts.length > 0 && hasMore && (
-                <div className="flex justify-center mt-8">
-                  <Button
-                    onClick={loadMoreProducts}
-                    disabled={isLoadingMore}
-                    className="btn-medical-primary px-8 py-3"
-                  >
-                    {isLoadingMore ? (
-                      <>
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                        Loading...
-                      </>
-                    ) : (
-                      <>
-                        <Package className="w-4 h-4 mr-2" />
-                        Load More Products
-                      </>
-                    )}
-                  </Button>
                 </div>
               )}
             </motion.main>

@@ -28,15 +28,9 @@ export default function CategoryPage() {
     queryKey: ['/api/products', category?.id, searchQuery],
     queryFn: async () => {
       if (!category) return [];
-      const params = new URLSearchParams();
-      params.append('categoryId', category.id.toString());
-      params.append('limit', '12');
-      if (searchQuery) params.append('search', searchQuery);
-      
-      const response = await fetch(`/api/products?${params.toString()}`);
-      if (!response.ok) throw new Error('Failed to fetch products');
-      const data = await response.json();
-      return data.products || [];
+      const searchParam = searchQuery ? `&search=${encodeURIComponent(searchQuery)}` : '';
+      const response = await fetch(`/api/products?categoryId=${category.id}${searchParam}`);
+      return response.json();
     },
     enabled: !!category,
   });
