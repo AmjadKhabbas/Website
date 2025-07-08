@@ -15,7 +15,14 @@ export default function CategoryPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 15;
+  
+  // Show more items per page for admin users to make product management easier
+  const { data: userResponse } = useQuery({
+    queryKey: ['/api/auth/user'],
+    retry: false
+  });
+  const isUserAdmin = userResponse?.admin || false;
+  const itemsPerPage = isUserAdmin ? 50 : 15; // Admin sees 50 items per page, regular users see 15
 
   const { data: category } = useQuery<Category>({
     queryKey: ['/api/categories', slug],

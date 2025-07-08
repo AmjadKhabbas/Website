@@ -131,6 +131,11 @@ Meds-Go is a specialized medical marketplace web application that connects healt
 
 ```
 Changelog:
+- July 8, 2025. Implemented server-side pagination to handle large product categories
+  - Fixed 64MB database response limit issue for Dermal Fillers category (49 products)
+  - Added pagination with 15 items per page for regular users, 50 for admin users
+  - Preserved all 92 existing products in database with proper accessibility
+  - Improved query performance by avoiding large joins
 - June 28, 2025. Initial setup
 ```
 
