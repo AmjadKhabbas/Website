@@ -99,9 +99,9 @@ export default function ContactPage() {
       </section>
 
       {/* Contact Information Cards */}
-      <section className="py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+      <section className="py-20">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-20 justify-center"></div>
             {contactInfo.map((item, index) => (
               <motion.div
                 key={item.title}
@@ -110,14 +110,14 @@ export default function ContactPage() {
                 transition={{ delay: index * 0.1 }}
               >
                 <Card className="h-full border-2 border-blue-100 hover:border-blue-300 transition-all duration-300 hover:shadow-lg bg-white">
-                  <CardContent className="p-8 text-center">
-                    <div className={`w-16 h-16 ${item.color} bg-opacity-15 rounded-xl flex items-center justify-center mx-auto mb-6`}>
-                      <item.icon className={`w-8 h-8 ${item.color}`} />
+                  <CardContent className="p-12 text-center">
+                    <div className={`w-20 h-20 ${item.color} bg-opacity-15 rounded-xl flex items-center justify-center mx-auto mb-8`}>
+                      <item.icon className={`w-10 h-10 ${item.color}`} />
                     </div>
-                    <h3 className="text-xl font-semibold text-slate-800 mb-4">{item.title}</h3>
-                    <div className="space-y-2">
+                    <h3 className="text-2xl font-semibold text-slate-800 mb-6">{item.title}</h3>
+                    <div className="space-y-3">
                       {item.details.map((detail, idx) => (
-                        <p key={idx} className={`${idx === 0 ? 'text-slate-800 font-semibold text-lg' : 'text-slate-600 text-sm'}`}>
+                        <p key={idx} className={`${idx === 0 ? 'text-slate-800 font-semibold text-xl' : 'text-slate-600 text-base'}`}>
                           {detail}
                         </p>
                       ))}
