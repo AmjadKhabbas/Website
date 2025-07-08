@@ -61,12 +61,6 @@ export default function ContactPage() {
       title: "Email",
       details: ["info@meds-go.com", "Response within 1-2 business days"],
       color: "text-green-600"
-    },
-    {
-      icon: Phone,
-      title: "Fax",
-      details: ["+1 (800) 513-8015", "Document submissions"],
-      color: "text-purple-600"
     }
   ];
 
