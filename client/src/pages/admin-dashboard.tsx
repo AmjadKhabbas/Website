@@ -235,9 +235,14 @@ export default function AdminDashboard() {
     enabled: isAdmin === true
   });
 
-  // Fetch all products for management
+  // Fetch all products for management with increased limit for admin view
   const { data: productsData, isLoading: productsLoading } = useQuery<{products: Product[]}>({
-    queryKey: ['/api/products'],
+    queryKey: ['/api/products', { limit: 100 }], // Show up to 100 products for admin management
+    queryFn: async () => {
+      const response = await fetch('/api/products?limit=100');
+      if (!response.ok) throw new Error('Failed to fetch products');
+      return response.json();
+    },
     enabled: isAdmin === true
   });
 
