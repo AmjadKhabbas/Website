@@ -253,7 +253,6 @@ export class DatabaseStorage implements IStorage {
     categoryId?: number;
     featured?: boolean;
     limit?: number;
-    offset?: number;
     search?: string;
   } = {}): Promise<Product[]> {
     // Select only essential fields to prevent 64MB response limit
@@ -291,16 +290,11 @@ export class DatabaseStorage implements IStorage {
       );
     }
 
-    // Apply limit and offset for pagination
+    // Apply a reasonable limit to show products from all categories
     const limit = options.limit || 100;
-    const offset = options.offset || 0;
     
     // Order by category to ensure variety across categories
     query = query.orderBy(products.categoryId, products.id).limit(limit);
-    
-    if (offset > 0) {
-      query = query.offset(offset);
-    }
 
     const results = await query;
     return results as Product[];
@@ -342,7 +336,6 @@ export class DatabaseStorage implements IStorage {
     categorySlug?: string;
     featured?: boolean;
     limit?: number;
-    offset?: number;
     search?: string;
   } = {}): Promise<ProductWithCategory[]> {
     // Completely minimal query excluding all large fields
@@ -392,15 +385,9 @@ export class DatabaseStorage implements IStorage {
       );
     }
 
-    // Apply much smaller limit to prevent 67MB response limit
-    const limit = Math.min(options.limit || 15, 15);
-    const offset = options.offset || 0;
-    
+    // Apply default limit of 20 to prevent large responses
+    const limit = options.limit || 20;
     query = query.limit(limit);
-    
-    if (offset > 0) {
-      query = query.offset(offset);
-    }
 
     const results = await query;
     return results.map(result => ({
