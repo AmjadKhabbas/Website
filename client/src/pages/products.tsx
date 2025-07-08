@@ -62,7 +62,7 @@ export default function ProductsPage() {
   
   const products = productsResponse?.products || [];
   const isAdmin = productsResponse?.isAdmin || false;
-  const serverTotalCount = productsResponse?.totalCount || 0;
+  const serverTotalCount = parseInt(productsResponse?.totalCount) || 0;
   const serverTotalPages = productsResponse?.totalPages || 1;
 
   const { data: categories = [] } = useQuery<Category[]>({

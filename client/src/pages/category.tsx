@@ -38,7 +38,7 @@ export default function CategoryPage() {
   });
 
   const products = productsResponse?.products || [];
-  const totalCount = productsResponse?.totalCount || 0;
+  const totalCount = parseInt(productsResponse?.totalCount) || 0;
   const serverTotalPages = productsResponse?.totalPages || 1;
 
   const sortedProducts = [...products].sort((a, b) => {

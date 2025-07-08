@@ -489,7 +489,7 @@ export class DatabaseStorage implements IStorage {
       }
 
       const [result] = await query;
-      return result.count;
+      return Number(result.count);
     } catch (error) {
       console.error('Error in getProductsCount:', error);
       return 0;
