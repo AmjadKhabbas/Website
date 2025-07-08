@@ -23,16 +23,15 @@ const registrationSchema = z.object({
   
   // Professional Information
   licenseNumber: z.string().min(1, "License number is required"),
-  licenseState: z.string().min(1, "License state is required"),
-  licenseExpiration: z.string().min(1, "License expiration is required"),
+  licenseState: z.string().optional(), // License state is optional
+  licenseExpiryDate: z.string().min(1, "License expiry date is required"),
   specialty: z.string().min(1, "Specialty is required"),
   
   // Practice Information
-  practiceName: z.string().min(1, "Practice name is required"),
   practiceType: z.string().min(1, "Practice type is required"),
   practiceAddress: z.string().min(1, "Practice address is required"),
   practiceCity: z.string().min(1, "Practice city is required"),
-  practiceState: z.string().min(1, "Practice state is required"),
+  practiceState: z.string().optional(), // Practice state is optional
   practiceZip: z.string().min(5, "Please enter a valid ZIP code"),
   
   // Additional Information
@@ -88,9 +87,10 @@ export default function RegisterPage() {
       phone: "",
       licenseNumber: "",
       licenseState: "",
-      licenseExpiration: "",
+      licenseExpiryDate: "",
       specialty: "",
-      practiceName: "",
+      
+      // Practice Information
       practiceType: "",
       practiceAddress: "",
       practiceCity: "",
@@ -273,7 +273,7 @@ export default function RegisterPage() {
                       name="licenseState"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>License State *</FormLabel>
+                          <FormLabel>License State</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger>
@@ -296,10 +296,10 @@ export default function RegisterPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
-                      name="licenseExpiration"
+                      name="licenseExpiryDate"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>License Expiration Date *</FormLabel>
+                          <FormLabel>License Expiry Date *</FormLabel>
                           <FormControl>
                             <Input type="date" {...field} />
                           </FormControl>
@@ -340,19 +340,7 @@ export default function RegisterPage() {
                     Practice Information
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="practiceName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Practice Name *</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Enter practice name" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+
                     <FormField
                       control={form.control}
                       name="practiceType"
@@ -410,7 +398,7 @@ export default function RegisterPage() {
                       name="practiceState"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>State *</FormLabel>
+                          <FormLabel>State</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger>

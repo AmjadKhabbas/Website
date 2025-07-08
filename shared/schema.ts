@@ -82,10 +82,10 @@ export const users = pgTable("users", {
   // Medical License Information
   licenseNumber: varchar("license_number").notNull(),
   collegeName: varchar("college_name").notNull(), // Professional Association Name
-  provinceState: varchar("province_state").notNull(), // Province or State of Registration
+  provinceState: varchar("province_state"), // Province or State of Registration (optional)
+  licenseExpiryDate: varchar("license_expiry_date").notNull(), // License expiry date
   
   // Practice Information
-  practiceName: varchar("practice_name").notNull(),
   practiceAddress: text("practice_address").notNull(),
   
   // Account Status & Verification

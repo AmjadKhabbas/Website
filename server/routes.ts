@@ -1058,14 +1058,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         phone: req.body.phone || '',
         licenseNumber: req.body.licenseNumber,
         collegeName: req.body.collegeName,
-        provinceState: req.body.provinceState,
-        practiceName: req.body.practiceName,
+        provinceState: req.body.provinceState || null, // Optional field
+        licenseExpiryDate: req.body.licenseExpiryDate,
         practiceAddress: req.body.practiceAddress,
         password: req.body.password || 'temp123' // Default temporary password for doctors
       };
 
-      // Validate required fields
-      const requiredFields = ['fullName', 'email', 'licenseNumber', 'collegeName', 'provinceState', 'practiceName', 'practiceAddress'];
+      // Validate required fields (provinceState is now optional)
+      const requiredFields = ['fullName', 'email', 'licenseNumber', 'collegeName', 'licenseExpiryDate', 'practiceAddress'];
       
       for (const field of requiredFields) {
         if (!formData[field as keyof typeof formData]) {
@@ -1091,7 +1091,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         licenseNumber: formData.licenseNumber,
         collegeName: formData.collegeName,
         provinceState: formData.provinceState,
-        practiceName: formData.practiceName,
+        licenseExpiryDate: formData.licenseExpiryDate,
         practiceAddress: formData.practiceAddress,
         isApproved: false,
         isLicenseVerified: false
@@ -1108,8 +1108,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           phone: formData.phone || 'Not provided',
           licenseNumber: newUser.licenseNumber,
           collegeName: newUser.collegeName,
-          provinceState: newUser.provinceState,
-          practiceName: newUser.practiceName,
+          provinceState: newUser.provinceState || 'Not provided',
+          licenseExpiryDate: newUser.licenseExpiryDate,
           practiceAddress: newUser.practiceAddress
         });
         console.log('Admin notification email sent successfully');

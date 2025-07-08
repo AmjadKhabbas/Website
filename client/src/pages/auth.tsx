@@ -29,8 +29,8 @@ const registrationSchema = z.object({
   fullName: z.string().min(2, 'Full name must be at least 2 characters'),
   licenseNumber: z.string().min(5, 'Please enter a valid license number'),
   collegeName: z.string().min(2, 'Professional association name is required'),
-  provinceState: z.string().min(2, 'Province or state is required'),
-  practiceName: z.string().min(2, 'Practice/clinic name is required'),
+  provinceState: z.string().optional(), // Province or state is optional
+  licenseExpiryDate: z.string().min(1, 'License expiry date is required'),
   practiceAddress: z.string().min(10, 'Please enter a complete practice address'),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
@@ -348,15 +348,28 @@ export default function AuthPage() {
                             </div>
 
                             <div className="space-y-2">
-                              <Label htmlFor="provinceState">Province/State of Registration *</Label>
+                              <Label htmlFor="provinceState">Province/State of Registration</Label>
                               <Input
                                 id="provinceState"
-                                placeholder="Ontario, California, etc."
+                                placeholder="Ontario, California, etc. (optional)"
                                 {...registerRegister('provinceState')}
                                 className={registerErrors.provinceState ? 'border-red-500' : ''}
                               />
                               {registerErrors.provinceState && (
                                 <p className="text-sm text-red-600">{registerErrors.provinceState.message}</p>
+                              )}
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="licenseExpiryDate">License Expiry Date *</Label>
+                              <Input
+                                id="licenseExpiryDate"
+                                type="date"
+                                {...registerRegister('licenseExpiryDate')}
+                                className={registerErrors.licenseExpiryDate ? 'border-red-500' : ''}
+                              />
+                              {registerErrors.licenseExpiryDate && (
+                                <p className="text-sm text-red-600">{registerErrors.licenseExpiryDate.message}</p>
                               )}
                             </div>
                           </div>
@@ -382,18 +395,7 @@ export default function AuthPage() {
                             Practice Information
                           </h3>
                           
-                          <div className="space-y-2">
-                            <Label htmlFor="practiceName">Practice/Clinic Name *</Label>
-                            <Input
-                              id="practiceName"
-                              placeholder="Downtown Medical Clinic"
-                              {...registerRegister('practiceName')}
-                              className={registerErrors.practiceName ? 'border-red-500' : ''}
-                            />
-                            {registerErrors.practiceName && (
-                              <p className="text-sm text-red-600">{registerErrors.practiceName.message}</p>
-                            )}
-                          </div>
+
 
                           <div className="space-y-2">
                             <Label htmlFor="practiceAddress">Practice/Clinic Address *</Label>

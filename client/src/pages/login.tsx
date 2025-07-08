@@ -55,8 +55,8 @@ export default function LoginPage() {
       confirmPassword: z.string(),
       licenseNumber: z.string().min(1, "License number is required"),
       collegeName: z.string().min(1, "College name is required"),
-      provinceState: z.string().min(1, "Province/State is required"),
-      practiceName: z.string().min(1, "Practice name is required"),
+      provinceState: z.string().optional(), // Province/State is optional
+      licenseExpiryDate: z.string().min(1, "License expiry date is required"),
       practiceAddress: z.string().min(1, "Practice address is required"),
     }).refine((data) => data.password === data.confirmPassword, {
       message: "Passwords don't match",
@@ -70,7 +70,7 @@ export default function LoginPage() {
       licenseNumber: "",
       collegeName: "",
       provinceState: "",
-      practiceName: "",
+      licenseExpiryDate: "",
       practiceAddress: "",
     },
   });
@@ -218,7 +218,7 @@ export default function LoginPage() {
                   name="provinceState"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-gray-700 font-medium">Province/State</FormLabel>
+                      <FormLabel className="text-gray-700 font-medium">Province/State (optional)</FormLabel>
                       <FormControl>
                         <Input placeholder="Ontario, Alberta, etc." {...field} className="h-12" />
                       </FormControl>
@@ -229,12 +229,12 @@ export default function LoginPage() {
 
                 <FormField
                   control={registerForm.control}
-                  name="practiceName"
+                  name="licenseExpiryDate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-gray-700 font-medium">Practice Name</FormLabel>
+                      <FormLabel className="text-gray-700 font-medium">License Expiry Date</FormLabel>
                       <FormControl>
-                        <Input placeholder="Smith Medical Center" {...field} className="h-12" />
+                        <Input type="date" {...field} className="h-12" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
