@@ -46,8 +46,10 @@ export interface IStorage {
   getProduct(id: number): Promise<Product | undefined>;
   getProductsWithCategory(options?: {
     categoryId?: number;
+    categorySlug?: string;
     featured?: boolean;
     limit?: number;
+    offset?: number;
     search?: string;
   }): Promise<ProductWithCategory[]>;
   createProduct(product: InsertProduct): Promise<Product>;
@@ -336,6 +338,7 @@ export class DatabaseStorage implements IStorage {
     categorySlug?: string;
     featured?: boolean;
     limit?: number;
+    offset?: number;
     search?: string;
   } = {}): Promise<ProductWithCategory[]> {
     // Completely minimal query excluding all large fields
@@ -385,9 +388,11 @@ export class DatabaseStorage implements IStorage {
       );
     }
 
-    // Apply default limit of 20 to prevent large responses
-    const limit = options.limit || 20;
-    query = query.limit(limit);
+    // Apply pagination with smaller default limit to prevent large responses
+    const limit = Math.min(options.limit || 12, 20); // Max 20 items per page
+    const offset = options.offset || 0;
+    
+    query = query.limit(limit).offset(offset);
 
     const results = await query;
     return results.map(result => ({

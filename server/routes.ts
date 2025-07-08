@@ -967,7 +967,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const categorySlug = req.query.categorySlug as string;
       const featured = req.query.featured === 'true';
       const search = req.query.search as string;
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : 100; // Increased to show products from all categories
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 12; // Reduced for better performance
+      const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
       
       // Use simple getProducts for "All Products" (no category filters) to avoid database response size limit
       // Use getProductsWithCategory only when category filtering is needed
@@ -980,14 +981,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           categorySlug,
           featured,
           search,
-          limit
+          limit,
+          offset
         });
       } else {
         // Simple query for "All Products" - no joins to prevent large response
         const simpleProducts = await storage.getProducts({
           featured,
           search,
-          limit
+          limit: Math.min(limit, 20) // Cap at 20 for "All Products"
         });
         
         // Convert to ProductWithCategory format but without actual category data
