@@ -1455,7 +1455,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Order creation endpoint for doctor information collection
+  // Order creation endpoint for doctor information collection (open to all)
   app.post("/api/orders", async (req, res) => {
     try {
       const {
