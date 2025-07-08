@@ -1814,9 +1814,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ${message}
       `;
 
-      // Send email to info@meds-go.com
+      // Send email to infomeds.go@gmail.com
       const emailSent = await emailService.sendEmail({
-        to: 'info@meds-go.com',
+        to: 'infomeds.go@gmail.com',
         subject: `Contact Form: ${subject}`,
         html: emailHtml,
         text: emailText
