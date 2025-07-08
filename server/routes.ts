@@ -967,20 +967,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const categorySlug = req.query.categorySlug as string;
       const featured = req.query.featured === 'true';
       const search = req.query.search as string;
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : 100; // Increased to show products from all categories
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 15; // Default to 15 items per page
+      const page = req.query.page ? parseInt(req.query.page as string) : 1;
+      const offset = (page - 1) * limit;
       
       // Use simple getProducts for "All Products" (no category filters) to avoid database response size limit
       // Use getProductsWithCategory only when category filtering is needed
-      let products;
+      let products, totalCount;
       
       if (categoryId || categorySlug) {
-        // Category-specific query with joins
+        // Category-specific query with joins and pagination
         products = await storage.getProductsWithCategory({
           categoryId,
           categorySlug,
           featured,
           search,
-          limit
+          limit,
+          offset
+        });
+        totalCount = await storage.getProductsCount({
+          categoryId,
+          categorySlug,
+          featured,
+          search
         });
       } else {
         // Simple query for "All Products" - no joins to prevent large response
@@ -995,6 +1004,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ...product,
           category: null // No category data for "All Products" view
         }));
+        totalCount = simpleProducts.length; // For simple products, we don't have exact count
       }
       
       // Set image URLs to individual image endpoints since we excluded them from the query
@@ -1003,9 +1013,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         imageUrl: `/api/products/${product.id}/image`
       }));
       
-      // Include admin status in response
+      // Include admin status and pagination info in response
       res.json({
         products: optimizedProducts,
+        totalCount,
+        currentPage: page,
+        totalPages: Math.ceil(totalCount / limit),
         isAdmin: req.isAdmin || false
       });
     } catch (error) {

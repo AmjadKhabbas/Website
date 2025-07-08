@@ -26,16 +26,20 @@ export default function CategoryPage() {
     },
   });
 
-  const { data: products = [], isLoading } = useQuery<ProductWithCategory[]>({
-    queryKey: ['/api/products', category?.id, searchQuery],
+  const { data: productsResponse, isLoading } = useQuery({
+    queryKey: ['/api/products', category?.id, searchQuery, currentPage],
     queryFn: async () => {
-      if (!category) return [];
+      if (!category) return { products: [], totalCount: 0, currentPage: 1, totalPages: 1 };
       const searchParam = searchQuery ? `&search=${encodeURIComponent(searchQuery)}` : '';
-      const response = await fetch(`/api/products?categoryId=${category.id}${searchParam}`);
+      const response = await fetch(`/api/products?categoryId=${category.id}&page=${currentPage}&limit=${itemsPerPage}${searchParam}`);
       return response.json();
     },
     enabled: !!category,
   });
+
+  const products = productsResponse?.products || [];
+  const totalCount = productsResponse?.totalCount || 0;
+  const serverTotalPages = productsResponse?.totalPages || 1;
 
   const sortedProducts = [...products].sort((a, b) => {
     switch (sortBy) {
@@ -51,11 +55,11 @@ export default function CategoryPage() {
     }
   });
 
-  // Calculate pagination
-  const totalPages = Math.ceil(sortedProducts.length / itemsPerPage);
+  // Use server-side pagination
+  const totalPages = serverTotalPages;
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentProducts = sortedProducts.slice(startIndex, endIndex);
+  const endIndex = Math.min(startIndex + itemsPerPage, totalCount);
+  const currentProducts = sortedProducts; // Products are already paginated from server
 
   // Reset to page 1 when search query changes
   useEffect(() => {
@@ -176,7 +180,7 @@ export default function CategoryPage() {
           )}
 
           {/* Pagination Controls */}
-          {sortedProducts.length > itemsPerPage && (
+          {totalCount > itemsPerPage && (
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -185,7 +189,7 @@ export default function CategoryPage() {
             >
               <div className="flex items-center gap-2 text-sm text-slate-600">
                 <span>
-                  Showing {startIndex + 1}-{Math.min(endIndex, sortedProducts.length)} of {sortedProducts.length} products
+                  Showing {startIndex + 1}-{endIndex} of {totalCount} products
                 </span>
               </div>
               

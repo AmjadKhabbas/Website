@@ -46,10 +46,18 @@ export interface IStorage {
   getProduct(id: number): Promise<Product | undefined>;
   getProductsWithCategory(options?: {
     categoryId?: number;
+    categorySlug?: string;
     featured?: boolean;
     limit?: number;
+    offset?: number;
     search?: string;
   }): Promise<ProductWithCategory[]>;
+  getProductsCount(options?: {
+    categoryId?: number;
+    categorySlug?: string;
+    featured?: boolean;
+    search?: string;
+  }): Promise<number>;
   createProduct(product: InsertProduct): Promise<Product>;
   deleteProduct(id: number): Promise<boolean>;
 
@@ -336,9 +344,10 @@ export class DatabaseStorage implements IStorage {
     categorySlug?: string;
     featured?: boolean;
     limit?: number;
+    offset?: number;
     search?: string;
   } = {}): Promise<ProductWithCategory[]> {
-    // Completely minimal query excluding all large fields
+    // Completely minimal query excluding all large fields and category joins
     let query = db
       .select({
         id: products.id,
@@ -350,26 +359,28 @@ export class DatabaseStorage implements IStorage {
         inStock: products.inStock,
         originalPrice: products.originalPrice,
         rating: products.rating,
-        reviewCount: products.reviewCount,
-        category: {
-          id: categories.id,
-          name: categories.name,
-          slug: categories.slug,
-          description: categories.description,
-          icon: categories.icon,
-          color: categories.color,
-          itemCount: categories.itemCount
-        }
+        reviewCount: products.reviewCount
       })
-      .from(products)
-      .leftJoin(categories, eq(products.categoryId, categories.id));
+      .from(products);
 
     if (options.categoryId) {
       query = query.where(eq(products.categoryId, options.categoryId));
     }
 
+    // Handle category filtering without joins to avoid large responses
     if (options.categorySlug) {
-      query = query.where(eq(categories.slug, options.categorySlug));
+      // Get category ID first
+      const [category] = await db
+        .select({ id: categories.id })
+        .from(categories)
+        .where(eq(categories.slug, options.categorySlug));
+      
+      if (category) {
+        query = query.where(eq(products.categoryId, category.id));
+      } else {
+        // Category not found, return empty result
+        return [];
+      }
     }
 
     if (options.featured) {
@@ -385,18 +396,94 @@ export class DatabaseStorage implements IStorage {
       );
     }
 
-    // Apply default limit of 20 to prevent large responses
+    // Apply default limit and offset for pagination
     const limit = options.limit || 20;
-    query = query.limit(limit);
+    const offset = options.offset || 0;
+    query = query.limit(limit).offset(offset);
 
     const results = await query;
+    
+    // If we need category data, fetch it separately for the specific categoryId
+    let categoryData = null;
+    if (options.categorySlug && results.length > 0) {
+      const [category] = await db
+        .select({
+          id: categories.id,
+          name: categories.name,
+          slug: categories.slug,
+          description: categories.description,
+          icon: categories.icon,
+          color: categories.color,
+          itemCount: categories.itemCount
+        })
+        .from(categories)
+        .where(eq(categories.slug, options.categorySlug));
+      categoryData = category;
+    }
+    
     return results.map(result => ({
       ...result,
       imageUrl: `/api/products/${result.id}/image`, // Use endpoint URL
       imageUrls: null, // Not loaded in list view
       tags: null, // Not loaded in list view  
       bulkDiscounts: null, // Will be loaded individually when needed
+      category: categoryData, // Add category data for all products in this category
     }));
+  }
+
+  async getProductsCount(options: {
+    categoryId?: number;
+    categorySlug?: string;
+    featured?: boolean;
+    search?: string;
+  } = {}): Promise<number> {
+    try {
+      let query = db
+        .select({ count: sql<number>`count(*)` })
+        .from(products);
+
+      let whereConditions: any[] = [];
+
+      if (options.categorySlug) {
+        // First get the category ID
+        const [category] = await db
+          .select({ id: categories.id })
+          .from(categories)
+          .where(eq(categories.slug, options.categorySlug));
+        
+        if (category) {
+          whereConditions.push(eq(products.categoryId, category.id));
+        } else {
+          return 0; // Category not found
+        }
+      } else if (options.categoryId) {
+        whereConditions.push(eq(products.categoryId, options.categoryId));
+      }
+
+      if (options.featured) {
+        whereConditions.push(eq(products.featured, true));
+      }
+
+      if (options.search) {
+        whereConditions.push(
+          or(
+            ilike(products.name, `%${options.search}%`),
+            ilike(products.description, `%${options.search}%`)
+          )
+        );
+      }
+
+      // Apply all where conditions
+      if (whereConditions.length > 0) {
+        query = query.where(whereConditions.length === 1 ? whereConditions[0] : and(...whereConditions));
+      }
+
+      const [result] = await query;
+      return result.count;
+    } catch (error) {
+      console.error('Error in getProductsCount:', error);
+      return 0;
+    }
   }
 
   async getCartItems(sessionId: string): Promise<CartItemWithProduct[]> {

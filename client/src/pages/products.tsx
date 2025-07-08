@@ -44,13 +44,15 @@ export default function ProductsPage() {
     queryKey: ['/api/products', { 
       categorySlug: selectedCategory,
       search: searchQuery,
-      limit: 1000 // Get all products for client-side pagination
+      page: currentPage,
+      limit: itemsPerPage
     }],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (selectedCategory) params.append('categorySlug', selectedCategory);
       if (searchQuery) params.append('search', searchQuery);
-      params.append('limit', '1000'); // Get all products
+      params.append('page', currentPage.toString());
+      params.append('limit', itemsPerPage.toString());
       
       const response = await fetch(`/api/products?${params.toString()}`);
       if (!response.ok) throw new Error('Failed to fetch products');
@@ -60,6 +62,8 @@ export default function ProductsPage() {
   
   const products = productsResponse?.products || [];
   const isAdmin = productsResponse?.isAdmin || false;
+  const serverTotalCount = productsResponse?.totalCount || 0;
+  const serverTotalPages = productsResponse?.totalPages || 1;
 
   const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ['/api/categories'],
@@ -86,23 +90,19 @@ export default function ProductsPage() {
   }, []);
 
   const filteredProducts = products.filter((product: ProductWithCategory) => {
-    const matchesSearch = !searchQuery || 
-      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchQuery.toLowerCase());
-    
     const productPrice = parseFloat(product.price);
     const matchesPrice = productPrice >= priceRange[0] && productPrice <= priceRange[1];
     
     const matchesStock = !inStockOnly || product.inStock;
     
-    return matchesSearch && matchesPrice && matchesStock;
+    return matchesPrice && matchesStock;
   });
 
-  // Calculate pagination
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  // Use server-side pagination
+  const totalPages = serverTotalPages;
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentProducts = filteredProducts.slice(startIndex, endIndex);
+  const endIndex = Math.min(startIndex + itemsPerPage, serverTotalCount);
+  const currentProducts = filteredProducts; // Products are already paginated from server
 
   // Reset to page 1 when filters change
   useEffect(() => {
@@ -341,7 +341,7 @@ export default function ProductsPage() {
                     }
                   </h2>
                   <Badge variant="secondary">
-                    {filteredProducts.length} products
+                    {serverTotalCount} products
                   </Badge>
                   {searchQuery && (
                     <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
@@ -434,7 +434,7 @@ export default function ProductsPage() {
               )}
 
               {/* Pagination Controls */}
-              {filteredProducts.length > itemsPerPage && (
+              {serverTotalCount > itemsPerPage && (
                 <motion.div 
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -443,7 +443,7 @@ export default function ProductsPage() {
                 >
                   <div className="flex items-center gap-2 text-sm text-slate-600">
                     <span>
-                      Showing {startIndex + 1}-{Math.min(endIndex, filteredProducts.length)} of {filteredProducts.length} products
+                      Showing {startIndex + 1}-{endIndex} of {serverTotalCount} products
                     </span>
                   </div>
                   
