@@ -131,6 +131,12 @@ Meds-Go is a specialized medical marketplace web application that connects healt
 
 ```
 Changelog:
+- July 9, 2025. Fixed critical checkout form submission issue
+  - Resolved billing address validation preventing form submission
+  - Removed institution number and clinic name requirements per user request
+  - Added comprehensive card information display for admin users only
+  - Enhanced admin order details with full transaction date/time display
+  - Implemented secure payment information viewing with clear admin-only warnings
 - July 8, 2025. Added comprehensive admin order management system
   - Implemented admin order viewing with complete purchase history
   - Added order status management (pending, approved, declined, shipped)

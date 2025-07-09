@@ -270,7 +270,15 @@ export default function AdminPendingOrdersPage() {
                     </DialogTrigger>
                     <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                       <DialogHeader>
-                        <DialogTitle>Order Details - #{order.orderNumber}</DialogTitle>
+                        <DialogTitle className="flex items-center justify-between">
+                          <span>Order Details - #{order.orderNumber}</span>
+                          <div className="flex items-center space-x-2 text-sm font-normal text-gray-600">
+                            <Clock className="w-4 h-4" />
+                            <span>
+                              {new Date(order.createdAt).toLocaleDateString()} at {new Date(order.createdAt).toLocaleTimeString()}
+                            </span>
+                          </div>
+                        </DialogTitle>
                         <DialogDescription>
                           Complete order information and doctor details
                         </DialogDescription>
@@ -380,7 +388,19 @@ export default function AdminPendingOrdersPage() {
                             </Card>
                           </div>
 
-                          {/* Banking & Card Information */}
+                          {/* Banking & Payment Information - Admin Only */}
+                          <Card className="border-red-200 bg-red-50">
+                            <CardHeader>
+                              <CardTitle className="text-lg flex items-center space-x-2 text-red-700">
+                                <CreditCard className="w-5 h-5" />
+                                <span>Sensitive Payment Information (Admin Only)</span>
+                              </CardTitle>
+                              <CardDescription className="text-red-600">
+                                This information is only visible to admin users for order processing
+                              </CardDescription>
+                            </CardHeader>
+                          </Card>
+                          
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <Card>
                               <CardHeader>
@@ -427,7 +447,7 @@ export default function AdminPendingOrdersPage() {
                               </CardContent>
                             </Card>
 
-                            <Card>
+                            <Card className="border-purple-200">
                               <CardHeader>
                                 <CardTitle className="text-lg flex items-center space-x-2">
                                   <CreditCard className="w-5 h-5 text-purple-600" />
@@ -437,21 +457,25 @@ export default function AdminPendingOrdersPage() {
                               <CardContent className="space-y-3">
                                 <div>
                                   <Label className="text-sm font-medium text-gray-700">Card Type</Label>
-                                  <Input value={selectedOrder.cardInfo.cardType} readOnly className="bg-gray-50" />
+                                  <Input value={selectedOrder.cardInfo.cardType || "Unknown"} readOnly className="bg-purple-50" />
                                 </div>
                                 <div>
                                   <Label className="text-sm font-medium text-gray-700">Last 4 Digits</Label>
-                                  <Input value={`****${selectedOrder.cardInfo.last4}`} readOnly className="bg-gray-50" />
+                                  <Input value={`****-****-****-${selectedOrder.cardInfo.last4}`} readOnly className="bg-purple-50" />
                                 </div>
                                 <div className="grid grid-cols-2 gap-3">
                                   <div>
                                     <Label className="text-sm font-medium text-gray-700">Expiry Month</Label>
-                                    <Input value={selectedOrder.cardInfo.expiryMonth} readOnly className="bg-gray-50" />
+                                    <Input value={selectedOrder.cardInfo.expiryMonth.padStart(2, '0')} readOnly className="bg-purple-50" />
                                   </div>
                                   <div>
                                     <Label className="text-sm font-medium text-gray-700">Expiry Year</Label>
-                                    <Input value={selectedOrder.cardInfo.expiryYear} readOnly className="bg-gray-50" />
+                                    <Input value={selectedOrder.cardInfo.expiryYear} readOnly className="bg-purple-50" />
                                   </div>
+                                </div>
+                                <div>
+                                  <Label className="text-sm font-medium text-gray-700">Transaction Date</Label>
+                                  <Input value={new Date(selectedOrder.createdAt).toLocaleString()} readOnly className="bg-purple-50" />
                                 </div>
                               </CardContent>
                             </Card>

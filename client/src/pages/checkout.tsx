@@ -214,10 +214,6 @@ export default function CheckoutPage() {
   });
 
   const onSubmit = (data: CheckoutFormData) => {
-    console.log('🚀 Form submission started!');
-    console.log('Form data:', data);
-    console.log('Form errors:', form.formState.errors);
-    console.log('Form is valid:', form.formState.isValid);
     createOrderMutation.mutate(data);
   };
 
@@ -537,13 +533,6 @@ export default function CheckoutPage() {
                 size="lg"
                 className="w-full bg-blue-600 hover:bg-blue-700"
                 disabled={createOrderMutation.isPending}
-                onClick={(e) => {
-                  console.log('🔘 Button clicked!');
-                  console.log('Button event:', e);
-                  console.log('Form state valid:', form.formState.isValid);
-                  console.log('Form values:', form.getValues());
-                  console.log('Form errors:', form.formState.errors);
-                }}
               >
                 {createOrderMutation.isPending ? "Submitting Order..." : "Submit Order for Approval"}
               </Button>
