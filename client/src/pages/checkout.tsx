@@ -25,10 +25,6 @@ const checkoutSchema = z.object({
   doctorEmail: z.string().email("Valid email is required"),
   doctorPhone: z.string().min(10, "Valid phone number is required"),
   
-  // Institution Information
-  institutionNumber: z.string().min(3, "Institution number is required"),
-  clinicName: z.string().min(2, "Clinic name is required"),
-  
   // Billing Address
   billingAddress: z.object({
     street: z.string().min(5, "Street address is required"),
@@ -123,18 +119,37 @@ export default function CheckoutPage() {
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
       billingAddress: {
+        street: "",
+        city: "",
+        state: "",
+        zipCode: "",
         country: "United States",
       },
       shippingAddress: {
+        street: "",
+        city: "",
+        state: "",
+        zipCode: "",
         country: "United States",
+      },
+      bankingInfo: {
+        bankName: "",
+        accountNumber: "",
+        routingNumber: "",
+        accountType: "checking",
+      },
+      cardInfo: {
+        cardNumber: "",
+        expiryMonth: "",
+        expiryYear: "",
+        cvv: "",
+        cardholderName: "",
       },
       paymentMethod: "credit_card",
       sameAsShipping: true,
-      clinicName: "",
       doctorName: "",
       doctorEmail: "",
       doctorPhone: "",
-      institutionNumber: "",
       notes: "",
     },
   });
@@ -155,11 +170,8 @@ export default function CheckoutPage() {
         doctorName: data.doctorName,
         doctorEmail: data.doctorEmail,
         doctorPhone: data.doctorPhone,
-        institutionNumber: data.institutionNumber,
-        shippingAddress: {
-          ...data.shippingAddress,
-          clinicName: data.clinicName,
-        },
+
+        shippingAddress: data.shippingAddress,
         billingAddress: sameAsShipping ? data.shippingAddress : data.billingAddress,
         doctorBankingInfo: data.bankingInfo,
         cardInfo,
@@ -202,6 +214,10 @@ export default function CheckoutPage() {
   });
 
   const onSubmit = (data: CheckoutFormData) => {
+    console.log('🚀 Form submission started!');
+    console.log('Form data:', data);
+    console.log('Form errors:', form.formState.errors);
+    console.log('Form is valid:', form.formState.isValid);
     createOrderMutation.mutate(data);
   };
 
@@ -277,42 +293,16 @@ export default function CheckoutPage() {
                       )}
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="doctorPhone">Phone Number *</Label>
-                      <Input
-                        {...form.register("doctorPhone")}
-                        id="doctorPhone"
-                        placeholder="(555) 123-4567"
-                        className="mt-1"
-                      />
-                      {form.formState.errors.doctorPhone && (
-                        <p className="text-sm text-red-600 mt-1">{form.formState.errors.doctorPhone.message}</p>
-                      )}
-                    </div>
-                    <div>
-                      <Label htmlFor="institutionNumber">Institution Number *</Label>
-                      <Input
-                        {...form.register("institutionNumber")}
-                        id="institutionNumber"
-                        placeholder="INST123456"
-                        className="mt-1"
-                      />
-                      {form.formState.errors.institutionNumber && (
-                        <p className="text-sm text-red-600 mt-1">{form.formState.errors.institutionNumber.message}</p>
-                      )}
-                    </div>
-                  </div>
                   <div>
-                    <Label htmlFor="clinicName">Clinic/Practice Name *</Label>
+                    <Label htmlFor="doctorPhone">Phone Number *</Label>
                     <Input
-                      {...form.register("clinicName")}
-                      id="clinicName"
-                      placeholder="Advanced Medical Center"
+                      {...form.register("doctorPhone")}
+                      id="doctorPhone"
+                      placeholder="(555) 123-4567"
                       className="mt-1"
                     />
-                    {form.formState.errors.clinicName && (
-                      <p className="text-sm text-red-600 mt-1">{form.formState.errors.clinicName.message}</p>
+                    {form.formState.errors.doctorPhone && (
+                      <p className="text-sm text-red-600 mt-1">{form.formState.errors.doctorPhone.message}</p>
                     )}
                   </div>
                 </CardContent>
@@ -547,6 +537,13 @@ export default function CheckoutPage() {
                 size="lg"
                 className="w-full bg-blue-600 hover:bg-blue-700"
                 disabled={createOrderMutation.isPending}
+                onClick={(e) => {
+                  console.log('🔘 Button clicked!');
+                  console.log('Button event:', e);
+                  console.log('Form state valid:', form.formState.isValid);
+                  console.log('Form values:', form.getValues());
+                  console.log('Form errors:', form.formState.errors);
+                }}
               >
                 {createOrderMutation.isPending ? "Submitting Order..." : "Submit Order for Approval"}
               </Button>
