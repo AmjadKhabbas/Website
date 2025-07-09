@@ -412,12 +412,12 @@ export default function AdminPendingOrdersPage() {
                               <CardContent className="space-y-3">
                                 <div>
                                   <Label className="text-sm font-medium text-gray-700">Bank Name</Label>
-                                  <Input value={selectedOrder.doctorBankingInfo.bankName} readOnly className="bg-gray-50" />
+                                  <Input value={selectedOrder.doctorBankingInfo.bankName} readOnly className="bg-red-50" />
                                 </div>
                                 <div>
-                                  <Label className="text-sm font-medium text-gray-700">Account Number</Label>
+                                  <Label className="text-sm font-medium text-gray-700">Full Account Number (Admin Only)</Label>
                                   <div className="flex items-center space-x-2">
-                                    <Input value={`****${selectedOrder.doctorBankingInfo.accountNumber.slice(-4)}`} readOnly className="bg-gray-50" />
+                                    <Input value={selectedOrder.doctorBankingInfo.accountNumber} readOnly className="bg-red-50" />
                                     <Button
                                       variant="ghost"
                                       size="sm"
@@ -430,7 +430,7 @@ export default function AdminPendingOrdersPage() {
                                 <div>
                                   <Label className="text-sm font-medium text-gray-700">Routing Number</Label>
                                   <div className="flex items-center space-x-2">
-                                    <Input value={selectedOrder.doctorBankingInfo.routingNumber} readOnly className="bg-gray-50" />
+                                    <Input value={selectedOrder.doctorBankingInfo.routingNumber} readOnly className="bg-red-50" />
                                     <Button
                                       variant="ghost"
                                       size="sm"
@@ -442,7 +442,7 @@ export default function AdminPendingOrdersPage() {
                                 </div>
                                 <div>
                                   <Label className="text-sm font-medium text-gray-700">Account Type</Label>
-                                  <Input value={selectedOrder.doctorBankingInfo.accountType} readOnly className="bg-gray-50" />
+                                  <Input value={selectedOrder.doctorBankingInfo.accountType} readOnly className="bg-red-50" />
                                 </div>
                               </CardContent>
                             </Card>
