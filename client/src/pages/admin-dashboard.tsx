@@ -582,14 +582,23 @@ export default function AdminDashboard() {
                           {order.cardInfo && (
                             <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg">
                               <h4 className="font-semibold text-red-900 dark:text-red-100 mb-2">
-                                Payment Information (Confidential)
+                                Payment Information (Admin View)
                               </h4>
-                              <div className="grid grid-cols-2 gap-4 text-sm text-red-800 dark:text-red-200">
+                              <div className="grid grid-cols-1 gap-2 text-sm text-red-800 dark:text-red-200">
                                 <div>
-                                  <span className="font-medium">Card:</span> ****{order.cardInfo.last4}
+                                  <span className="font-medium">Card:</span> {order.cardInfo.cardNumber || `****${order.cardInfo.last4}`}
                                 </div>
                                 <div>
-                                  <span className="font-medium">Expires:</span> {order.cardInfo.expiryMonth}/{order.cardInfo.expiryYear}
+                                  <span className="font-medium">Cardholder:</span> {order.cardInfo.cardholderName || 'Not provided'}
+                                </div>
+                                <div>
+                                  <span className="font-medium">Expires:</span> {order.cardInfo.expiryMonth?.padStart(2, '0')}/{order.cardInfo.expiryYear}
+                                </div>
+                                <div>
+                                  <span className="font-medium">Bank:</span> {order.doctorBankingInfo?.bankName || 'Not provided'}
+                                </div>
+                                <div>
+                                  <span className="font-medium">Account:</span> {order.doctorBankingInfo?.accountNumber || 'Not provided'}
                                 </div>
                               </div>
                             </div>
