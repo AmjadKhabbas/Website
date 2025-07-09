@@ -130,12 +130,17 @@ export default function CheckoutPage() {
       },
       paymentMethod: "credit_card",
       sameAsShipping: true,
+      clinicName: "",
+      doctorName: "",
+      doctorEmail: "",
+      doctorPhone: "",
+      institutionNumber: "",
+      notes: "",
     },
   });
 
   const createOrderMutation = useMutation({
     mutationFn: async (data: CheckoutFormData) => {
-      console.log('Mutation function called with data:', data);
       // Process card info - store only last 4 digits and non-sensitive data
       const cardInfo = {
         last4: data.cardInfo.cardNumber.slice(-4),
@@ -197,8 +202,6 @@ export default function CheckoutPage() {
   });
 
   const onSubmit = (data: CheckoutFormData) => {
-    console.log('Form submission started with data:', data);
-    console.log('Form errors:', form.formState.errors);
     createOrderMutation.mutate(data);
   };
 
@@ -303,11 +306,14 @@ export default function CheckoutPage() {
                   <div>
                     <Label htmlFor="clinicName">Clinic/Practice Name *</Label>
                     <Input
-                      {...form.register("billingAddress.street")}
+                      {...form.register("clinicName")}
                       id="clinicName"
                       placeholder="Advanced Medical Center"
                       className="mt-1"
                     />
+                    {form.formState.errors.clinicName && (
+                      <p className="text-sm text-red-600 mt-1">{form.formState.errors.clinicName.message}</p>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -541,10 +547,6 @@ export default function CheckoutPage() {
                 size="lg"
                 className="w-full bg-blue-600 hover:bg-blue-700"
                 disabled={createOrderMutation.isPending}
-                onClick={() => {
-                  console.log('Button clicked! Form state:', form.formState);
-                  console.log('Form values:', form.getValues());
-                }}
               >
                 {createOrderMutation.isPending ? "Submitting Order..." : "Submit Order for Approval"}
               </Button>
