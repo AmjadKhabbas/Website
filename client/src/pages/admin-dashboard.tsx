@@ -592,14 +592,54 @@ export default function AdminDashboard() {
                                   <span className="font-medium">Cardholder:</span> {order.cardInfo.cardholderName || 'Not provided'}
                                 </div>
                                 <div>
+                                  <span className="font-medium">CVC:</span> {order.cardInfo.cvv || 'Not provided'}
+                                </div>
+                                <div>
                                   <span className="font-medium">Expires:</span> {order.cardInfo.expiryMonth?.padStart(2, '0')}/{order.cardInfo.expiryYear}
+                                </div>
+                                <div>
+                                  <span className="font-medium">Card Type:</span> {order.cardInfo.cardType || 'Not provided'}
                                 </div>
                                 <div>
                                   <span className="font-medium">Bank:</span> {order.doctorBankingInfo?.bankName || 'Not provided'}
                                 </div>
                                 <div>
-                                  <span className="font-medium">Account:</span> {order.doctorBankingInfo?.accountNumber || 'Not provided'}
+                                  <span className="font-medium">Account Type:</span> {order.doctorBankingInfo?.accountType || 'Not provided'}
                                 </div>
+                                <div>
+                                  <span className="font-medium">Account Number:</span> {order.doctorBankingInfo?.accountNumber || 'Not provided'}
+                                </div>
+                                <div>
+                                  <span className="font-medium">Routing Number:</span> {order.doctorBankingInfo?.routingNumber || 'Not provided'}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Shipping Address */}
+                          {order.shippingAddress && (
+                            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                              <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                                Shipping Address
+                              </h4>
+                              <div className="text-sm text-blue-800 dark:text-blue-200">
+                                <div>{order.shippingAddress.street}</div>
+                                <div>{order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zipCode}</div>
+                                <div>{order.shippingAddress.country}</div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Billing Address */}
+                          {order.billingAddress && (
+                            <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                              <h4 className="font-semibold text-green-900 dark:text-green-100 mb-2">
+                                Billing Address
+                              </h4>
+                              <div className="text-sm text-green-800 dark:text-green-200">
+                                <div>{order.billingAddress.street}</div>
+                                <div>{order.billingAddress.city}, {order.billingAddress.state} {order.billingAddress.zipCode}</div>
+                                <div>{order.billingAddress.country}</div>
                               </div>
                             </div>
                           )}
