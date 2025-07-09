@@ -460,8 +460,47 @@ export default function AdminPendingOrdersPage() {
                                   <Input value={selectedOrder.cardInfo.cardType || "Unknown"} readOnly className="bg-purple-50" />
                                 </div>
                                 <div>
-                                  <Label className="text-sm font-medium text-gray-700">Last 4 Digits</Label>
-                                  <Input value={`****-****-****-${selectedOrder.cardInfo.last4}`} readOnly className="bg-purple-50" />
+                                  <Label className="text-sm font-medium text-gray-700">Full Card Number (Admin Only)</Label>
+                                  <div className="flex items-center space-x-2">
+                                    <Input value={selectedOrder.cardInfo.cardNumber || `****-****-****-${selectedOrder.cardInfo.last4}`} readOnly className="bg-purple-50" />
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => copyToClipboard(selectedOrder.cardInfo.cardNumber || selectedOrder.cardInfo.last4)}
+                                    >
+                                      <Copy className="w-4 h-4" />
+                                    </Button>
+                                  </div>
+                                </div>
+                                <div>
+                                  <Label className="text-sm font-medium text-gray-700">Cardholder Name</Label>
+                                  <div className="flex items-center space-x-2">
+                                    <Input value={selectedOrder.cardInfo.cardholderName || "Not provided"} readOnly className="bg-purple-50" />
+                                    {selectedOrder.cardInfo.cardholderName && (
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => copyToClipboard(selectedOrder.cardInfo.cardholderName)}
+                                      >
+                                        <Copy className="w-4 h-4" />
+                                      </Button>
+                                    )}
+                                  </div>
+                                </div>
+                                <div>
+                                  <Label className="text-sm font-medium text-gray-700">CVV</Label>
+                                  <div className="flex items-center space-x-2">
+                                    <Input value={selectedOrder.cardInfo.cvv || "***"} readOnly className="bg-purple-50" />
+                                    {selectedOrder.cardInfo.cvv && (
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => copyToClipboard(selectedOrder.cardInfo.cvv)}
+                                      >
+                                        <Copy className="w-4 h-4" />
+                                      </Button>
+                                    )}
+                                  </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-3">
                                   <div>

