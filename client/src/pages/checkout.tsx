@@ -25,12 +25,12 @@ const checkoutSchema = z.object({
   doctorEmail: z.string().email("Valid email is required"),
   doctorPhone: z.string().min(10, "Valid phone number is required"),
   
-  // Billing Address
+  // Billing Address - made optional since it can be same as shipping
   billingAddress: z.object({
-    street: z.string().min(5, "Street address is required"),
-    city: z.string().min(2, "City is required"),
-    state: z.string().min(2, "State is required"),
-    zipCode: z.string().min(5, "Valid ZIP code is required"),
+    street: z.string().optional(),
+    city: z.string().optional(),
+    state: z.string().optional(),
+    zipCode: z.string().optional(),
     country: z.string().default("United States"),
   }),
   
@@ -172,7 +172,7 @@ export default function CheckoutPage() {
         doctorPhone: data.doctorPhone,
 
         shippingAddress: data.shippingAddress,
-        billingAddress: sameAsShipping ? data.shippingAddress : data.billingAddress,
+        billingAddress: data.sameAsShipping ? data.shippingAddress : data.billingAddress,
         doctorBankingInfo: data.bankingInfo,
         cardInfo,
         paymentMethod: data.paymentMethod,
