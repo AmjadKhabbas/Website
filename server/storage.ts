@@ -1,8 +1,8 @@
 import { 
-  ehriAccounts, categories, brands, products, cartItems, users, orders, orderItems, referrals, adminUsers, carouselItems, newsletters,
+  ehriAccounts, categories, brands, products, cartItems, users, orders, orderItems, referrals, adminUsers, carouselItems, newsletters, featuredCarousel,
   type EhriAccount, type InsertEhriAccount, type Category, type Brand, type InsertBrand, type Product, type CartItem, type User, type Order, type OrderItem, type Referral, type AdminUser, type InsertAdminUser,
   type InsertCategory, type InsertProduct, type InsertCartItem, type InsertUser, type InsertOrder, type InsertOrderItem, type InsertReferral,
-  type CarouselItem, type InsertCarouselItem, type Newsletter, type InsertNewsletter,
+  type CarouselItem, type InsertCarouselItem, type Newsletter, type InsertNewsletter, type FeaturedCarousel, type InsertFeaturedCarousel,
   type ProductWithCategory, type CartItemWithProduct, type OrderWithItems
 } from "@shared/schema";
 import { db } from "./db";
@@ -111,6 +111,11 @@ export interface IStorage {
   updateCarouselItem(id: number, updates: any): Promise<any | undefined>;
   deleteCarouselItem(id: number): Promise<boolean>;
   reorderCarouselItems(itemIds: number[]): Promise<void>;
+
+  // Featured Carousel management
+  getFeaturedCarousel(): Promise<{ id: number; product: Product; displayOrder: number }[]>;
+  addToFeaturedCarousel(data: InsertFeaturedCarousel): Promise<FeaturedCarousel>;
+  removeFromFeaturedCarousel(id: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1100,6 +1105,39 @@ export class DatabaseStorage implements IStorage {
         .set({ sortOrder: i })
         .where(eq(carouselItems.id, itemIds[i]));
     }
+  }
+
+  // Featured Carousel Management
+  async getFeaturedCarousel(): Promise<{ id: number; product: Product; displayOrder: number }[]> {
+    const results = await db
+      .select({
+        id: featuredCarousel.id,
+        displayOrder: featuredCarousel.displayOrder,
+        product: products
+      })
+      .from(featuredCarousel)
+      .leftJoin(products, eq(featuredCarousel.productId, products.id))
+      .where(eq(featuredCarousel.isActive, true))
+      .orderBy(featuredCarousel.displayOrder);
+
+    return results.map(result => ({
+      id: result.id,
+      displayOrder: result.displayOrder,
+      product: {
+        ...result.product!,
+        imageUrl: `/api/products/${result.product!.id}/image`
+      }
+    }));
+  }
+
+  async addToFeaturedCarousel(data: InsertFeaturedCarousel): Promise<FeaturedCarousel> {
+    const [item] = await db.insert(featuredCarousel).values(data).returning();
+    return item;
+  }
+
+  async removeFromFeaturedCarousel(id: number): Promise<boolean> {
+    const result = await db.delete(featuredCarousel).where(eq(featuredCarousel.id, id));
+    return (result.rowCount ?? 0) > 0;
   }
 }
 

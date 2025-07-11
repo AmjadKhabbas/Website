@@ -9,6 +9,7 @@ import { ProductCard } from '@/components/product-card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { NewsletterSubscription } from '@/components/newsletter-subscription';
+import FeaturedProductsCarousel from '@/components/FeaturedProductsCarousel';
 
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/components/toast';
@@ -620,77 +621,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Brand Showcase Section */}
-      <section className="py-20 bg-slate-50 scroll-reveal">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16 scroll-reveal">
-            <h2 className="text-4xl font-bold text-slate-800 mb-6">OUR BRANDS</h2>
-            <p className="text-xl text-slate-600">Discover our range of top brands at amazing prices</p>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 mb-12">
-            {categories.map((category, index) => (
-              <div key={category.id} className="relative">
-                <Link href="/products">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.1 }}
-                    className="group cursor-pointer scroll-reveal scale-on-scroll"
-                  >
-                    <div className="bg-white rounded-2xl p-6 aspect-square flex items-center justify-center group-hover:shadow-lg transition-all duration-300 border-2 border-dashed border-blue-200 group-hover:border-blue-400 relative">
-                      {category.icon ? (
-                        <img 
-                          src={category.icon} 
-                          alt={category.name}
-                          className="w-full h-full object-contain rounded-lg"
-                        />
-                      ) : (
-                        <div className="text-center">
-                          <div className="w-16 h-16 bg-blue-50 rounded-lg mx-auto mb-4 flex items-center justify-center group-hover:bg-blue-100 transition-colors duration-300">
-                            <Heart className="w-8 h-8 text-blue-400 group-hover:text-blue-600" />
-                          </div>
-                          <p className="text-sm text-blue-500 group-hover:text-blue-700 font-medium">
-                            {isAdmin ? 'Click to Upload Image' : category.name}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                    <div className="mt-4 text-center">
-                      <h3 className="font-semibold text-slate-800 text-sm group-hover:text-blue-700 transition-colors duration-300">
-                        {category.name}
-                      </h3>
-                    </div>
-                  </motion.div>
-                </Link>
-                
-                {/* Admin Edit Button */}
-                {isAdmin && (
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleCategoryEdit(category);
-                    }}
-                    size="sm"
-                    variant="outline"
-                    className="absolute top-2 right-2 bg-white/90 hover:bg-white border-blue-300 text-blue-600 hover:text-blue-700 p-2"
-                  >
-                    <Edit3 className="w-4 h-4" />
-                  </Button>
-                )}
-              </div>
-            ))}
-          </div>
-
-          <div className="flex justify-center">
-            <Link href="/products">
-              <Button className="btn-medical">
-                ALL PRODUCTS
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
+      {/* Featured Products Carousel */}
+      <FeaturedProductsCarousel />
 
 
 

@@ -215,6 +215,16 @@ export const carouselItems = pgTable("carousel_items", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Featured products carousel for scrolling display
+export const featuredCarousel = pgTable("featured_carousel", {
+  id: serial("id").primaryKey(),
+  productId: integer("product_id").notNull(),
+  displayOrder: integer("display_order").notNull().default(0),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const insertCategorySchema = createInsertSchema(categories).omit({
   id: true,
 });
@@ -279,6 +289,12 @@ export const insertCarouselItemSchema = createInsertSchema(carouselItems).omit({
   updatedAt: true,
 });
 
+export const insertFeaturedCarouselSchema = createInsertSchema(featuredCarousel).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const insertNewsletterSchema = createInsertSchema(newsletters).omit({
   id: true,
   subscribedAt: true,
@@ -320,8 +336,17 @@ export const categoriesRelations = relations(categories, ({ many }) => ({
   products: many(products),
 }));
 
+export const featuredCarouselRelations = relations(featuredCarousel, ({ one }) => ({
+  product: one(products, {
+    fields: [featuredCarousel.productId],
+    references: [products.id],
+  }),
+}));
+
 export type InsertCategory = z.infer<typeof insertCategorySchema>;
 export type Category = typeof categories.$inferSelect;
+export type InsertFeaturedCarousel = z.infer<typeof insertFeaturedCarouselSchema>;
+export type FeaturedCarousel = typeof featuredCarousel.$inferSelect;
 
 export type InsertBrand = z.infer<typeof insertBrandSchema>;
 export type Brand = typeof brands.$inferSelect;

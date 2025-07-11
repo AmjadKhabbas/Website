@@ -1879,6 +1879,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Featured Carousel Routes
+  app.get('/api/featured-carousel', async (req, res) => {
+    try {
+      const featuredProducts = await storage.getFeaturedCarousel();
+      res.json(featuredProducts);
+    } catch (error) {
+      console.error('Error fetching featured carousel:', error);
+      res.status(500).json({ message: 'Failed to fetch featured carousel' });
+    }
+  });
+
+  app.post('/api/admin/featured-carousel', requireAdminAuth, async (req, res) => {
+    try {
+      const { productId, displayOrder } = req.body;
+      
+      if (!productId) {
+        return res.status(400).json({
+          message: 'Product ID is required',
+          code: 'MISSING_PRODUCT_ID'
+        });
+      }
+
+      const featuredItem = await storage.addToFeaturedCarousel({
+        productId: parseInt(productId),
+        displayOrder: displayOrder || 0,
+        isActive: true
+      });
+      
+      res.status(201).json({
+        message: 'Product added to featured carousel',
+        item: featuredItem
+      });
+    } catch (error) {
+      console.error('Add to featured carousel error:', error);
+      res.status(500).json({
+        message: 'Failed to add product to featured carousel',
+        code: 'ADD_FAILED'
+      });
+    }
+  });
+
+  app.delete('/api/admin/featured-carousel/:id', requireAdminAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      const deleted = await storage.removeFromFeaturedCarousel(parseInt(id));
+      
+      if (!deleted) {
+        return res.status(404).json({
+          message: 'Featured carousel item not found',
+          code: 'NOT_FOUND'
+        });
+      }
+      
+      res.json({
+        message: 'Product removed from featured carousel'
+      });
+    } catch (error) {
+      console.error('Remove from featured carousel error:', error);
+      res.status(500).json({
+        message: 'Failed to remove product from featured carousel',
+        code: 'REMOVE_FAILED'
+      });
+    }
+  });
+
   // Setup file upload routes
   setupUploadRoutes(app);
 
