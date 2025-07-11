@@ -313,18 +313,7 @@ export default function FeaturedProductsCarousel() {
                               <p className="text-slate-600 text-sm mb-3 line-clamp-2">
                                 {item.product.description}
                               </p>
-                              <div className="flex items-center justify-center gap-2 mb-3">
-                                <div className="flex text-yellow-400">
-                                  {Array.from({ length: 5 }, (_, i) => (
-                                    <span key={i} className={i < Math.floor(parseFloat(item.product.rating)) ? 'text-yellow-400' : 'text-gray-300'}>
-                                      ★
-                                    </span>
-                                  ))}
-                                </div>
-                                <span className="text-sm text-slate-500">
-                                  ({item.product.reviewCount})
-                                </span>
-                              </div>
+                              
                               <div className="text-2xl font-bold text-blue-600">
                                 ${item.product.price}
                               </div>
