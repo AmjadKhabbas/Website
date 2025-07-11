@@ -1120,14 +1120,17 @@ export class DatabaseStorage implements IStorage {
       .where(eq(featuredCarousel.isActive, true))
       .orderBy(featuredCarousel.displayOrder);
 
-    return results.map(result => ({
-      id: result.id,
-      displayOrder: result.displayOrder,
-      product: {
-        ...result.product!,
-        imageUrl: `/api/products/${result.product!.id}/image`
-      }
-    }));
+    // Filter out results where product is null (invalid product_id)
+    return results
+      .filter(result => result.product !== null)
+      .map(result => ({
+        id: result.id,
+        displayOrder: result.displayOrder,
+        product: {
+          ...result.product!,
+          imageUrl: `/api/products/${result.product!.id}/image`
+        }
+      }));
   }
 
   async addToFeaturedCarousel(data: InsertFeaturedCarousel): Promise<FeaturedCarousel> {
