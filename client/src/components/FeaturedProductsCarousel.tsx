@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
+import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -292,34 +293,36 @@ export default function FeaturedProductsCarousel() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: index * 0.1 }}
                       >
-                        <Card className="group hover:shadow-xl transition-all duration-300 cursor-pointer bg-white border-0 shadow-lg hover:scale-105">
-                          <CardContent className="p-6">
-                            <div className="aspect-square relative mb-4 overflow-hidden rounded-lg bg-gradient-to-br from-slate-100 to-slate-200">
-                              <img
-                                src={item.product.imageUrl}
-                                alt={item.product.name}
-                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                                onError={(e) => {
-                                  const target = e.target as HTMLImageElement;
-                                  target.src = 'https://images.unsplash.com/photo-1559757175-0eb30cd8c063?w=400&h=400&fit=crop';
-                                }}
-                              />
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                            </div>
-                            <div className="text-center">
-                              <h3 className="font-bold text-lg text-slate-800 mb-2 group-hover:text-blue-600 transition-colors duration-300">
-                                {item.product.name}
-                              </h3>
-                              <p className="text-slate-600 text-sm mb-3 line-clamp-2">
-                                {item.product.description}
-                              </p>
-                              
-                              <div className="text-2xl font-bold text-blue-600">
-                                ${item.product.price}
+                        <Link href={`/product/${item.product.id}`}>
+                          <Card className="group hover:shadow-xl transition-all duration-300 cursor-pointer bg-white border-0 shadow-lg hover:scale-105">
+                            <CardContent className="p-6">
+                              <div className="aspect-square relative mb-4 overflow-hidden rounded-lg bg-gradient-to-br from-slate-100 to-slate-200">
+                                <img
+                                  src={item.product.imageUrl}
+                                  alt={item.product.name}
+                                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.src = 'https://images.unsplash.com/photo-1559757175-0eb30cd8c063?w=400&h=400&fit=crop';
+                                  }}
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                               </div>
-                            </div>
-                          </CardContent>
-                        </Card>
+                              <div className="text-center">
+                                <h3 className="font-bold text-lg text-slate-800 mb-2 group-hover:text-blue-600 transition-colors duration-300">
+                                  {item.product.name}
+                                </h3>
+                                <p className="text-slate-600 text-sm mb-3 line-clamp-2">
+                                  {item.product.description}
+                                </p>
+                                
+                                <div className="text-2xl font-bold text-blue-600">
+                                  ${item.product.price}
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </Link>
                       </motion.div>
                     ))}
                 </div>
