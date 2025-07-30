@@ -131,6 +131,14 @@ Meds-Go is a specialized medical marketplace web application that connects healt
 
 ```
 Changelog:
+- July 30, 2025. Enhanced featured products carousel with clickable navigation
+  - CHECKPOINT: Featured products carousel fully functional with:
+    * Replaced "OUR BRANDS" section with scrolling featured products carousel
+    * Added database schema and API routes for admin-managed featured products
+    * Created smooth auto-scrolling carousel with product navigation links
+    * Admin can add/remove products from carousel via management interface
+    * Each carousel product now links to individual product detail pages (/product/{id})
+    * Fixed database WebAssembly configuration to prevent memory errors
 - July 9, 2025. Enhanced admin order management with complete payment visibility
   - CHECKPOINT: Admin can now see ALL order information including:
     * Full unmasked card numbers (not ****1234)
