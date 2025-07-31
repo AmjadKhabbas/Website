@@ -1,0 +1,31 @@
+{
+  "name": "meds-go-medical-marketplace",
+  "version": "1.0.0",
+  "description": "Medical marketplace platform for healthcare professionals",
+  "main": "index.js",
+  "type": "module",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^0.10.4",
+    "@sendgrid/mail": "^8.1.5",
+    "@stripe/stripe-js": "^7.4.0",
+    "bcryptjs": "^3.0.2",
+    "connect-pg-simple": "^10.0.0",
+    "drizzle-orm": "^0.39.1",
+    "express": "^4.21.2",
+    "express-session": "^1.18.1",
+    "memorystore": "^1.6.7",
+    "multer": "^2.0.1",
+    "nodemailer": "^7.0.3",
+    "passport": "^0.7.0",
+    "passport-local": "^1.0.0",
+    "stripe": "^18.3.0",
+    "ws": "^8.18.0",
+    "zod": "^3.24.2"
+  }
+}
