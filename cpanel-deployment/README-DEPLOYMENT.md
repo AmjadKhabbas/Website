@@ -1,7 +1,27 @@
 # Meds-Go Medical Marketplace - cPanel Deployment Guide
 
 ## Overview
-This is a Node.js/Express medical marketplace application that requires PostgreSQL database and Node.js support on your cPanel hosting.
+This is a complete Node.js/Express medical marketplace application with all backend configuration files exposed for cPanel hosting. No hidden dependencies or Replit-specific services.
+
+## What's Included
+✅ **Complete Backend Configuration**:
+- `config.js` - All environment variables in one file
+- `src/db.js` - Database connection configuration  
+- `src/schema.js` - Complete database schema definitions
+- `src/storage.js` - Database operations layer
+- `.env.example` - Alternative environment file template
+
+✅ **Self-Contained Application**:
+- Single `index.js` entry point
+- Built application in `dist/` folder
+- Static assets in `dist/public/`
+- File upload directory `uploads/`
+- All dependencies listed in `package.json`
+
+✅ **No External Dependencies**:
+- No Replit-specific services
+- No hidden environment variables
+- WebAssembly disabled for shared hosting compatibility
 
 ## Prerequisites
 Your cPanel hosting must support:
@@ -39,7 +59,9 @@ The application uses the following tables:
    - Username
    - Password
 
-### 2. Configuration
+### 2. Configuration Options
+
+**Option A: Using config.js (Recommended)**
 1. Open `config.js` and update ALL values:
    ```javascript
    DATABASE_URL: "postgresql://username:password@host:port/database_name"
@@ -49,6 +71,16 @@ The application uses the following tables:
    STRIPE_SECRET_KEY: "sk_live_your_stripe_key"
    // ... other settings
    ```
+
+**Option B: Using .env file**
+1. Copy `.env.example` to `.env`
+2. Update all values in the `.env` file
+3. The application will automatically load these
+
+**Backend Configuration Files Available**:
+- `src/db.js` - Database connection setup
+- `src/schema.js` - All database table definitions
+- `src/storage.js` - Database operations (CRUD functions)
 
 ### 3. Upload Files
 1. Zip the entire `cpanel-deployment` folder
