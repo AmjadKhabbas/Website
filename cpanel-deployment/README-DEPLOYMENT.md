@@ -26,16 +26,16 @@ This is a complete Node.js/Express medical marketplace application with all back
 ## Prerequisites
 Your cPanel hosting must support:
 - Node.js (version 18 or higher)
-- PostgreSQL database
+- MySQL database (version 5.7 or higher)
 - File upload permissions
 
 ## Database Requirements
-⚠️ **IMPORTANT**: This project REQUIRES a PostgreSQL database. It cannot run without one.
+⚠️ **IMPORTANT**: This project REQUIRES a MySQL database. It cannot run without one.
 
-### Database Tables
-The application uses the following tables:
+### Database Tables (MySQL)
+The application uses the following MySQL tables:
 - `users` - Healthcare professionals
-- `admin_users` - Admin accounts
+- `admin_users` - Admin accounts  
 - `products` - Medical products catalog
 - `categories` - Product categories
 - `brands` - Product brands
@@ -45,18 +45,20 @@ The application uses the following tables:
 - `carousel_items` - Homepage banners
 - `newsletters` - Email subscriptions
 - `sessions` - User sessions
-- And more...
+- `referrals` - Doctor referral program
+- `ehri_accounts` - EHRI account linking
+- `order_items` - Order line items
 
 ## Deployment Steps
 
 ### 1. Database Setup
-1. Create a PostgreSQL database in cPanel
-2. Run the SQL script `database-schema.sql` in your database
+1. Create a MySQL database in cPanel
+2. Import the SQL script `database-schema-mysql.sql` via phpMyAdmin
 3. Note down your database connection details:
-   - Host
-   - Port
+   - Host (usually localhost)
+   - Port (usually 3306)
    - Database name
-   - Username
+   - Username  
    - Password
 
 ### 2. Configuration Options
@@ -64,7 +66,12 @@ The application uses the following tables:
 **Option A: Using config.js (Recommended)**
 1. Open `config.js` and update ALL values:
    ```javascript
-   DATABASE_URL: "postgresql://username:password@host:port/database_name"
+   DATABASE_URL: "mysql://username:password@host:port/database_name"
+   // OR use individual credentials:
+   DB_HOST: "localhost"
+   DB_USER: "your_cpanel_db_user"
+   DB_PASSWORD: "your_cpanel_db_password"
+   DB_NAME: "your_cpanel_db_name"
    SESSION_SECRET: "your-unique-secret-key"
    GMAIL_USER: "your-email@gmail.com"
    GMAIL_APP_PASSWORD: "your-gmail-app-password"

@@ -2,10 +2,17 @@
 // Replace these values with your actual production values
 
 module.exports = {
-  // Database Configuration - REQUIRED
-  // Format: postgresql://username:password@host:port/database_name
-  // Example: postgresql://medsgo_user:mypassword@localhost:5432/medsgo_database
-  DATABASE_URL: "postgresql://username:password@host:port/database_name",
+  // Database Configuration - REQUIRED (MySQL)
+  // Format: mysql://username:password@host:port/database_name
+  // Example: mysql://medsgo_user:mypassword@localhost:3306/medsgo_database
+  DATABASE_URL: "mysql://username:password@host:port/database_name",
+  
+  // Alternative: Individual MySQL credentials (cPanel style)
+  DB_HOST: "localhost",
+  DB_PORT: "3306", 
+  DB_USER: "your_cpanel_db_user",
+  DB_PASSWORD: "your_cpanel_db_password",
+  DB_NAME: "your_cpanel_db_name",
   
   // Session Configuration - REQUIRED
   // Generate a random string for security

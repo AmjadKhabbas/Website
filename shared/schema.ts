@@ -1,89 +1,92 @@
-import { pgTable, text, serial, integer, boolean, decimal, timestamp, varchar, jsonb, index } from "drizzle-orm/pg-core";
+import { mysqlTable, text, int, boolean, decimal, timestamp, varchar, json, index } from "drizzle-orm/mysql-core";
+import { sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { relations } from "drizzle-orm";
 import { z } from "zod";
 
-export const categories = pgTable("categories", {
-  id: serial("id").primaryKey(),
+export const categories = mysqlTable("categories", {
+  id: int("id").primaryKey().autoincrement(),
   name: text("name").notNull(),
-  slug: text("slug").notNull().unique(),
+  slug: varchar("slug", { length: 255 }).notNull().unique(),
   description: text("description"),
   icon: text("icon").notNull(),
-  color: text("color").notNull().default("blue"),
-  itemCount: integer("item_count").notNull().default(0),
+  color: varchar("color", { length: 50 }).notNull().default("blue"),
+  itemCount: int("item_count").notNull().default(0),
 });
 
-export const brands = pgTable("brands", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull(),
+export const brands = mysqlTable("brands", {
+  id: int("id").primaryKey().autoincrement(),
+  name: varchar("name", { length: 255 }).notNull(),
   imageUrl: text("image_url"),
-  slug: text("slug").notNull().unique(),
+  slug: varchar("slug", { length: 255 }).notNull().unique(),
   description: text("description"),
   isActive: boolean("is_active").notNull().default(true),
 });
 
-export const products = pgTable("products", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull(),
+export const products = mysqlTable("products", {
+  id: int("id").primaryKey().autoincrement(),
+  name: varchar("name", { length: 255 }).notNull(),
   description: text("description").notNull(),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
   originalPrice: decimal("original_price", { precision: 10, scale: 2 }),
   imageUrl: text("image_url").notNull(),
-  imageUrls: text("image_urls").array().default([]), // Array of additional product images
-  categoryId: integer("category_id").notNull(),
+  imageUrls: json("image_urls").default([]), // JSON array for MySQL
+  categoryId: int("category_id").notNull(),
   rating: decimal("rating", { precision: 2, scale: 1 }).notNull().default("0.0"),
-  reviewCount: integer("review_count").notNull().default(0),
+  reviewCount: int("review_count").notNull().default(0),
   inStock: boolean("in_stock").notNull().default(true),
   featured: boolean("featured").notNull().default(false),
   tags: text("tags"),
-  bulkDiscounts: jsonb("bulk_discounts").default([]), // Array of bulk discount tiers
+  bulkDiscounts: json("bulk_discounts").default([]), // JSON for MySQL
 });
 
-export const cartItems = pgTable("cart_items", {
-  id: serial("id").primaryKey(),
-  sessionId: text("session_id").notNull(),
-  productId: integer("product_id").notNull(),
-  quantity: integer("quantity").notNull().default(1),
+export const cartItems = mysqlTable("cart_items", {
+  id: int("id").primaryKey().autoincrement(),
+  sessionId: varchar("session_id", { length: 255 }).notNull(),
+  productId: int("product_id").notNull(),
+  quantity: int("quantity").notNull().default(1),
 });
 
 // Session storage table for authentication
-export const sessions = pgTable(
+export const sessions = mysqlTable(
   "sessions",
   {
-    sid: varchar("sid").primaryKey(),
-    sess: jsonb("sess").notNull(),
+    sid: varchar("sid", { length: 255 }).primaryKey(),
+    sess: json("sess").notNull(),
     expire: timestamp("expire").notNull(),
   },
-  (table) => [index("IDX_session_expire").on(table.expire)],
+  (table) => ({
+    expireIdx: index("IDX_session_expire").on(table.expire),
+  }),
 );
 
 // Ehri account linking table
-export const ehriAccounts = pgTable("ehri_accounts", {
-  id: serial("id").primaryKey(),
-  ehriId: varchar("ehri_id").notNull().unique(),
-  email: varchar("email").notNull(),
+export const ehriAccounts = mysqlTable("ehri_accounts", {
+  id: int("id").primaryKey().autoincrement(),
+  ehriId: varchar("ehri_id", { length: 255 }).notNull().unique(),
+  email: varchar("email", { length: 255 }).notNull(),
   isVerified: boolean("is_verified").notNull().default(false),
-  verificationToken: varchar("verification_token"),
+  verificationToken: varchar("verification_token", { length: 255 }),
   linkedAt: timestamp("linked_at"),
-  createdAt: timestamp("created_at").defaultNow(),
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
-// Medical professionals user table with license verification
-export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
+// Medical professionals user table with license verification  
+export const users = mysqlTable("users", {
+  id: int("id").primaryKey().autoincrement(),
   
   // Authentication Information
-  email: varchar("email").notNull().unique(),
-  password: varchar("password").notNull(), // bcrypt hashed password
+  email: varchar("email", { length: 255 }).notNull().unique(),
+  password: varchar("password", { length: 255 }).notNull(), // bcrypt hashed password
   
   // Personal Information
-  fullName: varchar("full_name").notNull(),
+  fullName: varchar("full_name", { length: 255 }).notNull(),
   
   // Medical License Information
-  licenseNumber: varchar("license_number").notNull(),
-  collegeName: varchar("college_name").notNull(), // Professional Association Name
-  provinceState: varchar("province_state"), // Province or State of Registration (optional)
-  licenseExpiryDate: varchar("license_expiry_date").notNull(), // License expiry date
+  licenseNumber: varchar("license_number", { length: 100 }).notNull(),
+  collegeName: varchar("college_name", { length: 255 }).notNull(), // Professional Association Name
+  provinceState: varchar("province_state", { length: 100 }), // Province or State of Registration (optional)
+  licenseExpiryDate: varchar("license_expiry_date", { length: 50 }).notNull(), // License expiry date
   
   // Practice Information
   practiceAddress: text("practice_address").notNull(),
@@ -92,115 +95,115 @@ export const users = pgTable("users", {
   isApproved: boolean("is_approved").notNull().default(false),
   isLicenseVerified: boolean("is_license_verified").notNull().default(false),
   approvedAt: timestamp("approved_at"),
-  approvedBy: varchar("approved_by"),
+  approvedBy: varchar("approved_by", { length: 255 }),
   
   // Saved payment information (encrypted for convenience)
-  savedCardInfo: jsonb("saved_card_info"), // { last4, expiryMonth, expiryYear, cardType, billingAddress }
+  savedCardInfo: json("saved_card_info"), // { last4, expiryMonth, expiryYear, cardType, billingAddress }
   
   // Timestamps
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
 });
 
 // Orders table for purchase history
-export const orders = pgTable("orders", {
-  id: serial("id").primaryKey(),
-  userId: varchar("user_id").notNull(),
-  orderNumber: varchar("order_number").notNull().unique(),
-  status: varchar("status").notNull().default("pending"), // pending, approved, declined, shipped, delivered, cancelled
+export const orders = mysqlTable("orders", {
+  id: int("id").primaryKey().autoincrement(),
+  userId: varchar("user_id", { length: 255 }).notNull(),
+  orderNumber: varchar("order_number", { length: 255 }).notNull().unique(),
+  status: varchar("status", { length: 50 }).notNull().default("pending"), // pending, approved, declined, shipped, delivered, cancelled
   totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
   
   // Shipping & Billing Information
-  shippingAddress: jsonb("shipping_address").notNull(),
-  billingAddress: jsonb("billing_address").notNull(),
+  shippingAddress: json("shipping_address").notNull(),
+  billingAddress: json("billing_address").notNull(),
   
   // Doctor's Banking Information (Admin Only)
-  doctorBankingInfo: jsonb("doctor_banking_info").notNull(), // { bankName, accountNumber, routingNumber, accountType }
-  institutionNumber: varchar("institution_number").notNull(),
+  doctorBankingInfo: json("doctor_banking_info").notNull(), // { bankName, accountNumber, routingNumber, accountType }
+  institutionNumber: varchar("institution_number", { length: 100 }).notNull(),
   
   // Card Information (Admin Only)
-  cardInfo: jsonb("card_info").notNull(), // { last4, expiryMonth, expiryYear, cardType }
+  cardInfo: json("card_info").notNull(), // { last4, expiryMonth, expiryYear, cardType }
   
   // Payment Details
-  paymentMethod: varchar("payment_method").notNull(),
-  paymentStatus: varchar("payment_status").notNull().default("pending"), // pending, paid, failed, refunded
+  paymentMethod: varchar("payment_method", { length: 50 }).notNull(),
+  paymentStatus: varchar("payment_status", { length: 50 }).notNull().default("pending"), // pending, paid, failed, refunded
   
   // Doctor Information
-  doctorEmail: varchar("doctor_email").notNull(),
-  doctorName: varchar("doctor_name").notNull(),
-  doctorPhone: varchar("doctor_phone"),
+  doctorEmail: varchar("doctor_email", { length: 255 }).notNull(),
+  doctorName: varchar("doctor_name", { length: 255 }).notNull(),
+  doctorPhone: varchar("doctor_phone", { length: 50 }),
   
   // Admin Actions
-  approvedBy: varchar("approved_by"), // Admin email who approved/declined
+  approvedBy: varchar("approved_by", { length: 255 }), // Admin email who approved/declined
   approvedAt: timestamp("approved_at"),
   declineReason: text("decline_reason"),
   
   notes: text("notes"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
 });
 
 // Order items table for detailed purchase history
-export const orderItems = pgTable("order_items", {
-  id: serial("id").primaryKey(),
-  orderId: integer("order_id").notNull(),
-  productId: integer("product_id").notNull(),
-  quantity: integer("quantity").notNull(),
+export const orderItems = mysqlTable("order_items", {
+  id: int("id").primaryKey().autoincrement(),
+  orderId: int("order_id").notNull(),
+  productId: int("product_id").notNull(),
+  quantity: int("quantity").notNull(),
   unitPrice: decimal("unit_price", { precision: 10, scale: 2 }).notNull(),
   totalPrice: decimal("total_price", { precision: 10, scale: 2 }).notNull(),
-  productName: varchar("product_name").notNull(), // Store name at time of purchase
-  productImageUrl: varchar("product_image_url"), // Store image URL at time of purchase
+  productName: varchar("product_name", { length: 255 }).notNull(), // Store name at time of purchase
+  productImageUrl: varchar("product_image_url", { length: 500 }), // Store image URL at time of purchase
 });
 
 // Referrals table for doctor referral program
-export const referrals = pgTable("referrals", {
-  id: serial("id").primaryKey(),
-  firstName: varchar("first_name").notNull(),
-  lastName: varchar("last_name").notNull(),
-  email: varchar("email").notNull(),
-  phone: varchar("phone").notNull(),
-  specialty: varchar("specialty").notNull(),
-  licenseNumber: varchar("license_number").notNull(),
-  yearsOfExperience: varchar("years_of_experience"),
-  referredBy: varchar("referred_by"),
-  referrerContact: varchar("referrer_contact"),
+export const referrals = mysqlTable("referrals", {
+  id: int("id").primaryKey().autoincrement(),
+  firstName: varchar("first_name", { length: 255 }).notNull(),
+  lastName: varchar("last_name", { length: 255 }).notNull(),
+  email: varchar("email", { length: 255 }).notNull(),
+  phone: varchar("phone", { length: 50 }).notNull(),
+  specialty: varchar("specialty", { length: 255 }).notNull(),
+  licenseNumber: varchar("license_number", { length: 100 }).notNull(),
+  yearsOfExperience: varchar("years_of_experience", { length: 50 }),
+  referredBy: varchar("referred_by", { length: 255 }),
+  referrerContact: varchar("referrer_contact", { length: 255 }),
   additionalNotes: text("additional_notes"),
-  status: varchar("status").default("pending"), // pending, approved, rejected
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+  status: varchar("status", { length: 50 }).default("pending"), // pending, approved, rejected
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
 });
 
 // Newsletter subscription table
-export const newsletters = pgTable("newsletters", {
-  id: serial("id").primaryKey(),
-  email: varchar("email").notNull().unique(),
-  subscribedAt: timestamp("subscribed_at").defaultNow().notNull(),
+export const newsletters = mysqlTable("newsletters", {
+  id: int("id").primaryKey().autoincrement(),
+  email: varchar("email", { length: 255 }).notNull().unique(),
+  subscribedAt: timestamp("subscribed_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
   isActive: boolean("is_active").notNull().default(true),
 });
 
 // Admin users table for secure admin access
-export const adminUsers = pgTable("admin_users", {
-  id: serial("id").primaryKey(),
-  email: varchar("email").notNull().unique(),
-  passwordHash: varchar("password_hash").notNull(),
-  name: varchar("name").notNull(),
-  role: varchar("role").notNull().default("admin"),
+export const adminUsers = mysqlTable("admin_users", {
+  id: int("id").primaryKey().autoincrement(),
+  email: varchar("email", { length: 255 }).notNull().unique(),
+  passwordHash: varchar("password_hash", { length: 255 }).notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  role: varchar("role", { length: 50 }).notNull().default("admin"),
   isActive: boolean("is_active").notNull().default(true),
   lastLoginAt: timestamp("last_login_at"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
 });
 
 // Carousel items table for managing hero slideshow
-export const carouselItems = pgTable("carousel_items", {
-  id: serial("id").primaryKey(),
+export const carouselItems = mysqlTable("carousel_items", {
+  id: int("id").primaryKey().autoincrement(),
   title: varchar("title", { length: 255 }).notNull(),
   subtitle: varchar("subtitle", { length: 255 }),
   description: text("description").notNull(),
   price: varchar("price", { length: 50 }).notNull(),
   originalPrice: varchar("original_price", { length: 50 }),
   discount: varchar("discount", { length: 20 }),
-  discountPercentage: integer("discount_percentage"),
+  discountPercentage: int("discount_percentage"),
   imageUrl: text("image_url").notNull(),
   backgroundGradient: varchar("background_gradient", { length: 200 }).default("linear-gradient(135deg, #667eea 0%, #764ba2 100%)"),
   textColor: varchar("text_color", { length: 50 }).default("#ffffff"),
@@ -208,21 +211,21 @@ export const carouselItems = pgTable("carousel_items", {
   badgeText: varchar("badge_text", { length: 50 }),
   badgeColor: varchar("badge_color", { length: 50 }).default("#ef4444"),
   animationType: varchar("animation_type", { length: 50 }).default("fade"),
-  displayDuration: integer("display_duration").default(5000),
+  displayDuration: int("display_duration").default(5000),
   isActive: boolean("is_active").default(true).notNull(),
-  sortOrder: integer("sort_order").default(0).notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+  sortOrder: int("sort_order").default(0).notNull(),
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
 });
 
 // Featured products carousel for scrolling display
-export const featuredCarousel = pgTable("featured_carousel", {
-  id: serial("id").primaryKey(),
-  productId: integer("product_id").notNull(),
-  displayOrder: integer("display_order").notNull().default(0),
+export const featuredCarousel = mysqlTable("featured_carousel", {
+  id: int("id").primaryKey().autoincrement(),
+  productId: int("product_id").notNull(),
+  displayOrder: int("display_order").notNull().default(0),
   isActive: boolean("is_active").notNull().default(true),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
 });
 
 export const insertCategorySchema = createInsertSchema(categories).omit({

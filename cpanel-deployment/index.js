@@ -18,14 +18,8 @@ console.log('Node Environment:', process.env.NODE_ENV);
 console.log('Port:', process.env.PORT);
 console.log('Database configured:', !!process.env.DATABASE_URL);
 
-// Neon WebAssembly configuration - MUST be set before any database imports
-try {
-  const { neonConfig } = require('@neondatabase/serverless');
-  neonConfig.webAssembly = false;
-  console.log('WebAssembly disabled for Neon client');
-} catch (error) {
-  console.warn('Could not configure Neon WebAssembly:', error.message);
-}
+// MySQL configuration - no special setup needed for mysql2
+console.log('MySQL client configured for cPanel hosting');
 
 // Import and start the main application
 try {

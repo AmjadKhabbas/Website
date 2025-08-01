@@ -1,19 +1,49 @@
-// Database configuration for cPanel deployment
-const { neon, neonConfig } = require('@neondatabase/serverless');
-const { drizzle } = require('drizzle-orm/neon-http');
+// MySQL database configuration for cPanel deployment
+const mysql = require('mysql2/promise');
+const { drizzle } = require('drizzle-orm/mysql2');
 const config = require('../config.js');
 
-// Disable WebAssembly to prevent memory issues on shared hosting
-neonConfig.webAssembly = false;
+// MySQL connection configuration
+let connectionConfig;
 
-if (!config.DATABASE_URL) {
-  throw new Error("DATABASE_URL must be set in config.js. Please update your database connection string.");
+if (config.DATABASE_URL) {
+  // Parse DATABASE_URL format: mysql://user:password@host:port/database
+  const url = new URL(config.DATABASE_URL);
+  connectionConfig = {
+    host: url.hostname,
+    port: parseInt(url.port) || 3306,
+    user: url.username,
+    password: url.password,
+    database: url.pathname.slice(1), // Remove leading slash
+    ssl: false,
+  };
+} else {
+  // Individual environment variables (cPanel style)
+  connectionConfig = {
+    host: config.DB_HOST || 'localhost',
+    port: parseInt(config.DB_PORT || '3306'),
+    user: config.DB_USER || '',
+    password: config.DB_PASSWORD || '',
+    database: config.DB_NAME || '',
+    ssl: false,
+  };
 }
 
-console.log('Connecting to database...');
+if (!connectionConfig.user || !connectionConfig.database) {
+  throw new Error("MySQL credentials must be set in config.js. Check DATABASE_URL or individual DB_* variables.");
+}
 
-// Create database connection
-const client = neon(config.DATABASE_URL);
-const db = drizzle(client);
+console.log('Connecting to MySQL database:', {
+  host: connectionConfig.host,
+  port: connectionConfig.port,
+  database: connectionConfig.database,
+  user: connectionConfig.user
+});
 
-module.exports = { db, client };
+// Create MySQL connection pool
+const connection = mysql.createPool(connectionConfig);
+
+// Create Drizzle instance with MySQL adapter
+const db = drizzle(connection, { mode: 'default' });
+
+module.exports = { db, connection };
