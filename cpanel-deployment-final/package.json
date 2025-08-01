@@ -1,0 +1,35 @@
+{
+  "name": "rest-express",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Medical marketplace for healthcare professionals",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "NODE_ENV=development node index.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "express-session": "^1.18.1",
+    "connect-pg-simple": "^10.0.0",
+    "bcryptjs": "^3.0.2",
+    "drizzle-orm": "^0.39.3",
+    "postgres": "^3.4.7",
+    "drizzle-zod": "^0.7.0",
+    "zod": "^3.24.2",
+    "zod-validation-error": "^3.4.0",
+    "passport": "^0.7.0",
+    "passport-local": "^1.0.0",
+    "openid-client": "^6.5.0",
+    "multer": "^2.0.1",
+    "@sendgrid/mail": "^8.1.5",
+    "nodemailer": "^7.0.3",
+    "stripe": "^18.3.0",
+    "date-fns": "^3.6.0",
+    "memoizee": "^0.4.17",
+    "memorystore": "^1.6.7"
+  }
+}

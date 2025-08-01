@@ -1,0 +1,39 @@
+{
+  "compilerOptions": {
+    "noEmit": false,
+    "outDir": "./dist-compiled",
+    "target": "ES2020",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "allowImportingTsExtensions": false,
+    "resolveJsonModule": true,
+    "declaration": false,
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": false,
+    "skipLibCheck": true,
+    "lib": ["ES2020"],
+    "types": ["node"],
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@shared/*": ["./shared/*"]
+    }
+  },
+  "include": [
+    "server/**/*", 
+    "shared/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "dist-compiled", 
+    "client/**/*",
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "server/vite.ts",
+    "vite.config.ts"
+  ]
+}
