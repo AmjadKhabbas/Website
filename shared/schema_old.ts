@@ -1,4 +1,4 @@
-import { pgTable, text, serial, boolean, numeric, timestamp, varchar, jsonb, index, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, boolean, numeric, timestamp, varchar, json, index, integer } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { relations } from "drizzle-orm";
@@ -30,14 +30,14 @@ export const products = pgTable("products", {
   price: numeric("price", { precision: 10, scale: 2 }).notNull(),
   originalPrice: numeric("original_price", { precision: 10, scale: 2 }),
   imageUrl: text("image_url").notNull(),
-  imageUrls: jsonb("image_urls").default([]),
+  imageUrls: json("image_urls").default([]),
   categoryId: integer("category_id").notNull(),
   rating: numeric("rating", { precision: 3, scale: 1 }).notNull().default("0.0"),
   reviewCount: integer("review_count").notNull().default(0),
   inStock: boolean("in_stock").notNull().default(true),
   featured: boolean("featured").notNull().default(false),
   tags: text("tags"),
-  bulkDiscounts: jsonb("bulk_discounts").default([]),
+  bulkDiscounts: json("bulk_discounts").default([]),
 });
 
 export const cartItems = pgTable("cart_items", {
@@ -52,7 +52,7 @@ export const sessions = pgTable(
   "sessions",
   {
     sid: varchar("sid", { length: 255 }).primaryKey(),
-    sess: jsonb("sess").notNull(),
+    sess: json("sess").notNull(),
     expire: timestamp("expire").notNull(),
   },
   (table) => ({
@@ -98,11 +98,11 @@ export const users = pgTable("users", {
   approvedBy: varchar("approved_by", { length: 255 }),
   
   // Saved payment information (encrypted for convenience)
-  savedCardInfo: jsonb("saved_card_info"), // { last4, expiryMonth, expiryYear, cardType, billingAddress }
+  savedCardInfo: json("saved_card_info"), // { last4, expiryMonth, expiryYear, cardType, billingAddress }
   
   // Timestamps
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
 });
 
 // Orders table for purchase history
@@ -114,15 +114,15 @@ export const orders = pgTable("orders", {
   totalAmount: numeric("total_amount", { precision: 10, scale: 2 }).notNull(),
   
   // Shipping & Billing Information
-  shippingAddress: jsonb("shipping_address").notNull(),
-  billingAddress: jsonb("billing_address").notNull(),
+  shippingAddress: json("shipping_address").notNull(),
+  billingAddress: json("billing_address").notNull(),
   
   // Doctor's Banking Information (Admin Only)
-  doctorBankingInfo: jsonb("doctor_banking_info").notNull(), // { bankName, accountNumber, routingNumber, accountType }
+  doctorBankingInfo: json("doctor_banking_info").notNull(), // { bankName, accountNumber, routingNumber, accountType }
   institutionNumber: varchar("institution_number", { length: 100 }).notNull(),
   
   // Card Information (Admin Only)
-  cardInfo: jsonb("card_info").notNull(), // { last4, expiryMonth, expiryYear, cardType }
+  cardInfo: json("card_info").notNull(), // { last4, expiryMonth, expiryYear, cardType }
   
   // Payment Details
   paymentMethod: varchar("payment_method", { length: 50 }).notNull(),
@@ -140,7 +140,7 @@ export const orders = pgTable("orders", {
   
   notes: text("notes"),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
 });
 
 // Order items table for detailed purchase history
@@ -170,7 +170,7 @@ export const referrals = pgTable("referrals", {
   additionalNotes: text("additional_notes"),
   status: varchar("status", { length: 50 }).default("pending"), // pending, approved, rejected
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
 });
 
 // Newsletter subscription table
@@ -191,7 +191,7 @@ export const adminUsers = pgTable("admin_users", {
   isActive: boolean("is_active").notNull().default(true),
   lastLoginAt: timestamp("last_login_at"),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
 });
 
 // Carousel items table for managing hero slideshow
@@ -215,7 +215,7 @@ export const carouselItems = pgTable("carousel_items", {
   isActive: boolean("is_active").default(true).notNull(),
   sortOrder: integer("sort_order").default(0).notNull(),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
 });
 
 // Featured products carousel for scrolling display
@@ -225,7 +225,7 @@ export const featuredCarousel = pgTable("featured_carousel", {
   displayOrder: integer("display_order").notNull().default(0),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
 });
 
 export const insertCategorySchema = createInsertSchema(categories).omit({
@@ -264,11 +264,6 @@ export const insertUserSchema = createInsertSchema(users).omit({
 
 export const insertOrderSchema = createInsertSchema(orders).omit({
   id: true,
-  orderNumber: true,
-  status: true,
-  paymentStatus: true,
-  approvedBy: true,
-  approvedAt: true,
   createdAt: true,
   updatedAt: true,
 });
@@ -284,16 +279,11 @@ export const insertReferralSchema = createInsertSchema(referrals).omit({
   updatedAt: true,
 });
 
-export const insertNewsletterSchema = createInsertSchema(newsletters).omit({
-  id: true,
-  subscribedAt: true,
-});
-
 export const insertAdminUserSchema = createInsertSchema(adminUsers).omit({
   id: true,
-  lastLoginAt: true,
   createdAt: true,
   updatedAt: true,
+  lastLoginAt: true,
 });
 
 export const insertCarouselItemSchema = createInsertSchema(carouselItems).omit({
@@ -308,23 +298,12 @@ export const insertFeaturedCarouselSchema = createInsertSchema(featuredCarousel)
   updatedAt: true,
 });
 
-// Type definitions for better TypeScript support
-export type Category = typeof categories.$inferSelect;
-export type Brand = typeof brands.$inferSelect;
-export type Product = typeof products.$inferSelect;
-export type CartItem = typeof cartItems.$inferSelect;
-export type Session = typeof sessions.$inferSelect;
-export type EhriAccount = typeof ehriAccounts.$inferSelect;
-export type User = typeof users.$inferSelect;
-export type Order = typeof orders.$inferSelect;
-export type OrderItem = typeof orderItems.$inferSelect;
-export type Referral = typeof referrals.$inferSelect;
-export type Newsletter = typeof newsletters.$inferSelect;
-export type AdminUser = typeof adminUsers.$inferSelect;
-export type CarouselItem = typeof carouselItems.$inferSelect;
-export type FeaturedCarousel = typeof featuredCarousel.$inferSelect;
+export const insertNewsletterSchema = createInsertSchema(newsletters).omit({
+  id: true,
+  subscribedAt: true,
+});
 
-// Relations for better query support
+// Database relations
 export const usersRelations = relations(users, ({ many }) => ({
   orders: many(orders),
 }));
@@ -353,20 +332,11 @@ export const productsRelations = relations(products, ({ one, many }) => ({
     fields: [products.categoryId],
     references: [categories.id],
   }),
-  cartItems: many(cartItems),
   orderItems: many(orderItems),
-  featuredCarousel: many(featuredCarousel),
 }));
 
 export const categoriesRelations = relations(categories, ({ many }) => ({
   products: many(products),
-}));
-
-export const cartItemsRelations = relations(cartItems, ({ one }) => ({
-  product: one(products, {
-    fields: [cartItems.productId],
-    references: [products.id],
-  }),
 }));
 
 export const featuredCarouselRelations = relations(featuredCarousel, ({ one }) => ({
@@ -375,3 +345,47 @@ export const featuredCarouselRelations = relations(featuredCarousel, ({ one }) =
     references: [products.id],
   }),
 }));
+
+export type InsertCategory = z.infer<typeof insertCategorySchema>;
+export type Category = typeof categories.$inferSelect;
+export type InsertFeaturedCarousel = z.infer<typeof insertFeaturedCarouselSchema>;
+export type FeaturedCarousel = typeof featuredCarousel.$inferSelect;
+
+export type InsertBrand = z.infer<typeof insertBrandSchema>;
+export type Brand = typeof brands.$inferSelect;
+
+export type InsertProduct = z.infer<typeof insertProductSchema>;
+export type Product = typeof products.$inferSelect;
+
+export type InsertCartItem = z.infer<typeof insertCartItemSchema>;
+export type CartItem = typeof cartItems.$inferSelect;
+
+// Authentication types
+export type InsertEhriAccount = z.infer<typeof insertEhriAccountSchema>;
+export type EhriAccount = typeof ehriAccounts.$inferSelect;
+
+export type InsertUser = z.infer<typeof insertUserSchema>;
+export type User = typeof users.$inferSelect;
+
+export type InsertOrder = z.infer<typeof insertOrderSchema>;
+export type Order = typeof orders.$inferSelect;
+
+export type InsertOrderItem = z.infer<typeof insertOrderItemSchema>;
+export type OrderItem = typeof orderItems.$inferSelect;
+
+export type InsertReferral = z.infer<typeof insertReferralSchema>;
+export type Referral = typeof referrals.$inferSelect;
+
+export type InsertAdminUser = z.infer<typeof insertAdminUserSchema>;
+export type AdminUser = typeof adminUsers.$inferSelect;
+
+export type InsertCarouselItem = z.infer<typeof insertCarouselItemSchema>;
+export type CarouselItem = typeof carouselItems.$inferSelect;
+
+export type InsertNewsletter = z.infer<typeof insertNewsletterSchema>;
+export type Newsletter = typeof newsletters.$inferSelect;
+
+export type ProductWithCategory = Product & { category: Category };
+export type CartItemWithProduct = CartItem & { product: Product };
+export type OrderWithItems = Order & { items: (OrderItem & { product: Product })[] };
+export type OrderItemWithProduct = OrderItem & { product: Product };
