@@ -1,46 +1,51 @@
-// Configuration file for cPanel deployment
-// Replace these values with your actual production values
+// Configuration for cPanel MySQL deployment
+import dotenv from 'dotenv';
 
-module.exports = {
-  // Database Configuration - REQUIRED (MySQL)
-  // Format: mysql://username:password@host:port/database_name
-  // Example: mysql://medsgo_user:mypassword@localhost:3306/medsgo_database
-  DATABASE_URL: "mysql://username:password@host:port/database_name",
+// Load environment variables
+dotenv.config();
+
+export const config = {
+  // Database Configuration
+  database: {
+    host: process.env.DB_HOST || 'localhost',
+    port: parseInt(process.env.DB_PORT || '3306'),
+    user: process.env.DB_USER || '',
+    password: process.env.DB_PASSWORD || '',
+    database: process.env.DB_NAME || '',
+    connectionLimit: 10,
+    acquireTimeout: 60000,
+    timeout: 60000,
+  },
   
-  // Alternative: Individual MySQL credentials (cPanel style)
-  DB_HOST: "localhost",
-  DB_PORT: "3306", 
-  DB_USER: "your_cpanel_db_user",
-  DB_PASSWORD: "your_cpanel_db_password",
-  DB_NAME: "your_cpanel_db_name",
+  // Server Configuration
+  server: {
+    port: process.env.PORT || 3000,
+    env: process.env.NODE_ENV || 'production',
+  },
   
-  // Session Configuration - REQUIRED
-  // Generate a random string for security
-  SESSION_SECRET: "meds-go-super-secret-session-key-change-this-to-random-string-2024",
+  // Session Configuration
+  session: {
+    secret: process.env.SESSION_SECRET || 'change-this-in-production',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: true,
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+    },
+  },
   
-  // Email Configuration (Gmail SMTP) - OPTIONAL
-  // Used for user registration confirmations and notifications
-  GMAIL_USER: "your-email@gmail.com",
-  GMAIL_APP_PASSWORD: "your-gmail-app-password",
+  // Email Configuration
+  email: {
+    user: process.env.GMAIL_USER,
+    password: process.env.GMAIL_APP_PASSWORD,
+  },
   
-  // Stripe Configuration - OPTIONAL (for payments)
-  // Get these from https://dashboard.stripe.com/apikeys
-  STRIPE_SECRET_KEY: "sk_live_your_stripe_secret_key_here",
-  VITE_STRIPE_PUBLIC_KEY: "pk_live_your_stripe_public_key_here",
-  
-  // Environment
-  NODE_ENV: "production",
-  PORT: 3000,
-  
-  // Application URLs
-  BASE_URL: "https://yourdomain.com",
-  
-  // File Upload Settings
-  MAX_FILE_SIZE: "50mb",
-  UPLOAD_PATH: "./uploads",
-  
-  // Admin Account Settings
-  DEFAULT_ADMIN_EMAIL: "admin@meds-go.com",
-  DEFAULT_ADMIN_PASSWORD: "admin123", // CHANGE THIS IMMEDIATELY
-  DEFAULT_ADMIN_NAME: "System Administrator"
+  // Stripe Configuration (optional)
+  stripe: {
+    secretKey: process.env.STRIPE_SECRET_KEY,
+    publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
+  },
 };
+
+export default config;

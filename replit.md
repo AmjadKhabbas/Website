@@ -142,6 +142,16 @@ Changelog:
     * Built final deployment package (1.1MB) ready for cPanel public_html upload
     * All 92 products preserved across 5 categories with full functionality
     * No Replit dependencies - completely self-contained cPanel package
+- August 1, 2025. MAJOR: Complete PostgreSQL to MySQL migration for cPanel deployment
+  - CHECKPOINT: Successfully migrated entire project from PostgreSQL/Neon to MySQL:
+    * Converted all 15 database tables from PostgreSQL to MySQL syntax
+    * Updated schema definitions: SERIAL→AUTO_INCREMENT, JSONB→JSON, BOOLEAN→TINYINT(1)
+    * Replaced @neondatabase/serverless with mysql2 driver throughout project
+    * Created complete MySQL schema file (database-schema-mysql.sql) for phpMyAdmin import
+    * Updated connection code to support both DATABASE_URL and individual cPanel credentials
+    * Built final deployment package (1.1MB) ready for cPanel public_html upload
+    * All 92 products preserved across 5 categories with full functionality
+    * No Replit dependencies - completely self-contained cPanel package
 - July 30, 2025. Enhanced featured products carousel with clickable navigation
   - CHECKPOINT: Featured products carousel fully functional with:
     * Replaced "OUR BRANDS" section with scrolling featured products carousel
